@@ -1,0 +1,90 @@
+/*
+when the program starts it gets divided into a few area of memory:
+os is responsible for stack and heap
+compiler & linker organize in the following way:
+1. text - code as binary (object files)
+2. Data segment  - static/global variables, explicitly initialized
+3. BSS (Block Started by Symbol) segment - uninitialized global & static vars. filled implicitly with zeros
+4. Stack segment - (size determined by os) all local vars go here including functions. object data is stored contiguously.
+grows downwards (from high to low memory addresses). (size determined by os) all local vars go here including functions.
+object data is stored contiguously. when we allocate data the pointer moves to a new position, all data is stored close to one another.
+stack allocation is fast - one cpu instruction - move stack pointer up x bytes (4 for int)
+and return the address of the new position 4 byte int allocation -> stack pointer moves up 4 bytes
+5. heap segment - part of ram , grows upwards (from low memory address to high)
+6. OS Kernel space - user code cannot read or write to these addresses
+
+the os loads entire program into memory, allocates physical ram for it.
+the stack and the heap are 2 areas in the ram. stack - ~2mb, heap can grow and change.
+the actual location of these areas is in the ram. stack my be "hot" in the cache, because we often access the
+stack, but it is stroed in the ram. memory is used to store data.
+stack and heap work differently but are the same. we ask cpp data from these locations and the os returns the block.
+the difference is in memory allocation. an int is 4 bytes - finding contiguous memory in the stack and heap is different.
+
+*/
+
+#include <iostream>
+
+struct Vector3
+{
+    float x, y, z;
+    Vector3() :x(10), y(11), z(12) {}
+};
+
+int main()
+{
+    int value = 5; //stack, implicit auto storage specifier. see 21a_storage specifier
+    int* hvalue = new int; //heap value, new allocates on heap, dynamic storage specifier
+    *hvalue = 5;
+    
+    Vector3* vec = new Vector3(); // heap
+    //array of vector pointers are stored contiguously on the stack, but the vectors they are pointing to on the heap are probably scattered
+    //in contrast, array of vectors on the stack are probably stored contiguously (better performance, less memory jumps - cache advantages).
+    //using smart pointers - the also call new, smart pointers to this for us (same for delete)
+    delete vec; // clear the data to which the pointer points to, but the pointer isn't deleted since it
+    //is a plain-old-data store on the stack - it will be gone when leaving the scope
+    //delete actually frees memory (?) in contrast to stack
+    /*
+    the new keyword will call malloc in turn will call the os underlying specific function and allocate memory on the heap.
+    when we start a program the os allocates memory for that program. the program will maintian a free list which keeps tracks
+    of free blocks and their positions. when we ask for heap memory using malloc, the program traverses the free list, finds a free block 
+    of memory, the os gives back memory address (pointer to the beginning of the newly allocated memory block)
+    and record things such as the size of the allocation and that the block is reserved.
+    implementation of malloc is complex - in contrast to the simplicity of the stack. if we ask more memory than the available memory
+    in the free list than our program asks the os for more memory - even more expensive! whole process vs 1 cpu instruction of stack.
+    The differences between stack & heap is in allocation. the other benefit of stack allocation is that they are close together
+    and fit into 1 cpu cache line. this reduces cache miss - a failed attempt to read or write a piece of data in the cache
+    which results in a main memory access with much longer latency. this problem becomes prominent with lots of variables,
+    which increases the risks of cache misses. THE ALLOCATION IS THE SLOW PART - this is the peformane difference!
+    the "delete" is also a heavy operation.
+
+    WE can preallocate memory preheand and minimize the performance hit(?).
+    the actual access to memory is negligble, tha allocation itself is slow.
+    continuously allocate each frame/loop is bad. memory manangement is necessary.
+
+    The only reason to allocate on the heap is for more data (Textures of 50 mb) or for lifetime reasons
+    */
+
+
+    /*
+       stack variables are scoped, when exiting this scope the stack variables will be gone (all popped),
+       and the stack pointer will return to the memory address it pointed to before entering this scope
+       in most stack implementations the stack is grown backwards(?).
+        it doesn't cost performance to "free" memory, done automatically (1 cpu instruction)
+        by moving the pointer to the address it where before entering the scope!!!
+       only the stack pointer changes after leaving the scope!! the data itself is stil in the memory
+    */
+    {
+        int value2 = 4;
+        // cc cc cc cc cc cc in memory window in debug mode means uninitialized variable
+        // memory on the stack stored contiguously 00000001 00000002 00000003
+        //debug adds safety guard around variables so we won't accidently overflow/access them
+        int array[5];// stack
+        for (int i = 0; i < 5; i++)
+            array[i] = i;
+
+    }
+    
+
+    std::cout << "Hello World!\n";
+}
+

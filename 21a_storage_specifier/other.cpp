@@ -1,0 +1,1 @@
+int t = 5;// static storage specifier. "All objects declared at namespace scope (including global namespace) have this storage duration" external linkage.
