@@ -26,7 +26,7 @@ different in either the number of parameters, and/or the type of the parameters.
 note: 2 different functions that have the same name & same number and type of parameters
 but differ only in  return type are not considered overload, but an ambiguous functions.
 function overloading is also called compiled-time polymoprhism - because it occurs
-at compile-time and polymorphic because we have a symbol with the same name (a
+at compile-time and "polymorphic" because we have a symbol with the same name (a
 function with the same name, representing different types of functions).
 Thus, these functions are said to be statically dispatched (at compile time).
 
@@ -42,7 +42,8 @@ polymorphic references won't work correctly when supplied as an argument, since 
 they referto can only be deduced at run-time (dynamic dispatch), thus the type of the ref
 will be sliced to its underlying type. see 121_double_dispatch as an example.
 
-
+function overloading is not available in C (therefore C doesn't mangle
+the name of functions.)
 
 function overload - multiply(1,2,3) will activate this function:
 

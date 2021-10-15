@@ -3,9 +3,11 @@
 //all rules apply to stuct (except struct are public by default, class are private)
 
 //Entity1 is an aggregate object
-class Entity1 //contains implicitly-declared constructor (the declaration is implicitly done by the compiler
-	//if the user doesn't provide a DEFINED constructor) this implicit default constructor will become
-	//an IMPLICITLY-defined constructor when Entity1 type object will be constructed during compilation
+//contains implicitly-declared constructor (the declaration is implicitly done by the compiler
+//if the user doesn't provide a DEFINED constructor) this implicit default constructor will become
+//an IMPLICITLY-defined constructor when Entity1 type object will be constructed during compilation
+// which means that this line will be added to Entity1 "inline Entity() noexcept = default;"
+class Entity1 
 {
 public:
 	int x; int y;
@@ -234,7 +236,7 @@ int main()
 
 
 	/*
-	3. "a" not-yet-creatd + "b" is created and casted to an rvalue ref (manually or via std::move)+
+	3. "a" not-yet-created + "b" is created and casted to an rvalue ref (manually or via std::move)+
 	both and a,b are of the same type:
 	Entity a;  Entity a = (Entity&&)b   or Entity a = std::move(b)
 	the move constructor is invoked by the compiler, constructing a by moving members of b into a

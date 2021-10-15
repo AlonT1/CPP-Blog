@@ -14,6 +14,11 @@ No runtime cost:
 • Errors found at compile or link time
 • No synchronization concerns
 
+
+Note: constexpr class member fields cannot exist unless they are static (which then 
+they become a constant expression - see "class static"), this is because constexpr is
+resolved at compile time, and class instances are initialized at run-time (while static members
+are initialized at compile-time).
 */
 
 #include <iostream>

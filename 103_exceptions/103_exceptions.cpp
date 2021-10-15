@@ -13,6 +13,43 @@ The return type can still be a file, which is independant from the type of error
 BUT if we can return a null pointer, or a status code to indicate failure, that’s probably the better choice -
 because its simpler and more performant. otherwise, an exception would be reasonable.
     
+
+
+Exeptions tl;dr
+1. try-catch blocks always appear together - there is no try without catch and vice-versa.
+2. exception is raised using "throw X;" - X is the error msg/object/literal:
+    a. if the throw is inside the try block of try-catch block - the catch block (excecption handler)
+    that matches the argument of the expection catches the error. catch handlers are tested subsequently in order for
+    matching parameter.
+    b. if no appropriate catch handlers exist in the current try block that can accpet the argument of the exception,
+    or if the throw is outside of a try-catch block,
+    or it's inside a catch block itself,
+    then the exception propagtes up the stack to the nearest catch in the nearest try-catch block up the stack of callers.
+    c. if no appropriate catch handlers exist at all then the program will fail with an expcetion error
+    (propgated up the stack until the end of the program - up until main)
+
+3. compilers won't perform implicit type conversions when matching an exception to a catch block:
+e.g - const char* exception won't be implicitly converted to a catch that accepts std::string,  makes
+sense since we may want very specific exceptions to be caught be very specific catch
+
+NOTE: exceptions SHOULD BE CAUGHT in catch block BY REF/PTR for 2 reasons:
+for example throwing a derived object and catching a base by value will cause the following:
+    a. redundant copies -  of base section of derived into the base parameter of catch handler
+    b. not using ref or ptr will cause slicing -
+    throwing a Cat object as an error and catching it via Animal instead of Animal& will destroy polymorphism -
+    in practice we will lose access to the virtual functions of Animal that Cat overrides!
+    so if Cat overrides the virtual function  jump() thqt Animal has, executing
+    jump() will execute the jump of the animal, and not the jump() function of the cat,
+    because the Cat part of the object passed to the animal type has been "sliced"
+    (the vtable to possessing the pointers to the correct functions has been lost - no virutal
+    functions will be supported).
+    In contrast throwing a Cat object caught by Animal& and executing cat.jump()
+    will execute the jump() of the cat due to polymorphism supported only by references
+    and pointers in cpp.
+
+
+
+
 */
 
 #include <iostream>
@@ -50,8 +87,6 @@ void start_game()
         //in this way we tell the caller in main that something went wrong and he can do something
         //about the situation. Without rethrowing th error back to main,
         //knowing what happeneed here.the program just returns to main and continues without
-    
-
     }
 }
 
@@ -148,39 +183,6 @@ public:
 
 int main()
 {
-
-    /*
-    Exeptions tl;dr
-    1. try-catch blocks always appear together - there is no try without catch and vice-versa.
-    2. exception is raised using "throw X;" - X is the error msg/object/literal:
-        a. if the throw is inside the try block of try-catch block - the catch block (excecption handler)
-        that matches the argument of the expection catches the error. catch handlers are tested subsequently in order for
-        matching parameter.
-        b. if no appropriate catch handlers exist in the current try block that can accpet the argument of the exception,
-        or if the throw is not inside a try-catch block or it's inside the catch block itself,
-        then the exception propagtes up the stack to the nearest catch in the nearest try-catch block up the stack of callers.
-        c. if no appropriate catch handlers exist at all then the program will fail with an expcetion error
-        (propgated up the stack until the end of the program - up until main)
-
-    3. compilers won't perform implicit type conversions when matching an exception to a catch block:
-    e.g - const char* exception won't be implicitly converted to a catch that accepts std::string,  makes
-    sense since we may want very specific exceptions to be caught be very specific catch
-    
-    NOTE: exceptions SHOULD BE CAUGHT in catch block BY REF/PTR for 2 reasons:
-    for example throwing a derived object and catching a base by value will cause the following:
-        a. redundant copies -  of base section of derived into the base parameter of catch handler
-        b. not using ref or ptr will cause slicing -
-        throwing a Cat object as an error and catching it via Animal instead of Animal& will destroy polymorphism -
-        in practice we will lose access to the virtual functions of Animal that Cat overrides!
-        so if Cat overrides the virtual function  jump() thqt Animal has, executing
-        jump() will execute the jump of the animal, and not the jump() function of the cat,
-        because the Cat part of the object passed to the animal type has been "sliced"
-        (the vtable to possessing the pointers to the correct functions has been lost - no virutal
-        functions will be supported).
-        In contrast throwing a Cat object caught by Animal& and executing cat.jump()
-        will execute the jump() of the cat due to polymorphism supported only by references
-        and pointers in cpp.
-    */
 
 
     /*********basic try catch*******/

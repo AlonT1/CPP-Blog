@@ -6,8 +6,8 @@
 /*
 std optional - helps dealing in data that may or may not be there
 optional wraps around the return type - therefore std::optional can house 2 parameters:
-1. a parameter that has the type of template parameter, for example std::optional<std::string>
-can house std::string
+1. a parameter that has the type of the template parameter, for example std::optional<std::string>
+can store "std::string:
 2. empty optional (std::optional<std::string>{} or std::nullopt or {} that is interpreted as 
 a null string because the template parameter is std::string)
 */

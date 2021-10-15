@@ -3,8 +3,11 @@ Notes:
 
 **************************************************************************
 1. when using a header and a cpp, the implementation of a function in a .cpp should only include return type,
-name and parameters. keywords such as const, override, virtual, static, __declspec(dllimport) 
-(49_static_dynamic_linking), etc, should only be used in the header, and discarded in .cpp
+name and parameters. keywords such , override, virtual, static, __declspec(dllimport) 
+(49_static_dynamic_linking), should only be used in the header, and discarded in .cpp
+
+C++ Standard n3337 § 7.1.2/5 says:
+The virtual specifier shall be used only in the initial declaration of a non-static class member function;
 **************************************************************************
 
 2. //int Car::m_speed = 4; error!
@@ -22,11 +25,16 @@ name and parameters. keywords such as const, override, virtual, static, __declsp
 std::string Car::brand = "ken";
 int Car::m_wheel_amount = 4;
 
+
 Car::Car()
 {
 	m_speed = 0;
 }
 
+//with namespaces we can utilize "using" to avoid repeating the  namespace name
+//when implementing functions from the .h file in .cpp file, or wrapping the whole
+//implementation inside a namespace with the same name of the namespace from the header file. But! When 
+//implementing class functions there is no "using", There is no way to avoid the "Car::" qualification!
 void Car::accelerate(float intensity)
 {
 	m_speed += ACCELERATION_FACTOR * intensity;

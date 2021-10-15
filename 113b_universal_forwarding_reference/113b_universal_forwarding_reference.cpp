@@ -52,7 +52,8 @@ int main()
 	/*
 	what so special about universal references:
 	***************************************************************************************************
-	Universal references can bind to all value categories (very flexible!).
+	1. Universal references can bind to all value categories (very flexible!).
+	2. Universal references converge to (their final form is) either an lvalue ref or rvalue ref.
 	***************************************************************************************************
 
 	The "final type" that universal reference converge to (lvalue ref or rvalue ref) is based upon two steps:
@@ -187,7 +188,8 @@ int main()
 		step 1 (T deduction):U&& val = x; (in the ctor)  =>   int& && val = x; 
 		(auto T deduced to int& due to x being lvalue (int&) expression)
 
-		step 2 (ref collapsing): int& val = x; due to ref collapsing (rule 2 - T& &&)
+		step 2 (ref collapsing): int& && val = x ----collapses to----> int& val = x; 
+		due to ref collapsing (rule 2 - T& &&)
 		***********************************************************************************/
 		Entity<int> e1(x); 
 

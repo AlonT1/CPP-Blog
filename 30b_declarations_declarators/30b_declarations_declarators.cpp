@@ -98,8 +98,8 @@ b. int const unsigned* const array[50];
     of declaration.
     2. init-declarator-list:
         i. declarator: "* const array [50]". (array is an array of 50 const pointers)
-        this declarator  an identifier ("array"), and two modifiers /compound types (pointer and array)
-        const here pretains to the constant pointers that lie inside that array
+        contains an identifier ("array"), and two modifiers /compound types (pointer and array)
+        const qualifier here pretains to the constant pointers that lies inside that array
 
 c.  volatile char (*fp)(float const), &r = c;
     1. declaration specifier (decl-specifier-seq): volatile char (base type)

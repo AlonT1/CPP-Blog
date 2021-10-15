@@ -19,6 +19,8 @@ public:
     //conversions can occur "int x = (int)object;"
     //return type isn't necessary because the object is effectively converted to an int
     //and this function "explains" what this conversion means
+
+    //int serves both as the function name and the reutrn type
     explicit operator int() const //const - function promises not to modify member variables
     {
         return 8.5; //note the double here, explanied below

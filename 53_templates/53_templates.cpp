@@ -1,7 +1,7 @@
 /*
 generic programming is enabled in cpp by templates - type of macros.
 they reduce the repitition of code (DRY - don't repeat yourself principle).
-templates are created only at compile-time:
+templates are cpp entity created only at compile-time:
 * template functions - stenciled out (created) as concrete functions at compile-time if they are called
 * template classes - stenciled out at compile-time as concrete instance only if an object is instantiated
 * member functions (inside class T) - stenciled at compile-time out when an object of type T is instantiated
@@ -10,21 +10,25 @@ the template won't even appear in the binary
 */
 
 #include <iostream>
+#include <array>
+
+/*********************************Template functions**************************/
+
 
 /*THREE OVERLOADs for the same statement!!!*/
-void print(int value)
+int returner(int value)
 {
-    std::cout << value << std::endl;
+    return value;
 }
 
-void print(std::string value)
+std::string returner(std::string value)
 {
-    std::cout << value << std::endl;
+    return value;
 }
 
-void print(float value)
+float returner(float value)
 {
-    std::cout << value << std::endl;
+    return value;
 }
 
 /*
@@ -44,10 +48,32 @@ stroustrup originally used class to specify types in templates to avoid introduc
 committee introduced a new keyword typename to resolve ambiguity, but kept class as an option
 */
 template<typename T> //T is called a "template type"
-void print_template(T value) //"value" is a "template function parameter" or "template parameter"
+T returner_template(T value) //"value" is a "template function parameter" or "template parameter"
 {
-    std::cout << value << std::endl;
+    return value;
 }
+
+//now calling the function as:
+int res1 = returner_template<int>(5); //the compiler stencils out the following concrete function:
+
+/*
+template<>
+int returner_template<int>(int value)
+{
+    return value;
+}
+*/
+
+/*
+the above is a concrete form of the template, also called SPECIALIZATION of the
+template. note that once a specialization is created for an int, it will be
+created only once and will serve all function calls with type int.
+we can also manually specialize templates in the same way that the compiler does.
+more info in 101_template_specialization.
+
+with functions, cpp supports template argument deduction.
+since the argument is an int the compiler deduces the template type as an int:*/
+int res2 = returner_template(5);
 
 
 
@@ -70,16 +96,19 @@ T min(T x, T y)
 
 
 /*
-the call "min(2,4)" (equivalent to min<int>(2,4) due to auto deduction in cpp17)
+the call "min(2,4)" (equivalent to min<int>(2,4) due to type deduction)
 works will and the function:
 int min(int x, int y) { return x < y ? x : y; }
 is stenciled out at compile time.
 
 but min(2, 5.5) won't work because the compiler can't deduce the 
-type of the template parameter T - is it an int or double?
-*/
+type of the template parameter T - is it an int or double? 
+solution: use two typenames T and U, but which one would be the return value?
+this question is answered in (108 auto_if_constexpr) - in short use auto,
+as a return type, the compiler will deduce the return type at compile time
+based on the underlying type of the return value.*/
 
-
+/*********************************Template Classes**************************/
 /*
 Template for classes:
 As with function templates the compiler generates multiple data and function 
@@ -96,17 +125,16 @@ class C;
 template <class T>
 class C {};
 
-another use of templates - similar to the standarrd template library
-metaprogramming - programming what the compiler do in the compile time, instead of programming it ourself.
-the compiler writes code for us based on the rules of the template
+example:
 */
 template<typename T, int N> //can also hold multiple typenames. each typename represents a template type
 //typename T is a template type, N is a non-template type(parameter) because it is explicilty an int!
 class Array
 {
 private:
-    T m_array[N]; //the size of stack-allocated array must be known at compile time!
-    /*since templates are created at compiled-time, N will be the size of the array
+
+    /*the size of stack-allocated array must be known at compile time!
+    since templates are created at compiled-time, N will be the size of the array
     N in this case is a sort of a function parameter, a value which is passed into the class.
     N must be known at compile time. why?
     for example: int N=5;  int arr[N] is not possible because N can potentially be changed
@@ -114,26 +142,112 @@ private:
     therefore, const int N=5; int arr[N] is valid because N is known at compile time.
     for the same reason, the paramenter int N in the template is also valid, since when we create the array:
     const int N=5; Array<int, N> arr; or  Array<int, 5>  are both valid since the argument for N is
-    known at compile time. In addition N doesn't occupy memory, it is a form of a constant value!
-    */
+    known at compile time. In addition N doesn't occupy memory, it is a form of a constant value!*/
+    T m_array[N]; 
 
 public:
+    //when denoting the name of the class ("Array") it is implicitly equivalent to "Array<T,N>",
+    //which can be written explicitly.
+    //Note that this "feature" does not work in function templates, when writing them
+    //we must denote the full template type with <> brackets
+    void test(Array& array) {}
     T get_size()const { return N; }
 };
 //see 100_template_header for more information about template classes and header files
 
 
+
+Array<int, 5> arr; //equivalent to "Arra<int,5>
+
+/*
+template<>
+class Array<int, 5>
+{
+
+private:
+    int m_array[5];
+
+public:
+    inline void test(Array<int, 5>& array); //specialized in the same way as template functions
+
+    inline int get_size() const;
+
+    // inline Array() noexcept = default;
+};
+*/
+
+/*
+The above is a concrete form of the template, also called full specialization - 
+can also be done manually (as with functions). template classes can also be partially
+specialized as opposed to template functions, as seen in 101_template_specialization.
+
+as seen above, template type deduction for functions is supported, and since cpp17
+class template type deduction (CATD) is also supported:
+*/
+std::array array1{ 4, 5, 6 }; //the template arguemnt is deduced as initializer list
+
+//custom example for CATD:
+template <typename T, typename W>
+class Array1
+{
+public:
+    Array1(const T& t, const W& w)
+    {
+        std::cout << t << w;
+    }
+};
+
+Array1 arr(4, 5); // automatically deduced to "Array1<int, int> arr(4,5)"
+
+/*the template is specialized as the following:
+template<>
+class Array<int, int>
+{
+
+  public:
+  inline Array(const int & t, const int & w)
+  {
+    std::cout.operator<<(t).operator<<(w);
+  }
+};
+
+*/
+
+
+
 int main()
 {
-    print_template<std::string>("ma"); //print_template is parameterized with std::string
-
-    //also works in cpp17, the compiler auto deduces the template type
-    //from the argument, so no need to parameterize the template type explicitly as <std::string>
-    print_template("ma");
-    Array<std::string, 5> array; // we parameterize T as an std::string
-    std::cout << "Hello World!\n";
-    std::vector w{ 1,2,3 };
+ 
+  
 }
+
+
+
+// static variables:
+
+template <typename T>
+struct S
+{
+    static double something_relevant;
+};
+
+template <typename T>
+double S<T>::something_relevant = 1.5;
+
+
+/*
+for   "S<int> s;"
+the compiler generates the following code:
+
+template<>
+struct S<int>
+{
+  static double var;
+};
+
+double S<int>::var = 1.5;
+
+*/
 
 /*
 Notes:
@@ -194,4 +308,11 @@ template <typename T, typename U, typename V>
 T multiply (U x, T y, V z) {}
 
 
+4. if a function inside a template class isn't used, it isn't instantiated!!!!
+
+
+5. Templates are a means to create classes/functions. If we want a class or function
+to work with all cases we need to template them. If we want a template function/class 
+to work differently given a specific template parameter, we need to specialize the
+function/class (give the template a concrete definition).
 */

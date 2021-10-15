@@ -8,7 +8,7 @@ public:
 	Entity() { std::cout << "ctor" << std::endl; }
 	~Entity() { std::cout << "dtor" << std::endl; }
 	Entity(const Entity& other) { std::cout << "copy ctor" << std::endl;}
-	Entity(const Entity&& other) noexcept { std::cout << "move ctor" << std::endl; }
+	Entity(const Entity&& other)  noexcept { std::cout << "move ctor" << std::endl; }
 	Entity& operator=(const Entity& other) { std::cout << "copy assignment" << std::endl; return *this; }
 	Entity& operator=(const Entity&& other) noexcept { std::cout << "move assignment" << std::endl; return *this; }
 };
@@ -56,20 +56,56 @@ but for some reason vstudio doesn't perform this optmization
 In such a case, neither the copy constructor nor move constructor would be called.
 
 ****************************************************************
-if rvo/nrvo optimization deosn't occur, the compiler will try to move back the lvalue,
+if rvo/nrvo optimization doesn't occur, the compiler will try to move back the lvalue,
 if a move ctor doesn't exist, the compiler will try to copy back the lvalue, if
-a copy ctor doesn't exist we will get an error because the compiler won't be able
-to use the implict-declared copy ctor (considered deleted).
+a copy ctor doesn't exist we will get an error because the compiler WILL seek 
+a copy ctor but since a regular ctor exist, the implict-declared copy ctor is
+considered deleted, therefore the copy ctor won't be found and an error will be
+invoked.
 ****************************************************************
 */
 
-Entity rvo_uoptimized_func()
+
+
+Entity rvo_unoptimized()
 {
 	Entity temp = Entity();
 	return temp;
 }
 
 /*
+	with this version of MSVC, NRVO doesn't work with the function above.
+	if it would have worked, the compiler would have replaced the code above
+	with the following code:
+	Entity rvo_unoptimized()ch
+	{
+	Entity temp = Entity() 
+	//cast to &&, equivalent to std::move(temp)
+	return Entity(static_cast<const Entity&&>(temp));
+	}
+
+	And the print would have been:
+	ctor
+	dtor
+
+	note that code above would have worked even if only a copy ctor would 
+	exist without a move ctor. if no copy ctor and no move ctor ---> error.
+	ALTHOUGH A CAST TO A Rvalue ref occurs (equivalent to std::move)
+	the actual move ctor is invoked "BEHIND THE SCENES", in other words, nothing
+	prints out from the move ctor, and we can't reach it via the debugger.
+
+	if we copy and paste the generated code and use it instead:
+		Entity rvo_unoptimized()
+		{
+			Entity temp = Entity()
+			return Entity(static_cast<const Entity&&>(temp));
+		}
+	we would see that the move ctor DOES fire up, but when using our original function,
+	the move ctor runs IMPLICITLY - which means that if we have move ctor with errors
+	in it, or alternitavely - a problematic ctor without a move ctor  - it can affect the NRVO process.
+	Note that although the generated code casts temp to an rvalue ref and returns it,
+	it seems that the returned type is converted to an rvalue ref, but stays an lvalue.
+	
 
 */
 Entity rvo_optimized()
@@ -82,10 +118,10 @@ int main()
 
 	//rvo unoptimized
 	Entity e_rvo_unpotimized; 
-	e_rvo_unpotimized = rvo_uoptimized_func();
+	e_rvo_unpotimized = rvo_unoptimized();
 
 	//rvo optimized
-	Entity e_rvo_optmized = rvo_optimized();
+	//Entity e_rvo_optmized = rvo_optimized();
 
 
 
@@ -109,16 +145,20 @@ int main()
 	inside the ctor stack frame  we create the Entity object in an address that belongs to the func() stack frame
 	(done via passing a memory address of func() into the stack frame of ctor() via registers)
 	2. "move ctor" - returning back from ctor() stack frame into func()'s stack frame(), the  move ctor stack frame is invoked
-	in which we copy the object from func() stack frame back to main() stack frame (memory address of stacks are passed via registers)
+	in which we copy the object from func() stack frame back to main() stack frame (memory address of stacks are passed via registers).
+	IF MOVE CTOR DOESN'T EXIST A COPY CTOR WILL BE USED INSTEAD.
+	IF A copy ctor doesn't exist - error! because the regular constructor disables the implicitly declared copy ctor.
 	3. "dtor" - The object inside func() stack frame is now destroyed (in practice,
 	because the dtor is empty, the assembly code doesn't do anything significant
-	4. "move ctor" - now we return to main()'s stack frame(), in which we invoke move ctor once  again!
+	4. "move assignment" - now we return to main()'s stack frame(), in which we invoke move assignment. 
 	the compiler, which already moved the data the object from the stack frame of func() into main() (step 2)
 	now does it again - it manages to access the stack frame of func() and copy the entity object into  the address
 	of "e_rvo_unpotimized" variable inside main()'s stack frame which now holds two identical copies of the
 	Entity object in two different memory addresses.
 	so in step 2 we moved the object from func()'s stack frame to main()'s stack frame, and now we peform the same operation
 	to actually assign the object to variable e_rvo_unpotimized which also lives in the stack frame of main().
+	if the move assignment doesn't exist and the copy assignment operator exists - then it will be used instead.
+	if both don't exist - error! since a regular ctor exists which implicitly deletes copy ctor.
 	5. "dtor" - dtor invoked, destroyes the temporary object from step 4 (the rhs of the assignemnt), this
 	object has expression scope, going into the next statement causes its destruction (created by the first move ctor - 0x084)
 	6. "dtor" - destructing the object created in step 6 "variable e_rvo_unpotimized" (created by the second move ctor - 0x092)

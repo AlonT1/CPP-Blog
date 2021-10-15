@@ -87,6 +87,9 @@ template and non-template classes:
 	invloves two files:
 	a. an header file that contains the class with forward declerations
 	b. an inl file with function definitions of the forward declerations (Essentialy simulates the definition source cpp file).
+	c. the inl file is included in the header file. This achieves the same result as in the previous technique
+	(single, fully-defined header), but more structured.
+
 	inl files have no significance to the compiler, they are just a way of structuring the code for readability, JUST AS .h, .hpp etc.
 	have no meaning to the compiler. In other words, the extensions of the files we INCLUDE don't have a meaning, they are
 	dumped in the cpp's by the preprocessor (in terms of compilation, cpp extension does matter - the compiler looks for a main function there,

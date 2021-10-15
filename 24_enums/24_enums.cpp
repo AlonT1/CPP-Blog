@@ -107,17 +107,11 @@ private:
     only that that the enum hack occurs at compile time, the #define example occurs at preprocessing time.
     in addition, #define isn't suitable for debugging as compared to the anonymous enum
 
-    and similar to 
     2. static const int SIZE = 5;  (only valid as a class member!)
-    The standard states that a class member that is a  static const integer becomes
+    The standard states that a class member that is a  static const/constexpr integer becomes
     a constant expression, just like the literal 5 or the SIZE.
     */
- 
-    /*
-    enum {SIZE = 100} //anonymous enum - behaves like a literal, like a #define
-    why not use #define? not good for debugging and not good when it is used only once
-    in addition, this trick doens't allocates new memory, SIZE is a literal prrvalue
-    */
+
 };
 
 //pass enum to a function

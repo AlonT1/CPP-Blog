@@ -1,17 +1,13 @@
 #include <iostream>
-#include <vector>
-#include <string>
 
-void* operator new(size_t size)
-{
-	std::cout << "new\n";
-	return malloc(size);
-}
-
-void test(std::string&& str) {}
+struct A { virtual void foo() { }};
+struct B: public A { virtual void foo() override { }};
+void wr(B* b) {}
 
 int main()
 {
-	std::string a{ "shalom" };
-	test(std::move(a));
+	A* a = new B;
+	wr(a);
 }
+
+

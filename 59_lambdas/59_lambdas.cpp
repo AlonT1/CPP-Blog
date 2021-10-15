@@ -183,6 +183,8 @@ int main()
     variables and safely use them, even if they have a time-varying lifetime.
     
     in the example above we captured "a" by ref and "b" by value ([&a,b]).
+    note that "b" is considered read-only, meaning it is unmodifiable, as opposed
+    to "a".
 
     mutable lambda-specifier explained:
 

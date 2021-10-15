@@ -42,10 +42,22 @@ int main()
     example[0] = 2; //access  and set
     example[4] = 4;
     //std::cout << example[0];
-    //std::cout << example[-1]; // memory access violation - error doesn't belong to me - in release mode its possible - possible to override a memory that exists elsewhere!, in debug- not. 
+    //std::cout << example[-1]; // memory access violation - error doesn't belong to me -
+    //in release mode its possible - possible to override a memory that exists elsewhere!, in debug- not. 
     //std::cout << example; // this is a pointer type! the adress of the array
 
-    for (int i = 0; i < 5; i++) // possible to write <=4 but <= is more expensive than < (two actions vs one), more readible since our array size is 5
+    int size = 5;
+    //Error! size can be manipulated and changed during run-time, meaning that 5 isn't necessarily
+    //"size"'s "final" value. This collides with the fact that stack-allocated arrays are constructed
+    //during compile-time, therefore the compiler raises an error, telling us that the value that "size"
+    //holds during compile-time maybe modified during run-time, thus it cannot be trusted to allocate
+    //the size of the array during compile-time. Therefore "size" must be const or constexpr to solve
+    //this issue.
+    //int array3[size]; 
+
+    // possible to write <=4 but <= is more expensive than < (two actions vs one),
+    //more readible since our array size is 5
+    for (int i = 0; i < 5; i++) 
         example[i] = i;
 
     int* ptr = example; //example is an integer pointer

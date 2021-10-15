@@ -107,7 +107,7 @@ int main()
     //char arrays require adding a null termination  (0 or '\0') expliciltly. without it printing name2 yields jibbrish after 'o
     //(the end of string is not known to the compiler)
 
-    char str[3] = "ma"; // we have to accomodate an extra char for '\0' thus str[3] and not str[2]
+    char str4[3] = "ma"; // we have to accomodate an extra char for '\0' thus str[3] and not str[2]
 
     const wchar_t* name5 = L"makore"; //L signifies that literal is made up of wide characters (2 bytes per character - up to the compiler 2 windows 4 mac)
 
@@ -146,8 +146,9 @@ int main()
     std::cout << "ew" << contains << std::endl;
 
     //cpp14
+    // adding s after " - operator function that returns a set of string (implemented in string_literals), allows + concat
     using namespace std::string_literals;
-    std::string name13 = "Cherno"s + "hello"; // adding s after " - operator function that returns a set of string (implemented in string_literals), allows + concat
+    std::string name13 = "Cherno"s + "hello";
     std::u16string name14 = u"Cherno"s + u"hello"; 
     std::u32string name15 = U"Cherno"s + U"hello";
 
@@ -167,5 +168,25 @@ Line4)"; //R means to ignore escape characters (multiline strings)
     std::string name16 = "hello" + std::string("bye"); // string concat. "hello" + "bye" yields error ("bye" is const char*)
     std::cout << name16 << std::endl;
 
+
+    /* the following for loop on a std::string in reverse is problematic*/
+    std::string string = "hello";
+   /* for (size_t length{ string.length() - 1 }; length >= 0; --length)
+        std::cout << string[length];*/
+
+    /* the problem arises because string.length() returns a size_t (unsigned __int64) and
+    at the last loop, when length==0 and we print string[0], the final decrement "--length"
+    occurs - and because length is unsigned an overflow occurs and the length wraps around to its
+    max positive value. this causes the final check "length >=0" to fail and hangs us in an
+    indefinite loop.
+
+    solution:
+    for(size_t length { string.length() }; length > 0 ;)
+        std::cout << string[--length]; // decrements to 0, prints, and then ends in "length > 0" check
+
+    alternative - simply cast to an int:
+    for (int length = static_cast<int>(string.size()) ; length >= 0; --length )
+        std::cout << string[length];
+    */
 
 }

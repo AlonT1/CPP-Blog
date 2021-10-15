@@ -22,7 +22,7 @@ has two sub types which operate on integral/floating family (safe - no data loss
 			example: int a + float b + double c   -> all promoted to a dobule! and then the expression is evaluated.
 			3/5.0  ->  3 is promoted to a double -> 3.0/5.0   (NOTE: FLOATS ARE DENOTED WITH "f" literal while double is not)
 
-	2. numeric convertions (shortening)- conversion from a larger type to a similar smaller type (may result in data loss):
+	2.  shortening - numeric convertions- conversion from a larger type to a similar smaller type (may result in data loss):
 	char c {3000} // char has a range of -128 to 127, 3000 int causes an overflow and unexpected result
 	short s {2} //2 is an int, narrowed into a short, no data loss
 	double d{3} //integer 3 to to a double (different families)
@@ -83,7 +83,7 @@ int main()
 	to c style castings
 	*/
 
-	//static cast - very similar to c cast but more restrictive
+	//static cast - very similar to c cast but more restrictive - the safest cast
 	//------------------------------------------------------
 	double e = 5.24;
 	double s = static_cast<int>(e);
@@ -100,12 +100,16 @@ int main()
 
 	/*
 	Static_cast does not implement RTTI therefore it is more risky but faster,
-	unlike dynamic_cast it won't raise errors when downcasting a derived class
+	unlike dynamic_cast it won't raise errors when downcasting a  class
 	to a class it does not inherit from (which cause undefined behaviour)
 	*/
 
 
-	//reinterper cast - essentialy enforced type punning
+	//reinterper cast - essentialy enforced type punning - reinterprets the underlying bit pattern
+	//reinterpret_cast can only perform pointer-to-pointer conversions and reference-to-reference conversions 
+	//(plus pointer-to-integer and integer-to-pointer conversions).
+	//This is consistent with the intent expressed in the very name of the cast:
+	//it is intended to be used for pointer/reference reinterpretation.
 	//------------------------------------------------------
 	int* anotherP1 = reinterpret_cast<int*>(&ch); //successful!
 	//char c 1 byte memory block is now treated as if it was an 4 byte int - dangerous!
@@ -123,7 +127,7 @@ int main()
 
 
 
-	//dynamic cast - for downcasting  base-class pointers into derived-class pointers
+	//dynamic cast -  handles polymprhism, for downcasting  base-class pointers/refs into derived-class pointers/refs
 	//possible because derived classes have a portion in their memory representing base
 	//and due to RTTI the compiler knows that base pointer actually points to a derived
 	//class x and therefore can be downcasted to a derived class x, but if base pointed
@@ -150,16 +154,10 @@ int main()
 	but how does cpp knows that base points to a Derived class? cpp stores runtime type information (RTTI)
 	about all of our types - this adds overhead but allows us to do dynamic casting. dynamic casting
 	costs overhead since we need to validate thorugh the RTTI what is the real type of the object.
-
-	Run-time type information (RTTI) is a feature of C++ that exposes information about an object’s data type at runtime. 
-	This capability is leveraged by dynamic_cast. Because RTTI has a pretty significant space performance cost, 
-	some compilers allow you to turn RTTI off as an optimization. 
-	Needless to say, if you do this, dynamic_cast won’t function correctly.
-	RTTI checks during dynamic cast if base ptr actually points to a derived, 
-	therefore ensures that a dynamically down casting base to a derived type is possible.
+	(see 124_RTTI).
 
 	RTTI Can be disabled -> Project properties -> C/CPP -> Language  -> enable run-time-type information -> off
-	this removes the overhead!!
+	this removes the overhead!! but causes dynamic_cast not to work.
 	*/
 
 	Derived* ac = dynamic_cast<Derived*>(base); //casting base pointer (that points
@@ -190,9 +188,18 @@ int main()
 	/*will fail since "base" pointer points to "derived" type class
 	and not to AnotherDerived type class
 	this can help us to test the "underlying" type of "base"
-	Always ensure your dynamic casts actually succeeded by checking for a null pointer result.*/
+	Always ensure your dynamic casts actually succeeded by checking for a null pointer result.
+	
+	can be used in real time to know if base is a pointer to Mercedez or Lamborghini
+	if(dynamic_cast<Mercedez*>(base)) or if(dynamic_cast<Lamborghini*>(base))
+	
+	although :
+	"typeid(vehicle) == typeid(Lamborghini)" or  "typeid(vehicle) == typeid(Lamborghini)"
+	is three times faster than the techqniue above.
+	*/
 
-	if (!ac) //will fail because base is not an instance of AnotherDerived?
+
+	if (!ac) //If the cast fails, it returns a null pointer of the type inside <> (AnotherDerived)
 	{
 		std::cout << "fail" << std::endl;
 	}

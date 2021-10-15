@@ -302,7 +302,8 @@ int main()
         b. the reason we return a ref to vector2& is to support chaining, explained 
         in operator= overload definition in Vector2.
 
-    2. overloading with normal / friend functions, both are free (defined outside the class)
+    2. overloading with normal / friend functions, both are free (defined outside the class,
+    although friend can be defined inside the class)
     the signature is:
 
         Vector2 operator* (const Vector2& lhs, const Vector2& rhs);
@@ -310,10 +311,10 @@ int main()
         The operator* is a binary operator, and by declaring the signature of operator*
         to accept a two parameters,
         *********************************************************************
-        we are telling the compiler /another developer that we are going
+        we are telling the compiler / another developer that we are going
         to provide the two lhs & rhs operand explicitly, and that we are not
         interested on operating on a specific instance, but rather create a new
-        instance by manipulating the two arguments.
+        instance by manipulating the two argument instances.
         **********************************************************************
         Therefore if only a normal/friend operator overload exists, the compiler
         will morph the function call: "speed* powerup" to equate to 
@@ -465,6 +466,10 @@ int& Matrix::operator () (int x, int y)
 There is no int::operator+. Whether the compiler chooses to compile a + b directly to assembly (likely) 
 or replace it with some internal function like int __add_ints(int, int) (unlikely) is an implementation detail.
 
+
+4. Unary negation: "operator-": Note that you should not return *this. 
+The unary - operator needs to create a brand new Vector value, not change the
+thing it is applied to, therfore the overload of this operator should be free/friend
 
 
 */

@@ -3,11 +3,19 @@
 
 
 /*
-auto specifier - the type of a variable initialized or retuned from a
-function is automatically deduced at COMPILE-TIME! (no run-time performance cost)
+auto specifier (since cpp11) - specifies that the type of the variable will be
+automatically deduced from its initializer at compile time! the same as with
+templates (no runtime performance cost)
+for example:*/
+auto x = 5;
+/*
+is deduced by the compiler as:*/
+int deduced_x = 5; //since the initializer is 5 (an int
 
+/*a
 auto return type works well with templates - they are both evaluated at compile time.
-for example, the following calls produce different types:
+for example, the following calls produce different types, assuming multiply is a template
+function which returns a T:
 1. multiplty(5, 4) -> the template types are both parameterized as int and an int is returned.
 2. multiply(5, 1.5) -> T is parameterized as an int and U is parmeterized as a double,
 the calculation becomes -> 5 * 1.5 -> 5 undergoes promotion to the floating type (double) ->
@@ -64,25 +72,8 @@ class Vector
 {
 public:
     double m_vector[dim];
-
-    //args is a template parameter pack whose type is a T universal (forward) reference.
-    //This means that:
-    //1. T&& will become either an lvalue ref or rvalue according to the value category
-    //of each one of the values in parameter pack args (they can be either prvalues, lvalues or xvalues).
-    //2. This ctor is a variadic function: "args" can "take in" infinite number of values as a parameter pack (
-    //3. the values that "args" can take in must all be of type T (a single type), although the compiler
-    //is smart enough to perform promotions to match different types, for example: despite that
-    //the values (3.14, 5, 6) are double, int, int - the compiler will promote the ints to doubles 
-    //to match a single type (read 69_casting)
-
-    //With param. pack we directly assign pack to the vector (at compile time!), 
-    //while std::init_list requires #include + looping the initializer list (105_std_initializer_list)
-
     template <typename ...T> //template parameter pack T
-    Vector(T&&... args) 
-        : m_vector{ args... } {} //vectors can be assigned with unpacked(... on the left) parameter pack!
-    //note: in other words, args... is "expands" the pack.
-
+    Vector(T&&... args)  : m_vector{ args... } {} //variadic ctor explained in 110_variadic_template
     float operator[] (unsigned n) const
     {
         return m_vector[n];
@@ -90,9 +81,9 @@ public:
 
 
     /**********Constexpr and auto + templates
-    tl;dr auto return type (evaluated at compile-time) can't be deduced from an if-else branches that return
+    tl;dr auto return type (evaluated at compile-time) can't be deduced from an if-else branches that returns
     different types, because if-else are evaluated at run-time. "if constexpr" solves
-    this by allowing to evaluate if-else at compile-time, thus we would know the return type
+    this by enforcing evaluation of if-else at compile-time, thus we would also know the "auto" return type
     also at compile time.
 
     Note: "if constexpr" is also relevant when using "auto" without the context of a template.

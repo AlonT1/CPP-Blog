@@ -121,4 +121,9 @@ would cause the construction of the object field and back to square 1.
 A class can hold a pointer/reference of to itself! pointers don't require construction
 and they simply hold memory address
 
+Note 3:
+functions in the body of the class + friend of functions of that class, can
+access the private members of each instance through "this" (pointer to the current
+instance) or through any other instance of the class.
+
 */

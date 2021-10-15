@@ -315,7 +315,9 @@ int main()
     C++ standard provided specialisation of std::less for pointers, so yes you can safely use them as map keys etc.
 
 
-    Note: for user-defined types (custom objects) we have the following options to ensure order:
+    Note: for user-defined types (custom objects) we have the following options to ensure order - 
+    std::map is implemented as red-black tree - this is why the three options above define ORDER and not a specific hash
+    function.
     1. implement operator< in our class (similar to comparable interface in java)
     2. provide a struct/lambda functor that overrides operator() and performs a comparison via opreator <.
     this is fed to the 3rd template parameter type of the map.
@@ -337,6 +339,7 @@ int main()
     This is useful when our key doesn't have meaningful comparison semantics, making
     it bad to overload operator< just to cover the specific case for ordering. (although the 2nd solution
     is more "clear" in this case).
+
 
     //https://stackoverflow.com/questions/2282349/specialization-of-templateclass-tp-struct-stdless-in-different-namespace
 
@@ -360,12 +363,11 @@ int main()
     template <class _Kty (The key), class _Ty (The Value), class _Hasher = hash<_Kty> (hash function)
     , class _Keyeq = equal_to<_Kty> (comparator operator< function), class _Alloc = allocator<pair<const _Kty, _Ty>>>
 
-    //https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key
     To be able to use std::unordered_map (or one of the other unordered associative containers) with a user-defined key-type,
     you need to define two things:
 
-    1. A hash function; this must be a class (stuct /lambda  )that overrides operator()  and calculates the hash 
-    value given an object of the key-type, this class is provided as the third tempalte parameter when creating the map.
+    1. A hash function; this must be a class (stuct /lambda)that overrides operator()  and calculates the hash 
+    value given an object of the key-type, this class is provided as the third template parameter when creating the map.
     another way is to specialize the std::hash template for your key-type, in the same way we specialized
     std::less for std::map in the example above (both std::less and std::map specialization should reside in namespace std
     to get picked up the compiler).
@@ -380,7 +382,10 @@ int main()
     and performs a comparison), or as a specialization of std::equal,
     or – easiest of all – by overloading operator==() for your key type.
     
+    example here (1 is represented as KeyHasher and 2 as operator== in Key)
+    https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key
     */
+
     std::unordered_map<std::string*, int> mappa2{ {&str1, 2}, { &str2, 3 } };
 
 

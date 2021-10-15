@@ -6,7 +6,7 @@ thus it can be assigned with an int**
 
 
 2. a pointer to X can be assigned with:
-	1. X
+	1. X (single instance)
 	2. array of X
 	3. a pointer of the same type
 
@@ -16,23 +16,23 @@ thus it can be assigned with an int**
 	(stack allocated - contiguous, if heap - potentially fragmeneted).
 
 	e.g: "int** x" (x points to a pointer to an int) can be assigned with:
-	1. int*
+	1. int* (single instance)
 	2. array of int*
 	3. a pointer of the same type (int**)
 
-example in diagram (left represents bullet 1, right represents bullet 2)
+	example in diagram (left represents bullet 1, right represents bullet 2)
 
-int** x = new int*(5)		int** x = new int*[3]
+	int** x = new int*(5)		int** x = new int*[3]
 
-	set1    set2				set1    set2   set3(ints)
-*----->	* ----> 5     or         *----->* ----> .... 
-						                * ----> .... 
-								        * ----> .... 
+		set1    set2				set1    set2   set3(ints)
+	*----->	* ----> 5     or         *----->* ----> .... 
+											* ----> .... 
+											* ----> .... 
 
-	same goes for "int* x" (x points to an int) which can be assigned with:
-	1. int
-	2. array of ints
-	3. a pointer of the same type (int*)
+		same goes for "int* x" (x points to an int) which can be assigned with:
+		1. int
+		2. array of ints
+		3. a pointer of the same type (int*)
 
 
 3. int***...* x:  x itself will always be a single pointer.
@@ -44,7 +44,7 @@ set1    set2    set3(ints)
 		* ----> {3,4}
 		* ----> {5,6}
 
-dereferncing x - "*x" will lead us to the object whose address stored in x - 
+dereferncing x - "*x" will lead us to the object whose address stored in x -
 the address of the first pointer in set2 -  thus retrieving the first
 pointer of set 2.
 (set2 can contain an array of pointers or a single pointer as explained above).
@@ -57,6 +57,44 @@ which is the 2nd pointer to an int - can store a single/array of ints).
 b."*(*(x+1))":  now we have the 2nd pointer from set 2 - we dereference (outer parenthesis)
 this pointer and retrieve the object whose address is stored in this pointer which is
 the int array object of {3,4}.
+
+
+4. types such as "int****....* x" DOESN'T NECESSARILY IMPLY MULTI DIMENSIONAL ARRAYS!
+for example "int** x" isn't automatically means a 2D array - 
+"int** x" simply means that x is a pointer to a pointer.
+for example:
+a. int** x can point to null.
+b. int** x can to a 1D array of int* - then int** x will be equivalent to "int* arr [4]".
+assuming that in both statements "int** arr;"  and "int* arr[4]" the int pointers in 1D array
+point to some int, both of these ints can be accessed via arr[0...][0] where
+[0...] is the inner asterik and [0] is the outer asterik in the following expression: *(*(arr+0)+0) 
+the inner asterik dereferences the first pointer (from set1) that leads us to some n pointer in the 1D array (set 2),
+the second asterik dereferences that pointer and retrieves the int from set (3) pointed by the pointer from set 2
+
+set1    set2    set3(ints)
+*----->	* ----> 1
+		* ----> 2
+		* ----> 3
+
+This type of arrays are popular with files or nodes, for example: File** files - 
+which isn't exactly a classic 2D array (a table/matrix), but rather can be thought of as a 1D array
+of file pointers where each file pointer in that array is being "new"ed up with a file.
+Of course one might think of these arrays as a 2D array with multiple rows and one column,
+and they can even be dereferenced via [0...][0] syntax, but the prespective of "1D array
+of pointers" instead of 2D array with multiple rows and one column" is important to have - 
+
+Seeing File** files might imply a dense matrix of files ("proper" table) where each pointer
+from the 1D array points to an array of files, or simply a 1D array of files where each File pointer
+from the 1D array points to a file.
+
+
+c. of course as shown in the previous example, int** x can be a "proper" 2D array,
+with dense x and y dimensions.
+set1    set2    set3(ints)
+*----->	* ----> {1,2,4,5}
+		* ----> {3,4,7,8,9}
+		* ----> {5,6,5,3}
+
 
 
 */

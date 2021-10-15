@@ -4,10 +4,6 @@
 //https://blog.feabhas.com/2014/07/template-member-functions/
 //https://blog.feabhas.com/2014/06/template-classes/
 
-/*******************most basic templated inheritance ********
-this means that we inherit from template type T, or in another words we can inherit
-from anything!
-*/
 class Base
 {
 public:
@@ -15,16 +11,33 @@ public:
     Base(int num) : m_num{ num } {}
 };
 
+
+
+/********* subclass is a template class inehriting from a concreete class********
+this means that we inherit from "template type T", or in another words we can inherit
+from class T!*/
+
+
 template <typename V>
 class Derived : public V //V - the class that we inherit from can be anything!
 {
 public:
-    template <typename U> // we must use another template type for the ctor, V is occupied
-    Derived(U num) : V{num} {} // delegating ctor
+    Derived(int num) : V{num} {} //delegating the construction to the ctor of V
 };
 
 //can a template inherit from a template? probably not, because the templated 
 //type that we inherit from must be a CONCRETE CLASS
+
+
+
+/********* subclasses is a concrete class, inheriting from a templated class*******
+For this to work the inheriting subclasses must parameterize the template type with some type.
+Practical purpose? see 122 double_dispatch*/
+template <typename T>
+struct Vehicle {};
+
+struct Mercedez : Vehicle<Mercedez> {};
+struct Lamborghini : Vehicle<Lamborghini> {};
 
 
 

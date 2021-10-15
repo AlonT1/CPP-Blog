@@ -32,19 +32,44 @@ category as interpreted by the compiler:
     int here signifies the base type, but also denotes the value category of the
     literal "4" which is a prvalue. this is in contrast to unparanthesized e
     which only yields the type "int" (from which we can't deduce the value category)
+
+*Note: decltype vs typeid:
+decltype is a KEYWORD the type of an expression at compile-time.
+typeid is a Function that can obtain run-time information about the type of an expression.
+
+for example, the statement:
+A* a = &B; (assuming B inherits from A)
+typeid can obtain the run-time type of pointer "a" with is B (a is a polymorphic 
+pointer that points to B, when B inherits from A), while decltype will yield
+the compile-time type of a which is A*
+
+
 */
 
+class A {public:};
+class B : public A {public:};
 
+void func(A* a)
+{
+    std::cout << typeid(*a).name();
+}
 
 int main()
 {
     std::cout << std::boolalpha; //bool prints "true"/"false" instead of 1 or 0
 
-    int a = 4;
+    int n = 4;
     //unparenthesized decltype (not decltype((a)), but decltype(a) - 
     //returns the underlying type of a - an int)
-    decltype(a) j = 45; //using type of a to grant "j" int type.
+    decltype(n) j = 45; //using type of a to grant "j" int type.
 
     std::cout << std::is_same<decltype(j), int>::value << '\n';
+
+    B b;
+    A* a = &b;
+    func(a);
+    //std::cout << typeid(*a).name();
+    if( typeid(*a) == typeid(B)) std::cout << " true";
+    //std::cout << std::is_same<decltype(a), class B>::value << '\n';
 
 }

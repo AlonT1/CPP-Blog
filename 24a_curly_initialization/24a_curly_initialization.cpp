@@ -31,9 +31,12 @@ int main()
 
 	3. floating point cannot be converted to an int - > int a = { 4.2f }; error!
 	Entity e2(3.8, 4) is ok but Entity1 e2 { 3.8, 4 }; notifies narrowing of
-	a float(3.8) to an int - nice!*/
-
-
+	a float(3.8) to an int - nice!
+	
+	4. using empty uniform initialization, initializes the object with default/null values,
+	for example "int x{}" - x is assigned with 0, as oppposed to "int x;" where
+	x may be initialized with garbage values
+	*/
 
 	
 	int x2 = 3.4; // causes narrowing - x2 becomes 3
@@ -46,6 +49,10 @@ int main()
 	std::cout << x2 << std::endl;
 
 
+	/* If the object is an array of unknown size, and the supplied brace-enclosed
+	initializer list has n clauses, the size of the array is n. 
+	(Note that the object in this case cannot be a non-static data member: a member must have complete type.) */
+	int arr[] = { 1,2,3 };
 
 	/*******************uniform initialization on objects*************************/
 	

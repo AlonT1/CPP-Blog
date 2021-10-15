@@ -7,7 +7,12 @@ use pointers to classes as fields instead of instance variables.
 in the latter the compiler requires the class to be defined before it can be used as a field within
 another class (may cause dependency, header includes and  ordering issues , as explained below),
 while the former only requires forward declaration to the class, the ptr can be repointed and may even
-reduce the size of the class (size of pointer instead of a full sizeof an instance variable)
+reduce the size of the class (size of pointer instead of a full sizeof an instance variable).
+
+Note: in general, in cpp we use forward declaration when we use an identifier
+before it is defined. the forward declaration satisfy the compiler, promising it
+that the definition exists somewhere. The definition will be found by the linker
+(after compilation stage), which will link the forward declartion with the implementation.
 */
 
 

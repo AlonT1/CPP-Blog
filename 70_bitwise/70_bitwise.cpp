@@ -20,6 +20,7 @@ least significat BYYYYTTEE is DF
 endianess - order of bytes of a word of digital data in memory
 endianess decides which byte should be stored in the lowest address, the msb or the lsb?
 big endian -the most significant byte of the data (00) is placed at the byte with the lowest address: (the next bytes are following)
+address
 0x0000002C6933F744  stores 00 (hex)  //every 64 bit address can store 1 byte on byte-addressable computer
 0x0000002C6933F745  stores 59
 0x0000002C6933F746  stores F1

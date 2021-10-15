@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="122_double_dispatch2.cpp">
+    <ClCompile Include="125_adl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

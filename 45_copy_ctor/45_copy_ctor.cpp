@@ -8,6 +8,8 @@ therefore they are considered "safe" as opposed to move semantics which does mod
 (search "exception" in 89_move_semantics)
 
 with copy ctor we deep copy all the fields from the object we copy from into the fields of our object.
+
+//Note that copy ctors can also have initializer list!
 */
 
 #include <iostream>
@@ -123,6 +125,14 @@ int main()
     Vector2 d = c; //d is not yet created, while c is already created ->
     //invokes copy initialization with implicit copy ctor
     //the implicit copy ctor works well with pod's, it copies them succefuly, in a deep manner
+
+    //****************************************************************
+    //the compiler generates the following code for the statement above :
+    //Vector2 d = Vector2(c);   which is equivalent to:
+    //Vector2 d = Vector2(static_cast<const Vector> (c)); // the compiler performs implict cast
+    //to const Vector because the copy constructor has a const parameter
+    //****************************************************************
+
     d.x = 5;  // c.x is still 2! 
 
     Vector2* e = new Vector2();

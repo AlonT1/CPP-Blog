@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{ad2ca911-87d7-45f9-9b96-8d8bdc875c74}</ProjectGuid>
-    <RootNamespace>My122doubledispatch2</RootNamespace>
+    <ProjectGuid>{b7e73490-9b42-415a-9c6a-ea0527b83f38}</ProjectGuid>
+    <RootNamespace>My126trailingreturntype</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -139,7 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="122_double_dispatch2.cpp" />
+    <ClCompile Include="126_trailing_return_type.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

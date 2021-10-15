@@ -40,7 +40,7 @@ https://www.tutorialspoint.com/java/java_serialization.htm
 Why a buffer is needed?
 	Working with files is expensive performance wise. Therefore some streams have a buffer
 	(temp memory on ram - faster then hard disk), where the streams can copy the file to the buffer and perform
-	r/w operations on it there, and when all the changes are done, copy the changes to the file (flushing the buffer).
+	r/w operations on it there, and when all the changes are done, copy the changes back to the file (flushing the buffer).
 	https://stackoverflow.com/questions/8116541/what-exactly-is-streambuf-how-do-i-use-it):
 
 
@@ -80,7 +80,7 @@ Why a buffer is needed?
 	3. we use std::endl (adds a newline char '\n' and std::flush). better to use only '\n'
 	to create a new line
 
-	4. any input from std::cin, output to std::cerr, or program termination forces all
+	4. any input from std::cin, output to std::cerr (character error stream), or program termination forces all
 	standarad streams to be flushed, including cout (a call to std::cout.flush(),
 	(specifically, when the global instance of std::ios_base::Init is destroyed
 	https://stackoverflow.com/questions/25668601/structure-of-cout-buffer-and-endl-in-c).

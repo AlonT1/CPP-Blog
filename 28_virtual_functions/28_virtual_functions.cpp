@@ -2,12 +2,16 @@
 virtual functions are invoked via dynamic dispatch (at run time) under 3 conditions:
 1. Inheritance -  class B inherits from class A
 2. Virtual function override - class A contains a virtual function that class B overrides
-3. polymorphic pointer/ref - a polymorphic pointer (a symbol that can represent multiple types - Dog/Cat)
-of type Base points to either the Base class or one of the Derived classes.
+3. polymorphic pointer/ref - a polymorphic pointer/ref of type Base points
+that points/refers to one of the Derived (inheriting) classes.
 we exectue virtual functions through the polymorphic pointer.
 
-virtual functions enable to dynamically dispatch a function (a.k.a link a function call to its implementation
-at run time) through a polymorphic pointer, which is especially critical during run
+(polymorphism -  symbol that can represent multiple types -
+the pointer/ref can represent either Dog/Cat)
+
+virtual functions enable dynamic dispatch -
+when a function call is linked to its implementation at run time
+through a polymorphic pointer, which is especially critical during run
 time when the function call cannot be resolved at compile time, for example:
 
 1. if the user presses 1 then ptr of type animal points to dog and if the user presses 2 it points to cat - 
@@ -16,7 +20,8 @@ only at runtime we can tell if  we want to execute walk() of cat or dog.
 2 another example is a polymorphic array of animals where a pointer executes walk()
 function of each Animal in the array iterated by a for loop at run time.
 Only at run time, during the iteration, we can tell via the Animal ptr, which walk()
-to dynamically dispatch.
+to dynamically dispatch based on the run-time type of the ptr (run-time type - the type
+at which the pointer points to).
 
 Therefore, The vtables mechanism helps to resolve the call (animal->walk() (animal polymorphic pointer)
 does walk() belongs to Animal::walk() or does it belong to Dog::walk())
@@ -36,6 +41,8 @@ in practice no difference in perfromance impact (maybe on embadded where every c
 
 Only member functions can be declared virtual (friend functions cannot be virtual, 
 they are not part of the class)
+
+Note that virtual functions in themselves are not necessary for polymorphism
 */
 
 #include <iostream>

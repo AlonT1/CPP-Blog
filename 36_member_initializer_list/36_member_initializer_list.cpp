@@ -77,9 +77,9 @@ classes are given garbage values).
 
 	a. 1. if the current class inehrits from a Base class then:
 			a. if a delegating ctor is included in mib (e.g Base(3,4)), then the delegating ctor will execute
-			first no matter if we initialize other members before (e.g mib is: m_x{x}, Base{3,4} - Base{3,4}
+			first no matter if we initialize other members before it (e.g mib is: m_x{x}, Base{3,4} - Base{3,4}
 			will execute first)
-			b. if there is no delegating ctor, then the default ctor (Base(){}) will execute. (Note: vs debugger
+			b. if there is no delegating ctor, then the default ctor (Base(){}) will execute. (Note: VS debugger
 			will only jump to explictly declared "Base(){}" default ctor, the debugger won't jump to Base()=default
 			(and of course won't jump to the implicit non-declared ctor).
 		2. if the current class doesn't inherit from a base - continue to b.
@@ -102,8 +102,9 @@ classes are given garbage values).
 	***then member initialization list wins and inline initilaization at declaration is discarded completely****.
 
 5. after finishing with the member initalizer list, the compiler enters the body of the ctor.
-at this point, all pod's are defined (with explicit/garbage values - if no explicit definition),
-and all user-defined types are defined+initilized (implicitly by the compiler using default ctor, or explicitly by the user)
+at this point, all pod's are defined (with explicit/garbage (indeterminate) values - if no explicit definition),
+and all user-defined types are defined+initilized (implicitly by the compiler using non-explicit default ctor,
+or explicitly by the user)
 
 This order is critical for the following reasons:
 1. user-defined types are defined+initialized at the member list. this initialization
@@ -118,7 +119,6 @@ on the value being assigned:
 
 6. in the body, after leaving the member initalizer list, the user-defined types are already defined+initalized,
 all assignments to user-defined types in the body of the ctor are considered as assignment operations to an already created object!
-
 */
 
 class Entity

@@ -17,7 +17,7 @@ public:
 	//std::initializer_list is a prvalue object, therefore we can accept it either by
 	//value (causes a copy) or by a const lvalue ref which can accept prvalues
 	//(explained in 85_lr_values)
-	Array(const std::initializer_list<T>& list) //alternative: template parameter pack (see 108_if_constexpr)
+	Array(const std::initializer_list<T>& list) //alternative: template parameter pack (see 110_variadic_template)
 	{
 		int index{ 0 };
 		for (T val : list)
@@ -47,7 +47,9 @@ int main()
 	int array[]{ 1,2,3,4,5 }; //initializer list
 	//can we have something similar in a user defined class? YES!
 
-	Array<int, 6> my_array1{1,2,3,4,5};
+	//braced-init-list ({1,2,3,4,5}) can be used to construct an std::initializer_list
+	//see 5a_initialization for more details
+	Array<int, 6> my_array1{1,2,3,4,5}; 
 	
 	/*
 	One caveat: Initializer lists will always favor a matching initializer_list

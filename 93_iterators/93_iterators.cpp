@@ -34,7 +34,7 @@ int main()
 					  |
 				Forward Iterator (added feature: dereference returns lvalue ref (can assign to it)
 					  ↑
-			  Bidirectional Iterator (added feature: iterating backwards (all below iterates only forward)
+			  Bidirectional Iterator (added feature: iterating backwards (all below above iterates only forward)
 					  ↑
 			  Random Access Iteraotr (added feature: random access via operator [])
 

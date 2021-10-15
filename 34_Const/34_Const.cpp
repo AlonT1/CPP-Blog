@@ -22,22 +22,31 @@ private: // m - member variable
 public:
     int x = 2;
     static const int y = 5;
-    int get_x() const // read only method - this method won't modify class member variables
-    {
-        //
-        //m_x = 2 //impossible
-        var = 3; // possible if var is mutable, overrides const. in scenarios where the method is const,
-        //yet we need to perform slight modifications to data (for debugging)
-        return m_x;
-    }
 
+    //IMPORTANT NOTE: invoking a non const function through a const instance IS NOT POSSIBLE.
+     //e.g: "const Entity e;" --> "e.get_x();"  error!
+     //if the function signature would have been "int get_x() const {...}" then the statements
+     //above would have exectued fine.
     int get_x() // non const getter
     {
         return m_x;
     }
 
+    // read only method - this method won't modify class member variables
+    //only const functions can be invoked by const instances!!!!!!
+    int get_x() const 
+    {
+        //
+        //m_x = 2 //impossible
+        var = 3; // possible if var is "mutable", overrides const. in scenarios where the method is const,
+        //yet we need to perform slight modifications to data (for debugging)
+        return m_x;
+    }
+
+ 
+
     //method is read only, it returns a m_ptr that is constant pointer (can't be reassigned m_ptr = w //forbidden)
-    //to an int constant (the integer data in the pointed location can't be changed *m_ptr = 2 -forbidden
+    //to an int constant (the integer data in the pointed location can't be changed *m_ptr = 2 -forbidden),
     //NOTE: in a const method, returning a reference of an object, the return value must also be const
     //because everything inside the function is const! (even though the object itself is declared as non const)
     const int* const get_m_ptr() const 

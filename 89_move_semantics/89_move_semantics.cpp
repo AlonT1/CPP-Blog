@@ -62,6 +62,8 @@ public:
 		*/
 		other.m_data = nullptr; //other.m_data buffer now points to nowhere to prevent dangling pointer
 		other.m_size = 0; // reseting other's size, since m_data is now pointing to nullptr
+
+		//Note that move ctors can also have initializer list!
 	}
 
 	~String()
@@ -144,6 +146,11 @@ int main()
 	//meaning m_data of str1 takes the address of m_data of str and leaves data members
 	//of str in a nullable state, with non dangling pointers and without memory leaks.
 	//explained below in "HOW DOES THE MOVE OPERATION OPTIMIZES THE CODE"
+
+	//****************************************************************
+	//the compiler generates the following code for the statemenet above
+	//"String str1 = String(std::move(str));"
+	//****************************************************************
 
 	String str2(
 		String("ken")
@@ -286,7 +293,7 @@ int main()
 
 		int main()
 		{
-			std::string&& str = func(); //must be rvalue ref. Type T (std::tring) will cause an allocation
+			std::string&& str = func(); //must be rvalue ref. Type T (std::string) will cause an allocation
 			becuase type T means that "str" will be bound to objects that will be considered as those
 			who have an identity and ren't stealable (moveable), while std::string&& means that "str"
 			will bind to temporary objects which is stealable, therefore no need to cause reallocation,
@@ -325,7 +332,7 @@ int main()
 			std::string str = func();
 		}
 
-		but with other user defined objects, NRVO seems to work fine (only 1 ctor invokation,
+		but with other user defined objects, NRVO seems to work fine (only 1 ctor invocation,
 		and therefore only 1 "new" allocation)
 
 		class Test
