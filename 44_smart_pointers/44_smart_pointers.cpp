@@ -20,6 +20,25 @@ if two functions handle the same raw pointer we have to decide who frees up that
 this is mitigated by smart pointers.
 
 Smart pointers are essentialy scoped pointers, "see 26_destructor" ScopedPointer class.
+
+
+***************tl;dr*******************
+smart pointers - gets deleted automatically when reaching the end of the scope (+the resource is destroyed)
+
+1. unique_ptr - resources (what the pointer points at) cannot be shared, meaning 
+that if uniqute_ptr ptr1 points to res, ptr2 cannot perform "ptr2 = res"
+2. shared_ptr - holds 2 pointers one for the managed instance, and a second
+pointer to a control block that counts the number of pointers pointing to the resource.
+when the count reaches 0 the resource is destroyed. pointers are shared via = operator
+3. weak ptr - resource can be shared across multiple pointers, but when one pointers
+die, the resource is destroyed, leaving all the other weak ptrs dangling (pointing to deleted location)
+
+make_unique: expcetion safe when construction of object fails (raises exception)
+make_shared: exception safe + creates the control block and constructs the object in a single call!
+as opposed to just using "new" 
+(std::shared_ptr<int> p (new int{5}), vs std::shared_ptr<int> p = std::make_shared<int>(5))
+
+ std::unique_ptr<bool[]> visited(new bool[V] {false}); // smart pointer to array of bools
 */
 
 
@@ -128,8 +147,8 @@ int main()
 
     make_shared creates a dynamic control block memory where it stores the reference count (increases to 1)
     if we use shared_ptr ctor, instead of make_shared, we essentialy:
-    1. create new instance and we pass it to the shared pointer ctor
-    2. smart_ptr allcates the control block
+    1. create new instance of the object  we pass it to the shared pointer ctor
+    2. allocating the control block
 
     But, if we construct a shared pointer with std::make_shared it the two constructions are optimized
     into a single memory allocation, better performance.

@@ -99,7 +99,7 @@ int main()
     run-time type of an object fails (function overloading is resolved at compile-time,
     before we know the run-time type of spaceship_ref
     
-    The solution is in 122_double_dispatch*/
+    The solution is in 122_double_dispatch or 122a_crtp or 123_std_visit*/
     
 
     SpaceShip& spaceship_ref = apollo_spacecraft; //although spaceship_ref refers to an ApolloSpaceCraft object......

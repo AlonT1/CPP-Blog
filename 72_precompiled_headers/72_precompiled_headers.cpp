@@ -18,6 +18,7 @@ HOW TO (in visual studio):
 -> c/c++ -> precompiled header tab -> precompiled header (use) -> precompiled header file -> pch.h
 since we select properties of the project, it will apply to all files (all files will use the precompiled header)
 4.the .pch is generated in the files
+5. include the precompiled header in the project
 */
 #include <iostream>
 #include "pch.h" 

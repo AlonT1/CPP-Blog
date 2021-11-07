@@ -67,12 +67,6 @@ invoked.
 
 
 
-Entity rvo_unoptimized()
-{
-	Entity temp = Entity();
-	return temp;
-}
-
 /*
 	with this version of MSVC, NRVO doesn't work with the function above.
 	if it would have worked, the compiler would have replaced the code above
@@ -108,25 +102,39 @@ Entity rvo_unoptimized()
 	
 
 */
+
+//nrvo - named returned value optimization, the object we return has a name "x".
+// returning an already-created object.
+Entity nrvo_optimized()
+{
+	Entity x;
+	return x;
+}
+
 Entity rvo_optimized()
 {
 	return Entity();
 }
 
+Entity move()
+{
+	Entity x;
+	return std::move(x);
+}
+
 int main()
 {
-
-	//rvo unoptimized
-	Entity e_rvo_unpotimized; 
-	e_rvo_unpotimized = rvo_unoptimized();
 
 	//rvo optimized
 	//Entity e_rvo_optmized = rvo_optimized();
 
-
+	//nrvo optimized
+	Entity e_nrvo_optimized = nrvo_optimized();
+	
+	//Entity e = move();
 
 	/*
-	with rvo:
+	with rvo / nrvo (single object construction) - running rvo_optimized() or nrvo_optimized():
 	1."ctor" - main() stack frame is invoked, which invokes the stack frame of func() which
 	in turn invokes stack frame of Entity ctor - inside this ctor's stack frame
 	we construct the entity object right in the stack frame of main() into the address of variable "e"! (an address that belongs 
@@ -138,7 +146,7 @@ int main()
 	*/
 
 	/*
-	without rvo (prints):
+	without rvo (prints), running the function (multiple object constructions):
 	* possible of additional construction of e_rvo_unoptimized in main() stack frame
 	1. "ctor" - starting in main() stack frame, we invoke (call) func() stack frame, and within func() the ctor()
 	of entity invokes a stack frame of itself.
@@ -162,11 +170,21 @@ int main()
 	5. "dtor" - dtor invoked, destroyes the temporary object from step 4 (the rhs of the assignemnt), this
 	object has expression scope, going into the next statement causes its destruction (created by the first move ctor - 0x084)
 	6. "dtor" - destructing the object created in step 6 "variable e_rvo_unpotimized" (created by the second move ctor - 0x092)
+
+
+	returning std::move when rvo is ON - running move() (when rvo is off, move() function
+	yields the same result as seen above):
+	1. ctor - constructing the object in the function move()
+	2. move ctor - due to std::move + rvo the move ctor constructs the object
+	in the stack frame of the caller main() - inside the memory of the accepting variable!
+	3. dtor - of the object in 1
+	4. dtor - of the object 2
+
+	As we see std::move with rvo on disables the rvo process and is harmful!
+	instead of constructing one object, the move semantics disable rvo
+	and cause another object to be built
+
 	*/
 
-	/*
-	see 89_move_semantics notes at the bottom - move_semantics enable to return from a function without redundant copies,
-	like an rvo, but with more syntax (std::move and rvalue refs)
-	*/
 
 }

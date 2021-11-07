@@ -178,7 +178,7 @@ int main()
     auto [it2, result2] = m.insert(std::pair("fifth", "avi"));
 
 
-    /**********************map::emplace() - more performant then insert*/
+    /**********************map::emplace() - more performant than insert*/
     //emplace directly uses the ctor (inplace) of pair which map wraps around and the ctor of pair
     //will use the the ctors of the key and value, in the same
     //way that an emplace on vector<Test> will utilize one of Test's ctor, and is 

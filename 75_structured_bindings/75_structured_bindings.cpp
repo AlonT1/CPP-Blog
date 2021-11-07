@@ -6,7 +6,7 @@ tl;dr
 this hidden variable can be an lvalue ref, an alias of the object we bind to - more performant
 because we don't create a new object! (if we use "auto&)
 or it can be a  complete copy of the object we bind to (if we use "auto").
-2. two lvalue references are created (regardless if we bind with auto or auto&, both initialized with 
+2.  lvalue references are created (regardless if we bind with auto or auto&, both initialized with 
 corresponding sub object we bind to from the hidden var.
 
 scenarios:
@@ -73,6 +73,8 @@ int main()
     int(&__a14)[2] = arr;
     int& o = __a14[0];
     int& p = __a14[1];
+
+
     /*
     the compiler produces the following:
 
@@ -84,8 +86,8 @@ int main()
     //members of arr through this reference.
     //note that the reference declarator & only affects the hidden "__ar" variable
     ///"__ar is a reference to an array of 2 ints"
-    int (&__ar[2]) = arr;
 
+    int (&__ar[2]) = arr;
     int& o = __ar[0];
     int& p = __ar[1];
 
@@ -93,6 +95,9 @@ int main()
     which itself is an lvalue reference to "arr", an alias for "arr" ->
     meaning that o and p are both referring to the original arr[0] and arr[1].
     */
+
+    //up until this point all principles repeat
+    /***************************************************************************/
 
     arr[0] = 100;
     //u is still 1 because it referes to the temp "_ar" array

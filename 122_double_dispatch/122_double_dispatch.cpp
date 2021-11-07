@@ -67,13 +67,21 @@ public:
 
         /*The Problem:
         
-        compiler can't dispatch (link) the call  "rock.collide_with(vehicle_ref)"
-        to the collide_with that takes in Lamborghini& (the run-time type of vehicle)
-        as we expect, because dispatching (func overload resolution, a.k.a compile-time polymorphism)
-        occurs only at compile-time, while the true identity (run-time type) of  "vehicle" can only
-        be deduced at run-time when the expression is used. Therefore the compiler links
-        the call to the function that simply accepts "Vehicle&" which is the underlying
-        type of the reference, known at compile time (cpp is statically typed language).
+        in CPP, the RTTI of an object cannot be utilized when the object is used as an argument
+        to a function, because static dispatch  (a.k.a static binding) which works via name
+        mangling, only works at compile-time (when the run-time type of the object is
+        not known yet). that is why the compiler can't dispatch (link) the call  "rock.collide_with(vehicle_ref)"
+         to the collide_with that takes in Lamborghini& (the run-time type of vehicle).
+        Therefore the compiler links the call to the function that simply accepts "Vehicle&" which is the underlying
+        type of the reference, known at compile time (cpp is statically typed language),
+        and that is the reason we are in this function now.
+
+        On the contrary, cpp utilizes RTTI via dynamic dispatch - where we invoke a function
+        through a polymorphic pointer/ref (vehicle  ptr whose run time type is Lamborghini, thus invoking
+        the collide_with() of Lamborghini through Vehicle ptr). This possible only when:
+        1. inehritance - Lamborghini inherits from Vehicle
+        2. virtual function - Vehicle has a virtual rock_visiting_vehicle() which Lamborghini overrides
+        3. polymorphic pointer/ref of Vehicle to Lamborghini
 
         At this point we have 3 options to decipher the true identity (run-time type) of "vehicle"
         all will execute at run-time: 
@@ -99,8 +107,8 @@ public:
         the following statement is the 1st dispatch:
         when executing this statement and using "vehicle" expression, 
         cpp will decipher the run-time type of vehicle (Lamborghini),
-        therefore the "rock_visiting_vehicle" func of Lamborghini will be invoked.
-        only then we will be aware of the true identity of vehicle - therefore
+        therefore the polymorphic vehicle ref that implements "rock_visiting_vehicle" func of
+        Lamborghini will be invoked only then we will be aware of the true identity of vehicle - therefore
         we can utilize this information as seen in the 2nd dispatch
         
         *rock visits lamborghini meaning we pass rock to the "rock_visiting_vehicle"
@@ -145,7 +153,7 @@ int main()
     1. Deduce the run-time type of the ptr/ref: 
     in the first call we invoke a function via the polymorphic ptr/ref - using
     it will decipher its run-time type, calling the method from the class that the ptr/ref
-    points/refers to.
+    points/refers to, thus utilizing RTTI.
     2. Using *this:
     once the run-time type is deciphered, we can pass back the deciphered type
     using "*this" to the calling class.
@@ -156,7 +164,14 @@ int main()
     Lamborghini lamborghini;
     Vehicle& vehicle_ref = lamborghini;
     Rock rock;
-    rock.collide_with(vehicle_ref);
+    rock.collide_with(vehicle_ref); //remember that run time type of an object
+    //cannot be used as an argument to a function because static dispatch (binding)
+    //only occurs at compile-time when the run time type of vehicle_ref (Lamborghini)
+    //isn't known, thus it defaults to the type of ptr/ref which is Vehicle&
+    //**************************************************************************
+    //RTTI is utlized when calling a function through a polymorphic pointer,
+    //and not when the polymorphic pointer is used as an argument to a function
+    //**************************************************************************
 
     /*
     Note: double dispatch is a good solution but the problem with is that RockVisitor

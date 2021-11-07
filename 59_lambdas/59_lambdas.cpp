@@ -1,5 +1,3 @@
-
-
 #include <iostream>
 #include <vector>
 #include <algorithm> // for std::for_each
@@ -87,16 +85,22 @@ int main()
     the address of one of the functor's member function that represents the body of the lambda,
     this address is later assigned to the function pointer.
 
-
     But there is a catch...
 
     This conversion happens ONLY WITH NON-CAPTURES lambdas (lambdas who don't capture variables
     from the local scope as shown in example 2), therefore only this type of lambdas can be assigned
     to function pointers
 
-    tl;dr: non-capturing lambdas are self contained and don't modify their own functor class members 
-    making them similar to "regular" functions as opposed to capturing lambdas which do modify class members
-    
+    *********************************************************************************************
+    tl;dr: non-capturing lambdas are self contained, they do not have class members, they simply
+    hold a function, and by passing these types of lambdas to a function, the class that represents
+    the lambda has conversion function when that returns a function pointer to the method that holds
+    the function body, therefore this lambdas can be passed to a function that accepts a regular func pointer.
+    As opposed to capturing lambdas who have class members (the captured variables)
+    therefore, they are more complex (contains a method that r/w class members), therefore
+    they require to be passed to a function that accepts std::function.
+    *********************************************************************************************
+
     To understand why, we need to understand the difference between capture and non-capture lambdas
     behind the scenes. Both are represented by a class (a functor) that acts like a function (because
     they override operator()).

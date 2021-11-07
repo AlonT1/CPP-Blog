@@ -2,7 +2,13 @@
 casting (type casting) - cpp is a strongly typed language - types are enforced.
 type conversion has 2 types:
 
-1. implicit type conversion (coercion, forced) - automatic by the compiler, occurs
+1.
+implicit type conversion (coercion, forced) -
+*************tl;dr:
+widening  - of integral to ints or widening of ints to a float (double/ float)
+shortening - of ints to short/chars, or doubles to floats...
+*************
+automatic by the compiler, occurs
 when 1 data type is expected but a different one is supplied.
 has two sub types which operate on integral/floating family (safe - no data loss):
 

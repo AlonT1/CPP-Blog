@@ -79,6 +79,11 @@ int& set_values(int i)
     return vals[i]; //returning  an alias of that memory location - this is not the simple value!
     //we return an lvalue of that number - a variable with location in memory, not a temporary prvalue
     //changing the returned reference, will change the number "inside" the array.
+    
+    //IMPORTANT NOTE: if vals[] was a local variable, we would have returned 
+    //a reference to an object who would have been destroyed when leaving this
+    //scope (Returning a dangling reference). because vals[] is a global variable,
+    //returning a reference actually works.
 }
 
 int main()

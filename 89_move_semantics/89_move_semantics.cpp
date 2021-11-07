@@ -7,6 +7,23 @@ move ctors do 2 things:
 2. set the resources of the argument to null, ensuring that the object can 
 be destructed without destroying the stolen resources
 https://akrzemi1.wordpress.com/2011/08/30/move-constructor-qa/
+
+move ctors and assginment operators takes in an rvalue reference - a reference
+to an rvalue (xvalue or prvalue) - a temporary object who is "stealable" - 
+by supplying an rvalue we convey that the object is indeed a temporary - it isn't
+manipulated somewhere else by another actor, therefore it is safe to steal its content
+
+When to use move ctors?
+ when moving variable b into variable a
+Obj a = std::move(b); // stealing b into a via move ctor;
+
+Obj c;
+c = std::move(a) // stealing a into c via move assignment operator
+//(not move ctor because c already exists)
+
+// what about returning from a function?
+// no reason to do that! rvo is better, just return an lvalue
+
 */
 
 
@@ -285,7 +302,7 @@ int main()
 	A more performant alternative is to perform a move operation passing the ownership
 	(passing the resources) to a variable outside the functions scope. example:
 
-		std::string&& func() // must be rvalue ref
+		std::string func()
 		{
 			std::string x{ "shalom" }; //single "new" allocation, no extra copies to the caller
 			return std::move(x);
@@ -293,67 +310,16 @@ int main()
 
 		int main()
 		{
-			std::string&& str = func(); //must be rvalue ref. Type T (std::string) will cause an allocation
-			becuase type T means that "str" will be bound to objects that will be considered as those
-			who have an identity and ren't stealable (moveable), while std::string&& means that "str"
-			will bind to temporary objects which is stealable, therefore no need to cause reallocation,
-			we safely steal the rhs (moved value from func() as-is.
-		}
-
-
-		Note that due to RVO (return value optimization, by the compiler), we will get the same result 
-		(only one string construction, with less syntax then std::move and rvalue ref's) with:
-
-		std::string func()
-		{
-			return std::string x{ "shalom" }; //no redundant copies.
-		}
-
-		int main()
-		{
-			std::string str = func();
-		}
-		
-
-		This ONLY WORKS WHEN THE RETURNED VALUES IS A PRVALUE.
-
-		NRVO (when the returned value is named), is an optimization
-		which is guaranteed in cpp17 - but for example with strings
-		NRVO doesn't work in my vs studio (2 "new" allocations in the example above:
-
-		std::string func()
-		{
-			std::string x{ "shalom" }
-			return x; //named returned value
-		}
-
-		int main()
-		{
 			std::string str = func();
 		}
 
-		but with other user defined objects, NRVO seems to work fine (only 1 ctor invocation,
-		and therefore only 1 "new" allocation)
+		Notes:
 
-		class Test
-		{
-		public:
-			int* x;
-			Test() : x{ new int(5) } {}
-		};
+		1. This can actaully be bad for performance because it disables rvo which is more
+		effective - see 91_rvo.
 
-		Test func()
-		{
-			Test t;
-			return t;
-		}
-
-		int main()
-		{
-			Test t = func();
-		}
-
-
+		2. returning lvalue and not lvalueref or rvalueref because x is local and
+		would be destroyed when leaving the scope (we don't want a reference to a deleted object).
 
 	*/
 

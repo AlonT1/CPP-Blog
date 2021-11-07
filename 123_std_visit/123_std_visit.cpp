@@ -1,53 +1,64 @@
 #include <iostream>
-#include <string>
-#include <variant> //for std::variant and std::visit
-#include <vector>
+#include <variant>
 
-/*Applies the visitor vis (Callable that can be called with any combination 
-of types from variants) to the variants vars.
-https://gieseanw.wordpress.com/2018/12/29/stop-reimplementing-the-virtual-table-and-start-using-double-dispatch/#more-1692
-http://www.vishalchovatiya.com/double-dispatch-in-cpp/
-*/
+//https://www.cppstories.com/2018/09/visit-variants/
 
-struct Rock;
-struct Mercedez;
-struct Lamborghini;
+struct Vehicle {};
+struct Lamborghini : Vehicle {};
+struct Mercedez : Vehicle {};
 
-struct RockVisitor 
+struct Rock 
 {
-    Rock* rock;
-    void invoke_collision(Mercedez* merecedez);
-    void invoke_collision(Lamborghini* lamborghini);
+    void operator()(const Mercedez&) { std::cout << "Mercedez\n"; }
+    void operator()(const Lamborghini&) { std::cout << "Lamborghini\n"; }
 };
 
-template <typename T>
-struct Vehicle 
-{ 
-    void visit(RockVisitor rock_visitor) { rock_visitor.invoke_collision(static_cast<T*>(this)); }
-};
-
-struct Mercedez : Vehicle<Mercedez> {};
-struct Lamborghini : Vehicle<Lamborghini> {};
-
-struct Rock
+int main() 
 {
-    template <typename T>
-    void collide_with(Vehicle<T>* vehicle)
-    {
-        RockVisitor rock_visitor{this};
-        vehicle->visit(rock_visitor);
-    }
+    /*
+    tl;dr
+    Animal* animal = &cat; animal->walk() - via rtti the compiler knows to run walk() of Cat.
+    Vehicle* vehicle = &mercedez; rock.collide_with(Vehicle) - because functions are binded
+    at compile time, the run-time type of vehicle(merecedez) cannot be deduced
+    (RTTI available only at run-time), thus the call
+    invokes collide_with which takes in the underlying type of the ptr (Vehicle*) => std::visit 
+    ************************************************************************************************
+    std::visit solves this - it can invoke the correct function based on the run-time type of a ptr/ref.
+    ************************************************************************************************
 
-    void collide_with(Mercedez* mercedez) { std::cout << "Mercedez Collsion"; }
-    void collide_with(Lamborghini* lamborghini) { std::cout << "Lamborghini Collsion"; }
-};
 
-void RockVisitor::invoke_collision(Mercedez* merecedez) { rock->collide_with(merecedez); }
-void RockVisitor::invoke_collision(Lamborghini* lamborghini) { rock->collide_with(lamborghini); }
+    Long version
+    what std::visit solves?
+    RTTI is utlized when calling a function through a polymorphic pointer.
+    e.g: Cat inherits from Animal and overrides Animal's virtual function walk().
+    Animal* animal = &cat;  animal->walk()  will invoke walk() of Cat because
+    the run time type of animal is Cat. This is called dynamic dispatch - binding
+    of a function at runtime according to the runtime type of the ptr/ref which is deduced
+    via RTTI - a mechanism that reveals the run-time type of Animal.
+    (only possible when B inherits from A, B overrides a virtual function of A, 
+    and A is polymorphic ptr/ref to B (inheritance, virutal function, polymorphism - 
+    where one symbol is able to represent multiple symbols).
 
-int main()
-{
+    RTTI cannot be utilized when the polymorphic pointer is used as an argument to a function.
+    e.g: rock.collide_with(vehicle), where vehicle is a polymorphic pointer that points
+    to Mercedez (rock can be polymorphic or not.). function calls based on arguments
+    are only determined at compile-time via name mangling where the actual function name
+    is mangled according the the argument names. Since RTTI is run-time only, and the
+    run-time type of vehicle (Mercedz) isn't known at compile-time, the call
+    rock.collide_with(vehicle) is binded to a colldie with which takes in a Vehicle*
+    and not Mercedez*.
+
+    This can be fixed via double dispatch, crtp or the simplest way - std::visit:
+    */
+
+
+    // car can be either Lamborghini or Mercedez - and we decide to init car
+    // with Mercedez(), hence car is of type Mercedez
+    std::variant <Lamborghini, Mercedez> car{ Mercedez()};
     Rock rock;
-    Vehicle<Lamborghini>* vehicle_ref = new Lamborghini();
-    rock.collide_with(vehicle_ref);
+
+    // std::visit unveils the run-time type of car (Mercedez) and is fed to the correct
+    //function of rock which takes in a Mercedez type.
+    //this isn't possible with a "classic" call rock.collide_with(car) (explained above).
+    std::visit(rock, car);
 }

@@ -84,10 +84,14 @@ struct Lamborghini : Vehicle<Lamborghini> {};
 struct Rock
 {
     template <typename T>
-    void collide_with(Vehicle<T>* vehicle)
+    void collide_with(Vehicle<T>* vehicle) // T is Lamborghini
     {
         RockVisitor rock_visitor{ this };
-        vehicle->visit(rock_visitor);
+        //vehicle is of type Vehicle<Lamborghini> and when calling visit of 
+        //Vehicle we utilize the fact that T represents Lamborghini!
+        //thus we cast this to Lamborghini. Essentially T preserves the identity (run-time type)
+        //of Vehicle but this is done at compile-time! 
+        vehicle->visit(rock_visitor); 
     }
 
     void collide_with(Mercedez* mercedez) { std::cout << "Mercedez Collsion"; }
@@ -101,5 +105,5 @@ int main()
 {
     Rock rock;
     Vehicle<Lamborghini>* vehicle_ref = new Lamborghini();
-    rock.collide_with(vehicle_ref);
+    rock.collide_with<Lamborghini>(vehicle_ref);
 }

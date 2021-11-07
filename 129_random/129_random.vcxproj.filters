@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="test.cpp">
+    <ClCompile Include="129_random.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
