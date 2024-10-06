@@ -1,17 +1,27 @@
 ﻿#include <iostream>
 #include <bitset>
 /*
+
+important: x bitoperation y
+means x is manipulated by y, for example 1 << 5
+means x is moved left by 5 bits
+
 76543210  Bit position (starting at 0)
 00000101  Bit sequence
 
-word - 16 bits == 2 bytes == 4 hexes. (1 hex == 4 bits ) (nibble = 1 byte, or 2 hexes such as 1b)
-0b1000 - 8 in binary, 0b for binary
+1 bit - 0 or 1.
+1 hex = 4 bits - can represent up to 16 combinations of 0/1 , "F" equals 1111 in binary.
+byte = 8 bits = 2 hexes (1f comprised of hex 1 and hex f, equivalent to 0x00011111 (0x for hex).
+0b1000 - 8 in binary, 0b for binary.
+nibble = 4 bits = 1 hex (nibble for half of a bite, similar to byte)
+word - 16 bits == 2 bytes. 
 
-/************MSB VS LSB:
+/************MSB VS LSB (B can stand for Byte(relevant to endianess)
+or bit(relevant for signed bit/two's complement methods):
 MSB (most significant bit) - leftmost bit
 LSB (least significant bit) - rightmost bit
 65 decimal -> 0b01000001 (1 byte of memory is the minimum addressable storage unit) msb: 0  lsb: 1
-This always applies no matter the endianess (big or small).
+This always applies, no matter the endianess (big or small).
 
 /************Big Endian VS Small Endian:
 5894623 decimal -> 0x0059F1DF in hex  represeting 32 bit integer-> (most significat BYYYTTEE is (leftmost) 00,
@@ -27,6 +37,7 @@ address
 0x0000002C6933F747  stores DF
 in vs memory window, 5894623 will look like 0059F1DF
 
+Intel processors have traditionally been little-endian. Motorola processors have always been big-endian.
 little endian - the least signifcant byte is placed at the the byte with the lowest address: (the next bytes are following)
 0x0000002C6933F744  stores DF
 0x0000002C6933F745  stores F1
@@ -37,16 +48,55 @@ in vs memory window, 5894623 will look like DFF15900
 
 in vs memory window, memory addresses in each columns rise from right to left (see mem_window diagram).
 popular intel cpus use little endianess
+Note: the bits are not reversed, the order of the bytes is simply different between big/little endianess
+
+*********************************************************************************
+Bitwise operators and their practical use:
+assuming "a = 0b0101;" //represnts 5
+
+1. Turn off specific bits:
+a. create a mask, for example 1011 - aimed to turn off the 3rd bit
+b. AND the mask with the target number: 1011 & 0101 = 0001
+Alternatives: 
+* create the mask 0100 (explicitly states we want to off bit 3)
+and then NOT the mask ~0100, which yields 1011, same mask in "a"
+
+2. Turn on specific bits:
+a. create a mask, for example 0010 - aimed to turn on the 2nd bit
+b. OR the mask with the target number: 0011 | 0101 = 0111
+alternatives:
+* turn on a specific bit (only one! shortcut to above):
+a = a | 1 << k. for example turning on bit 2:
+a = 0101 | 1 << 1 = 0101 | 0010 = 0111
+
+3. check if a specific bit is turned on:
+a. create a mask, e.g: 0010 - aimed to check if the 2nd bit is on
+b. AND the mask with the target number: 0010 & 0101:
+if the result is != 0 than the bit is on, otherwise if == 0 than the bit is off
+(because all bits are set to 0)
+alternatives:
+* (shortcut to above):  a & (1 << k) where k is the number of bit we want to examine,
+for example: 0101 & ( 1 << 2) = 0101 & 0100 = 0100
+
+4.  Zero out a number:
+XOR a number with itslef (because all bits are the same,
+and XOR yields 1 only when 2 nums are different).
 
 
-Bitwise operators:
+5. Multiply number by 2^n: a << n
+e.g: multiply a number by 2: left shift by 1: a<<=1, equivalent to a = a<<1.
 
-&  AND
-| OR
-^ XOR
-<< x logical left shift by x bits
->> x logical right shift x bits  
-~NOT
+6. Divide number by 2^n: a >> n:
+e.g divide a number by 2: right shift by 1: a>>=1, equivalent to a = a>>1.
+
+
+*logical means that the bitshift does not preserve the msb. in arithmetic bitshift
+(the default << and >> in Java), the MSB is "stuck" and the shifting doesn't move it.
+(logical bitshift in java is 
+
+
+Note: bitwise operators in CPP can be overloaded. for example << is overloaded
+when used with std::cout, ad insertion operator
 
 signed bit - msb bit that indicates the sign of the number(+ 0/- 1)
 unsigned int - 0...65535 possible ints. the msb is 0 (only positive nums)
@@ -59,9 +109,8 @@ There are two ways to represent zero, 00000000 (0) and 10000000 (−0).
 
 INTEL cpu's use Two's Complement method instead of signed bit
 where 1 is 00000001 and -1 is 111111111  (convert 1 to its complement -1 - rightmost 1 is detected in 00000001
-and all zeros to the left of it are flipped)s
-as opposoed to the signed bit method 00000000 means 0 and 10000000 means -128
-
+and all zeros to the left of it are flipped)
+as opposoed to the signed bit method 00000000 means 0 and 10000000 means -0
 
 */
 
@@ -84,10 +133,11 @@ int main()
      c's >> is actually >>> in Java (both called logical right shift - do not preserve msb)
     -7 is 10000000000000000000000000000111 >>> 1 (in java) will yield 01000000000000000000000000000011 (2147483644)  (same as >> in c)
 
-    left shift for signed integers is arithmetic overlfow - undefined behaviour. for example :
+    left shift for signed integers is arithmetic overlfow - undefined behaviour. for example:
     std::cout << (-7 << 1) << "\n"; //undefined behaviour
      -7 10000000000000000000000000000111  << 1    becomes 10000000000000000000000000001110 (-14) ->  the msb 1 is "stuck"
-     but: 01000000000000000000000000000000 (1073741824) << 1 becomes 10000000000000000000000000000000 (-2147483648) -> the msb 0 turned to 1  - 0 isn't stuck!!
+     but: 01000000000000000000000000000000 (1073741824) << 1 becomes 10000000000000000000000000000000 (-2147483648) ->
+     the msb 0 turned to 1  - 0 isn't stuck!!
 
     */
     

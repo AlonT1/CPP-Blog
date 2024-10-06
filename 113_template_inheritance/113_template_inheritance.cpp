@@ -13,7 +13,7 @@ public:
 
 
 
-/********* subclass is a template class inehriting from a concreete class********
+/********* subclass is a template class inehriting from a concrete class********
 this means that we inherit from "template type T", or in another words we can inherit
 from class T!*/
 

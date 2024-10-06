@@ -17,10 +17,13 @@ public:
 Entity t()
 {
 	Entity z;
-	return std::move(z);
+	//return std::move(z);
 }
+
+auto func(auto x) { return x * x; }
 
 int main()
 {
-	Entity&& w = t();
+	std::cout << "hello";
+
 }

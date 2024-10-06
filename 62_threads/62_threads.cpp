@@ -23,7 +23,6 @@ void do_work()
         //sleep_for mitigates that
         //std::this_thread references the current "worker" thread
     }
-    
 }
 
 /*

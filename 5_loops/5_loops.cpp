@@ -42,12 +42,17 @@ int main()
     for (int& n : arr)
         std::cout << n << ' ';
 
+
+    // iterate over a braced-init-list
+    for (int x : {1, 2, 3, 4, 5})
+        std::cout << x << ' ';
+
     /**************how does a range-based loop looks behind the scenes?
     range-based loop is a syntactic sugar (equiavlent) for the following */
 
     //__range1 is a reference to an array of [5] ints. An alias for our "arr".
     int(&__range1)[5] = arr;
-    int* __begin1 = __range1; // a pointer to the beginning of "arr"
+    int* __begin1 = __range1; // a pointer to the beginning of "arr", equivalent to "int* __begin1 = &__range1;"
     // a pointer to one element-after the ending of "arr" (beyond the boundary of 0-4 cells).
     //this memory location is undefined dereferencing it may lead to unexpected behaviour
     int* __end1 = __range1 + 5;

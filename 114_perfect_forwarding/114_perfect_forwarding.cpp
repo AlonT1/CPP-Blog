@@ -136,7 +136,7 @@ void dispatcher1(T&& str)
 
 
 //func now recieves "str" as std::string&. it is our responsibilty to ensure that
-//the function that expects a perfectly forwarded argument (func 1)  will have the same type
+//the function that expects a perfectly forwarded argument (func1)  will have the same type
 //(rvalue ref or lvalue ref) that the incoming arguemnt from std::forward provides,
 //and since dispatcher1 will eventually output an lvalue ref, this function should also
 //accept lvalue refs

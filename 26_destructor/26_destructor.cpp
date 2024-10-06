@@ -92,12 +92,15 @@ To access members of a structure through a pointer, use the arrow operator.
 
 /*
 RAII is a programming idiom you have to follow (construction destruction),
-GC is a mechanism that is just there and working for you. In a separate thread, too, while RAII happens in application thread, so there's that.
-RAII stand for Resource Acquisition Is Initialization. resource acquired in the constructor & released in the destructor of the object.
+GC is a mechanism that is just there and working for you. In a separate thread, too, 
+while RAII happens in application thread, so there's that.
+RAII stand for Resource Acquisition Is Initialization. resource acquired in the constructor
+& released in the destructor of the object.
 used in smart pointers  C++ Don't pay for something you don't use. no measureable overhead.
 it is also used with files, for example:
 
-void print_file(std::string fname) {
+void print_file(std::string fname)
+{
    std::ifstream f(fname); // file opened here
    for(std::string line; std::getline(f, line); )
        std::cout << line << '\n';
@@ -106,12 +109,16 @@ void print_file(std::string fname) {
 //(e.g: "new"ing an array inside a function without performing a "delete" on the pointer that holds the array(resource)
 //before leaving the scope of the function).
 
-GC like the one in Java, that adds its own overhead, removes some of the determinism (the abillity to explicitly call destructor) from the resource release process and handles circular
+GC (Garbage Collection) like the one in Java, that adds its own overhead, removes some of the determinism 
+(the abillity to explicitly call destructor) from the resource release process and handles circular
 references (not handeled in cpp - variables refering to each other are being releasedc).
-Garbage Collection solves memory management  making it so that the developer doesn't need to pay as much attention to managing those resources.
-RAII solves it by making it easier for developers to pay attention to their resource management. Anyone who says they do the same thing has something to sell you.
+Garbage Collection solves memory management  making it so that the developer doesn't 
+need to pay as much attention to managing those resources.
+RAII solves it by making it easier for developers to pay attention to their resource management. 
+Anyone who says they do the same thing has something to sell you.
 //Herb Sutter’s cppcon 2016 presentation[1] on deferred_ptr[2] : smart pointers are garbage collection.
-RAII in CPP means that any allocated resource is bound to some scope. When that scope is left, the resource is destroyed/released automatically.
+RAII in CPP means that any allocated resource is bound to some scope. 
+When that scope is left, the resource is destroyed/released automatically.
 Any object allocated by new() MUST be de-allocated by a matching delete().
 Any memory allocated by malloc() MUST be de-allocated by a matching free().
 
@@ -119,9 +126,9 @@ Any memory allocated by malloc() MUST be de-allocated by a matching free().
 
 RAII                        GC
 Programming idiom vs    Mechanism
-                        handles circular references
+                        handles circular references (reference counting?)
 no over head
-user deterministic           automatic
+user deterministic           automatic memory reclamation
 mainly in smart pointers
 
 */

@@ -1,186 +1,149 @@
+#include <iostream>
+#include <vector>
+
+
 /*
-read 121 static_dynamic_dispatch first
-https://dzone.com/articles/double-dispatch-in-c
-http://www.vishalchovatiya.com/double-dispatch-in-cpp/
-https://gieseanw.wordpress.com/2018/12/29/stop-reimplementing-the-virtual-table-and-start-using-double-dispatch/#more-1692
+
+THIS IS NOT STATIC POLYMORPHISM BECAUSE WE UTILIZE RTTI!
+
+Note: the full explanation path (project names): 
+static_dynamic_dispatch, double dispatch (here + diagram of visitor pattern), crtp, std::vist
+
+****************************************************************************************
+The best way to tackle visitor pattern /double dispatch is either via the example
+shown below or with std::visit
+****************************************************************************************
+
+Explanation:
+Since double dispatch is the main mechanism on top of which Visitor pattern is built - 
+they will be explained together:
+
+
+tl;dr
+visitor pattern enables adding new functionality to classes with minimal changes
+to those functions. We want to export info about shapes to xml,
+but don't want to implement export() in each shape, risk breaking existing shape classes. 
+naive solution suggests having seperate XMLExporter class with xml_exporter.export(shape)
+but cpp (and other programming languages) can't utilize the run-time type of
+polymorphic ptrs/refs as arguments: xml_exporter.export(shape): assuming shape is 
+a pointer to Circle the call will always default to Shape! (although not sliced,
+calling shape->draw() will still invoke draw of Circle).
+
+**************************************************************************************
+by using the Visitor Pattern which utilizes Double dispatch we switch POV'S and supply the 
+exporter to the shape:  shape.accept_visitor(v) (1st dispatch):
+Thanks to RTTI, shape is now deciphered  as Circle - we reach the Circle class.
+v is the actual exporter object  (it "visits" the Rect/Circle).
+From circle we invoke v.visit_circle(*this) (2nd dispatch), a function of the xmlexporter,
+essentially we supply the shape back to the exporter with *this which is 100% a circle object.
+from there visit_circle of xmlexporter simply invokes exporter(shape& s).
+**************************************************************************************
+
+
+Long version:
+Visitor is a behavioral design pattern that can introduce a new behavior to a class without modifying that
+class (or at least minimally affecting it...)
+The diagram explained:
+Circle and Rectangle inherit from Shape. We want to export these shapes (their size) to an XML.
+The main purpose of Shape objects is to be drawn on screen with various sizes, thus exportXML() 
+will feel alien in these classes. And what if we want to implement other export 
+options such as exportJPG? these classes will explode.
+
+Naive Solution (that doesn't work):
+assume XmlExporter has 3 functions: export(Shape&), export(Circle&), export(Rectangle&)/
+for each shape in array of Shape* containing Rectangles and Circles
+xml_exporter.export(*shape)
+where export accepts a polymorphic shape reference (can accept Rectangle/Circle...)
+
+This doesn't work. Why? because functions are bound at compile time, where the real time type of "shape" 
+(Rectangle/Circle, retrievable by RTTI mechanism) isn't available. Therefore the compiler defaults back to 
+the underlying type of shape (type Shape) that IS available at compile time. So instead of calling export(Circle),
+the compiler calls export(Shape s).  Note that the object isn't sliced, the 
+"Circle-ness" is still there, calling s->draw()
+will still invoke draw of Circle.
+
+Remember, in cpp:
+RTTI can be utilized to call the correct function through a polymorphic pointer
+ e.g: Shape* shape = &Circle;  shape->draw() invokes draw() of Circle, and not draw() of Shape
+(assuming Circle inherits from Shape + Circle overrides virtual func draw() of Shape)
+RTTI cannot be utilized when the argument is a polymorphic ptr/ref - as seen above with shape ptr that 
+can represent multiple symbols (Rectangle, Circle).
+
+Solution:
+instead of supplying a polymorphic pointer to xml_exporter (has limitiations as described above), we will
+supply the xml_exporter to the polymoprhic pointer!
+so instead of xml_exporter.export(Shape), we will perform shape->accept_visitor(Visitor& v). Explained:
+1. first of all RTTI WILL work now (described above), therefre we will call the 
+correct run-time type of shape (Rectangle or Circle)
+2. the visitor object is any object that implements the Visitor interface, essentially any class 
+that wants to add functionality to Rect/Circle, without breaking existing code. In our case XmlExporterVisitor.
+3. Our Shapes Retc/Circle implement accept_visitor where they can accept any Visitor object. 
+Once we are in Circle/Shape - we call the visitor via v.visit_circle(*this). Note: once we are in Circle 
+class then *this is always a Circle! the XmlExporterVisitor now knows that it deals with a Circle Object.
+4. back in XmlExporterVisitor, visit_circle(Circle& c)  simply invokes export_shape(c).
+
+This is also called double dispatch:
+in the 1st dispatch (1) we deciphered the true identity of shape using RTTI - we are now either
+in Circle or Rectangle.
+in the 2nd dispatch (3), once we know we are handling a Circle/Rectangle object, we make contact
+with xml exporter and supplying him with "*this" which is 100% either circle or rectangle,
+now xmlexporter can export the shape.
+
+Notes:
+1. CPP implements this pattern via std::visit.
+2. A shorter version of the one displayed above can be achieved via crtp
 */
 
-#include <iostream>
 
-class Mercedez;
-class Lamborghini;
-class Rock;
-class RockVisitor;
+struct Circle;
+struct Rectangle;
 
-class RockVisitor
+struct Visitor
 {
-public:
-    Rock* rock = nullptr;
-    void vehicle_visiting_rock(Lamborghini& lamborghini);
-    void vehicle_visiting_rock(Mercedez& mercedez);
+	virtual void visit_circle(Circle& c) = 0;
+	virtual void visit_rectangle(Rectangle& c) = 0;
 };
 
-class Vehicle
+struct Shape
 {
-public:
-    virtual void rock_visiting_vehicle(RockVisitor& rock_visitor) = 0;
+	int size = 0;
+	virtual void accept_visitor(Visitor& v) = 0;
+	virtual ~Shape() {}
 };
 
-class Mercedez : public Vehicle
+struct Circle : public Shape
 {
-    void rock_visiting_vehicle(RockVisitor& rock_visitor)
-    {
-        //2nd dispatch - now we possess the chosen vehicle - use rock_visitor
-        //to invoke the correct collide_with() function in rock_visitor
-        //we CAN utilize function overloading because we are sure about the type
-        //of the vehicle (Mercedez)
-        rock_visitor.vehicle_visiting_rock(*this); 
-    }
+	//2nd dispatch - here we know they type of the shape "Circle"
+	void accept_visitor(Visitor& v) override { v.visit_circle(*this); } 
 };
 
-class Lamborghini : public Vehicle
+struct Rectangle : public Shape
 {
-public:
-    void rock_visiting_vehicle(RockVisitor& rock_visitor)
-    {
-        //2nd dispatch: in the 1st dispatch that was executed in real-time, cpp
-        //has deciphered "vehicle" as a reference to Lamborghini, therefore we are
-        //here now and we know for sure that vehicle refers to Lamborghini.
-        //now the compiler can utilize function overloading, since "*this"
-        //isn't polymorphic  and doesn't require run-time querying (RTTI),
-        //because we know that *this is always a Lamborghini, thus
-        //during compile-time the function below was statically dispatched
-        //(linked to the implementation) to "vehicle_visiting_rock(Lamborghini&)",
-        //which in turn will invoke collide_with(lamborghini) of rock.
-        //*to communicate with our rock, rock_visitor holds a pointer to rock
-        rock_visitor.vehicle_visiting_rock(*this); //2nd dispatch back to rock
-    }
+	void accept_visitor(Visitor& v) override { v.visit_rectangle(*this); } //2nd dispatch
 };
 
 
-class Rock
+struct XmlExporterVisitor : public Visitor
 {
-public:
-    void collide_with(Vehicle& vehicle)
-    {   
-        RockVisitor rock_visitor{ this }; //holds a ptr to the current Rock
-
-        /*The Problem:
-        
-        in CPP, the RTTI of an object cannot be utilized when the object is used as an argument
-        to a function, because static dispatch  (a.k.a static binding) which works via name
-        mangling, only works at compile-time (when the run-time type of the object is
-        not known yet). that is why the compiler can't dispatch (link) the call  "rock.collide_with(vehicle_ref)"
-         to the collide_with that takes in Lamborghini& (the run-time type of vehicle).
-        Therefore the compiler links the call to the function that simply accepts "Vehicle&" which is the underlying
-        type of the reference, known at compile time (cpp is statically typed language),
-        and that is the reason we are in this function now.
-
-        On the contrary, cpp utilizes RTTI via dynamic dispatch - where we invoke a function
-        through a polymorphic pointer/ref (vehicle  ptr whose run time type is Lamborghini, thus invoking
-        the collide_with() of Lamborghini through Vehicle ptr). This possible only when:
-        1. inehritance - Lamborghini inherits from Vehicle
-        2. virtual function - Vehicle has a virtual rock_visiting_vehicle() which Lamborghini overrides
-        3. polymorphic pointer/ref of Vehicle to Lamborghini
-
-        At this point we have 3 options to decipher the true identity (run-time type) of "vehicle"
-        all will execute at run-time: 
-
-        1. check if(dynamic_cast<Lamborghini&>(vehicle)) and then call "collide_with_lamborghini(vehicle)"
-        or if(dynamic_cast<Mercedez&>(vehicle)) and then call "collide_with_mercedez(vehicle)"
-        *dynamic_cast utilizes RTTI (run-time type information) a mechanism that allows
-        the type of an object to be determined during program execution (performance hit)
-
-        2. "typeid(*vehicle) == typeid(Lamborghini)" or  "typeid(*vehicle) == typeid(Lamborghini)"
-        three times faster than rtti, as seen in 1 above
-
-        *options 1 and 2 are slow and require potentially endless if-else branching
-
-        3. double dispatch - meachnism that can execute the correct function at run time,
-        from a set of overloaded functions, based on the run-time type of a variable.
-        This mechanism is based on 2 main function calls (dispatches), where in the
-        1st we actually invoke a call through the polymorphic ptr/rf  (dynamic dispatch)
-        which leads us to the class that represents the run-time type of the object
-        (revealing the type!!!!!) and in the 2nd dispatch we use the revealed type for our needs.
-
-        
-        the following statement is the 1st dispatch:
-        when executing this statement and using "vehicle" expression, 
-        cpp will decipher the run-time type of vehicle (Lamborghini),
-        therefore the polymorphic vehicle ref that implements "rock_visiting_vehicle" func of
-        Lamborghini will be invoked only then we will be aware of the true identity of vehicle - therefore
-        we can utilize this information as seen in the 2nd dispatch
-        
-        *rock visits lamborghini meaning we pass rock to the "rock_visiting_vehicle"
-        of Lamborghini.
-
-        Important! vehicle_ref IS NOT SLICED TO vehicle in this function,
-        it retains the run-time type of Lamborghini!!!
-        */
-	    vehicle.rock_visiting_vehicle(rock_visitor);
-    }
-
-    void collide_with_lamborghini(Lamborghini& lamborghini)
-    {
-        std::cout << "collided with lamborghini \n";
-    }
-
-    void collide_with_mercedez(Mercedez& mercedez)
-    {
-        std::cout << "collided with mercedez \n";
-    }
+	void visit_circle(Circle& c) override { export_shape(c); }
+	void visit_rectangle(Rectangle& r) override { export_shape(r); }
+	void export_shape(Shape& s) { std::cout << "exporting " << typeid(s).name() << '\n'; }
 };
-
-void RockVisitor::vehicle_visiting_rock(Lamborghini& lamborghini)
-{
-    rock->collide_with_lamborghini(lamborghini);
-}
-
-void RockVisitor::vehicle_visiting_rock(Mercedez& mercedez)
-{
-    rock->collide_with_mercedez(mercedez);
-}
-
 
 int main()
 {
-    /*
-    Double dispatch - 
-    
-    A mechanism for invoking the correct method from a set of overloaded methods
-    based on the run-time type of a polymorphic ptr/ref to an instance.
-    works by invoking 2 function calls:
-    1. Deduce the run-time type of the ptr/ref: 
-    in the first call we invoke a function via the polymorphic ptr/ref - using
-    it will decipher its run-time type, calling the method from the class that the ptr/ref
-    points/refers to, thus utilizing RTTI.
-    2. Using *this:
-    once the run-time type is deciphered, we can pass back the deciphered type
-    using "*this" to the calling class.
+	// we flipped the positions: instead of the exporter getting objects 
+	// and exporting them (problematic because polymorphic arguments aren't allowed in cpp, i.e
+	// exporter can't accept Shape pointer that points to Circle or Rectangle - when the pointer
+	// is passed, only its compile time remains (Shape*).
+	// Instead, The objects get the exporter as a visitor
+	// (the visitor visits the object), and by working from the perspective of the objects, their
+	// types can be revealed simply by using "this".
+	XmlExporterVisitor xml_exporter_visitor;
 
-    a practical exmample is seen next.
-    
-    */
-    Lamborghini lamborghini;
-    Vehicle& vehicle_ref = lamborghini;
-    Rock rock;
-    rock.collide_with(vehicle_ref); //remember that run time type of an object
-    //cannot be used as an argument to a function because static dispatch (binding)
-    //only occurs at compile-time when the run time type of vehicle_ref (Lamborghini)
-    //isn't known, thus it defaults to the type of ptr/ref which is Vehicle&
-    //**************************************************************************
-    //RTTI is utlized when calling a function through a polymorphic pointer,
-    //and not when the polymorphic pointer is used as an argument to a function
-    //**************************************************************************
-
-    /*
-    Note: double dispatch is a good solution but the problem with is that RockVisitor
-    holds a function for lamborghini and mercedez. 122a_crtp shows how we can have 
-    a single visit function and a template parameter type T (which denotes if the
-    incoming parameter is a lamborghini or merceded, enabling us to cast the "this" (vehicle)
-    to the parameter T. 
-    */
+	std::vector<Shape*> shapes{ new Rectangle{}, new Circle{} };
+	for (Shape* s : shapes)
+	{
+		s->accept_visitor(xml_exporter_visitor); //1st dispatch
+	}
 }
-
-
-

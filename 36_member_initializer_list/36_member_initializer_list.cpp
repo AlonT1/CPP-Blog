@@ -20,7 +20,7 @@ public:
 	}
 };
 
-//bad example of ctor - Driver2 is correct
+//bad example of ctor - Driver2 is correct********************************
 class Driver
 {
 public:
@@ -47,7 +47,7 @@ public:
 };
 
 
-//correct optimized ctor
+//correct optimized ctor************************************************
 class Driver2
 {
 public:
@@ -56,8 +56,6 @@ public:
 	//here Stub object is instiated once with Stub(5) and assigned to m right away -> 1 instantiation 1 assignment
 	//WE OVERWRITTEN THE IMPLICIT INITIALIZATION LIST Driver2(): m()
 };
-/**********************************************************/
-
 
 /*
 Order of definition+initialization (mib - member initializer list):
@@ -91,10 +89,11 @@ classes are given garbage values).
 	c. that being said, user-defined type (classes) members are always initialized
 	before pod's (even if they're declared after them)
 
-	d. pod / classes can be explicitly initialized inline at declaration OR in mib:
+	d. pod / classes can be explicitly initialized via default member init,  OR in mib:
 	inside mib, if a member isn't initliazed in mib then the compiler seeks if the pod/class was initialized 
-	at declaration (default member initialization), and if thats the case the compiler jumps to the inline declaration and initializes
-	the class / pod member and continues inside mib. if the member wasn't initialized inline or in mib:
+	at declaration (default member initialization), and if thats the case the compiler jumps to the 
+	inline default member initialization. mib wins over default member init!
+	if the member wasn't initialized inline or in mib:
 		a. pod - remains with the garbage value it recieved in step 2
 		b. class object - implicitly initialized with a default ctor.
 
@@ -119,6 +118,22 @@ on the value being assigned:
 
 6. in the body, after leaving the member initalizer list, the user-defined types are already defined+initalized,
 all assignments to user-defined types in the body of the ctor are considered as assignment operations to an already created object!
+
+
+Notes:
+assuming Dog inherits from Animal.
+1. construction order: outside->inside (Animal->Dog).
+In practice though, before starting the construction from the outer most cass, the compiler first
+inspects the constructors of the inner most class. This inspections is done to check if the inner
+classes contain any delegating constructors that explicitly invoke the construction of the parent.
+if the delegating ctor doesn't exist, the construction of the parent will start any way by using
+its default ctor.
+2. destruction order: inside->outside (Dog->Animal).
+In this case, the compiler indeed starts the destruction from the inner class and continues outwards.
+Note that with polymorphic pointers: "Animal* dog = new Dog;" by performing: "delete dog", if the
+dtor of Animal isn't marked virtual, only the dtor of Animal will exectue, instead of Dog dtor.
+and then Animal dtor. In this case, if Dog contains objects on heap, these objects will not be
+destroyed - memory leak. see 68_virtual_destructor.
 */
 
 class Entity

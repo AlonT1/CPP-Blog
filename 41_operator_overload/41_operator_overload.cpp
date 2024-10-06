@@ -133,7 +133,10 @@ public:
     WE CANNOT OVERLOAD MEMBER FUNCTIONS OF INACCESSIBLE CLASS SUCH AS OSTREAM,
     only its non-member functions that "lay free" globally.
     when overloading operator<< we specify ostream as the first paramaeter in the overload
-    and a concrete type (Vector2) as the second parameter
+    and a concrete type (Vector2) as the second parameter.
+
+    The only reason to "friend" this function is to give it access to the private
+    fields of "other". otherwise, the function can be non-friend "normal"
     */
     
     friend std::ostream& operator<< (std::ostream& stream, const Vector2& other);
@@ -182,11 +185,13 @@ Notes about friend functions:
     std::ostream& operator<< (std::ostream& stream, const Vector2& other)
     {
     }
-
+***************************************
 3.  friend functions grant access to the private members of the friended class that is passed
     through the arguments (we can access the private members of "Vector2 other" parameter
     because the the is declared inside the Vector2 class body with a friend keyword).
-
+    because of this friend functions break "data hiding" (private is visible), and should
+    be used only when necessary.
+***************************************
 4.  there is no hidden *this parameters in friend functions, all parameters are explicit
 
 5. friend function cannot be declared virtual - only member functions can be virtual
@@ -251,8 +256,8 @@ int main()
 
     Vector2 res3 = speed * powerup;
     /*
-     operator* is a binary operator (two operands).
-    "speed" is lhs operand, "powerup" is rhs operand.
+     operator* is a binary operator (two operands, two argments).
+    "speed" is lhs operand (1st operand), "powerup" is rhs operand(2nd operand).
 
 
     overload with a Member/Friend/Normal function?
@@ -389,8 +394,9 @@ int main()
     which function signature to use? (the compiler will generate the appropriate function
     call according to the signature, explained in "speed * powerup" example above)
 
-    1. Want to manipulate lhs? overload by member function
-    2. want to create a new instance / overload an operator from an inaccessible class(operator<<)? overload by normal function
+    1. Want to manipulate lhs? overload by member function  +=, -=, /=,  *=, [], =, ()
+    2. want to create a new data (instance / overload an operator from an inaccessible class(operator<<)?
+    overload by normal function:  +,-,/,* , <<
     3. same reasons in 2, but also grant access to private members of parameters
     and also have the possibility to define the overload inside the class*? overload by friend function
 

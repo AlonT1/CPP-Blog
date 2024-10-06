@@ -1,14 +1,26 @@
 #include <iostream>
 /*
-by implementing pure virtual functions (who don't have a definition) 
-subclasses are forced to define them.
+pure virtual functions work under 3 conditions mentioned in 28_virtual functions
+(inheritance, implementation of virtual function by the child & polymorphic pointer).
 
-Interfaces (classes that contain only pure virtual functions )can help utilize polymorphism - 
-where one type can represent multiple types: 
-classes (e.g: keyboard, cardboardbox...) that implement an interface such as
+when implementing pure virtual functions (who don't have a definition)  - subclasses are forced to define them.
+
+Interfaces (classes that contain only pure virtual functions ) can help utilize polymorphism - 
+where one type can represent multiple types. Advantages:
+
+1. polymorphic arrays: classes (e.g: keyboard, cardboardbox...) that implement an interface such as
 IRecyclable (that contains pure virtual functions - isRecyclable()) are later can be put
 inside an "IRecyclable obj" array and then we can execute obj->isRecyclable(). 
 In the same way we can provide a concrete class (keyboard, bottle..) to a function that has an IRecyclable parameter.
+
+2. Flexibility and extensibility: 
+paymentProcessor.pay(Visa v); instead of supplying the concrete Visa, we can abstract Visa to CreditCard via interface
+ – all credit cards will fit as long as they implement the interface
+ 
+ 3. provides encapsulation – only the interface methods are visible to paymentProcessor, Visa class methods remain 
+
+ Note: all of this advantages are seen when using non-pure virtual functions as well!
+
 
 Only member functions can be declared pure virtual (friend functions cannot be virtual,
 they are not part of the class)

@@ -1,5 +1,5 @@
 /*
-type punning - (treating a memory we have as a different type than it actually is).
+type punning - (treating a type stored in a memory as if it was another different type).
 all we have to do is to get the adress of the type (address of an int),
 cast it to a different pointer type (double*) and dereference it to get the value.
 getting around the type system by raw memory operations. cpp is strongly type - types
@@ -54,7 +54,7 @@ int main()
     */
     std::cout << pos[0] << std::endl;
     
-    int y = *(int*)((char*)&e + 4); //raw memory arithmetic
+    int y = *(int*)((char*)&e + 4); //raw memory arithmetic using char that allows byte by byte traversal, so we get y of "Entity e"
     /*
     &e - returns an entity pointer to the starting mem location of e
     (char*)&e - cast the entity pointer into a char pointer, char allows to maniuplate memory byte by byte

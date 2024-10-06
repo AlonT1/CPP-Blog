@@ -21,8 +21,11 @@ int main()
     data = "Hello"; // now data is const char*
     data = std::string("hello"); // now data is std::string
 
-    //get the data
-    std::string w = std::any_cast<std::string>(data);
+    std::cout << data.type().name() << '\n'; //type() returns a std::type_info just like typeid()
 
-    std::string t = std::any_cast<std::string&>(data); //faster, return by reference
+    //how to get the data back:
+    //NOTE: THIS ISN'T A CAST! any_cast is a device to access the contained object.
+    //https://stackoverflow.com/a/41905929
+    std::string w = std::any_cast<std::string>(data); // creats a new data object
+    std::string t = std::any_cast<std::string&>(data); //faster we access the contained data by reference
 }

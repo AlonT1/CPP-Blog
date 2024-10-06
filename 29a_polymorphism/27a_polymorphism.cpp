@@ -1,12 +1,30 @@
 /*
 polymorphism - the use of a single symbol to represent multiple different types.
-dog can be represented as an animal, when dog inherits from the animal, because dog 
-is-a(n) animal but animal isn't a dog.
 
-Polymorphism is implemented via virtual functions (see 28_virtual_functions) and 
-only works with pointets.
-Base base = derived will cause slicing (see 102_slicing) while Base* base = enables polymorphism.
 
+cpp supports 2 types of polymorphism:
+1. Compile-time polymorphism
+    a. Compile-time polymorphism (static dispatch) - function overloading (if 2 funcs have the same name
+    but different params, cpp mangles their names behind the scenes according to their parameters
+    thus it differntiates between them (same name+params but different return types are still the same funcs)
+    b. Parametric polymorphism - templates - at compile time (T can represent anything).
+2. Run-time polymorphism
+    a. subtype polymorphism (dynamic dispatch) - when Cat inherits from Animal
+    we can use a pointer of type Animal and point to a Cat object or an Animal Object,
+    hence the same symbol (pointer) can represent multiple different types.
+    Although the underlying type of pointer is Animal, the real-time type of the pointer
+    is Cat (because it points a Cat object). The real-time type of a ptr is given via
+    the RTTI (Real time type information) mechanism 
+
+    polymorphic pointers such as  Animal* animal = &cat can work only if Cat inherits
+    from Aniaml. the main use of subtype polymorphism  (and the animal pointer above)
+    is to invoke virtual functions. see 28_virtual_functions.
+
+
+Note: Base base = derived will cause slicing (see 102_slicing) while Base* base = &derived - base
+is a polymorphic pointer through which we can invoke virtual functions (occurs at run time).
+
+Important note: more about static/dynamic dispatch can be found in 121_static_dynamic_dispatch
 */
 
 #include <iostream>

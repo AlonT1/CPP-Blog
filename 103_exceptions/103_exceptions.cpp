@@ -32,6 +32,10 @@ Exeptions tl;dr
 e.g - const char* exception won't be implicitly converted to a catch that accepts std::string,  makes
 sense since we may want very specific exceptions to be caught be very specific catch
 
+4. throwing and catching and exception does not cause the program to quit, it simply quits the current
+try block when the error is caught, and the compiler continues to the next statement in the current
+scope after the try-catch blocks.
+
 NOTE: exceptions SHOULD BE CAUGHT in catch block BY REF/PTR for 2 reasons:
 for example throwing a derived object and catching a base by value will cause the following:
     a. redundant copies -  of base section of derived into the base parameter of catch handler

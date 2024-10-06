@@ -2,9 +2,15 @@
 Notes:
 
 **************************************************************************
-1. when using a header and a cpp, the implementation of a function in a .cpp should only include return type,
-name and parameters. keywords such , override, virtual, static, __declspec(dllimport) 
-(49_static_dynamic_linking), should only be used in the header, and discarded in .cpp
+1. when using a header and a cpp, the cpp should only include 
+implementation of functions in the following format: return type, name and parameters.
+keywords such , override, virtual, static, __declspec(dllimport) 
+(49_static_dynamic_linking), should only be used in the header, where the functions
+are declared, and discarded in .cpp (implementation).
+when dealing with a class, the class should be declared in the header, it should
+contain the fields and function declarations. the functions will be implemented
+in the cpp
+
 
 C++ Standard n3337 § 7.1.2/5 says:
 The virtual specifier shall be used only in the initial declaration of a non-static class member function;

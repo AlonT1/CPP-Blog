@@ -31,6 +31,12 @@ class Foo
 template <typename T>
 void goo(T&& param) {}
 
+template <typename T>
+void joo(T a, const T& b)
+{
+
+}
+
 int main()
 {
 	/*
@@ -40,12 +46,19 @@ int main()
 	If a variable or parameter is declared to have type cv-unqualified (no const ano no volatile)
 	T&& for some deduced type T, that variable or parameter is not an rvalue 
 	reference but a universal (forwarding) reference. for example:
+	
 	*/
 	int&& p = 4; //p is an int - type is fully specified - no type deduction occurs - && is rvalue ref
 	auto&& q = 5; //type of q is deduced by the compuler at compile time => && is a forward reference
-	/*
+	
+	/***************************************************************************************
+	* Both rvalue and universal references use &&, but universal references are only as such when used
+	* in a template context (either with auto or with using T).
+	/***************************************************************************************
 	template function:
 	template <typename T> void f(T&& param) {}  //T is deduced by the compiler => T is forward ref
+
+
 	*/
 
 	
@@ -61,17 +74,11 @@ int main()
 	****Step 1:  deduce "T" or "auto" according to the value category of the assigned expression. ****
 	***************************************************************************************************
 
-		1. If the value category of an expression initializing a universal reference is an lvalue,
-		the universal reference becomes an lvalue reference.
-
-		2. If the value category of an expression initializing the universal reference is an rvalue
-		(prvalue or xvalue), the universal reference becomes an rvalue reference.
-
 		Important Note: The auto deduction of T in templates or "auto" is done according to the
 		underlying type and VALUE CATEGORY of the expression we provide (examples below)
 		Note: xvalue expressions of type T are deduced to (symbolized by) T&&.
 			  lvalues expressions of type T are deduced to (symbolized by)T&.
-			  pvalues expressions of type T are deduced to (symbolized by) T.
+			  prvalues expressions of type T are deduced to (symbolized by) T.
 
 		*decltype returns the underlying type of an expression when it's unparaenthesized: decltype(e)
 		*decltype returns the underlying type and value category of expression when it's paraenthesized: decltype((e))
@@ -83,6 +90,10 @@ int main()
 		the base type of x is an lvalue ref, but rather that the value category of x is lvalue, and an lvalue 
 		category is deduced by the compiler as T&, specifically (int&) (as noted above). (read 118_decltype)
 
+		Note: 
+		decltype(entity/expression) specifier inspects the declared type of the entity/expression
+		typeid inspects the RTTI (real-time type of the object):
+		for example, Animal* anim = &Cat - the run-time type of anim is Cat but the decltype is Animal*
 
 	***************************************************************************************************
 			****step 2 (ref collapse): perform reference collapasing if necessary.****
@@ -109,6 +120,7 @@ int main()
 		*sometimes reference collapsing isn't necessary when dealing with universal
 		references as seen in example 3
 
+
 		reference collapsing occurs in  4 scenarios:
 		2 scenarios involving universal references:
 			1. template functions (either member functions (belog to class) or normal functions
@@ -117,6 +129,15 @@ int main()
 		2 scenarios NOT involving universal references:
 			1. typedef formation of template type T (T not necessarily forward reference)
 			2. decltype
+
+
+		short rules:
+
+		1. If the value category of an expression initializing a universal reference is an lvalue (T&),
+		the universal reference becomes an lvalue reference.
+
+		2. If the value category of an expression initializing the universal reference is an rvalue
+		(prvalue (T) or xvalue (T&&)), the universal reference becomes an rvalue reference.
 
 
 		*/
@@ -225,14 +246,6 @@ int main()
 		//"int&" will cause the universal ref to converge to an int& (lvalue ref (int& && => int& collapse rule 2)
 		//and lvalue ref cannot bind to prvalue 4
 
-	/********examples of ref collapsing (NO UNIVERSAL REFERENCE) when using typedef in templates*******/
-		Foo<int&> w;
-		/*
-		this causes "typedef T& LvalueRefType;" in Foo class to evaluated in the following way:
-		typedef int& & LvalueRefType  (T replaced by int&)   =>  int& LvalueRefType; (ref collapsing rule 1)
-		*/
-		
-
 
 	/********examples of reference collapsing (NO UNIVERSAL REFERENCE) when using "decltype"*********/
 
@@ -256,6 +269,40 @@ int main()
 		//that o (an lvalue) cannot be binded to an rvalue ref. The point is that unlike auto&&
 		//which can be binded to all values as a forwarding reference, we see here that delctype(e)&& 
 		//cannot be binded to some values
+
+
+		/********examples of ref collapsing (WHEN T IS NOT UNIVERSAL REFERENCE, i.e it isn't T&&, but T& - look at Foo)
+		when using typedef in templates
+		https://stackoverflow.com/questions/54480599/why-is-const-t-not-sure-to-be-const
+		*******/
+		Foo<int&> w;
+		/*
+		this causes "typedef T& LvalueRefType;" in Foo class to evaluated in the following way:
+		typedef int& & LvalueRefType  (T replaced by int&)   =>  int& LvalueRefType; (ref collapsing rule 1)
+		*/
+		// more "inline" example:
+		int m = 5;
+		typedef int& LRI;
+		LRI& r1 = m;        // LRI& ==> int& & ===> int&
+		const LRI& r2 = m;	// LRI& ==> int& & ===> int& NOTE: the final type is int& (lvalue ref to int,
+		// AND NOT const lvalue ref to an int (according to http://eel.is/c++draft/dcl.ref#6, cv qualifiers are discarded
+		// when used in this context (with typedef) ). Note that this also applies to templates:
+		//**********************************************************
+		// reference collapsing can occur regardless if universal reference are involved, 
+		// specifcally if a typedef or template parameter represent an lvalue referene (T&) (T&& would have been
+		// consudered a universal ref), then collapsing WILL occur. Note that const gets removed
+		// if indeed reference collapsing occurs.
+		//***********************************************************
+		// 
+		// another example (with templates):
+		/* the function is also at the top of the page.
+		template <typename T>
+		void joo(T a, const T& b) {}
+		
+		*/
+
+		// another example of reference collapsing (no universal references invloved)
+		// can be seen in 34a_east_const
 
 
 }

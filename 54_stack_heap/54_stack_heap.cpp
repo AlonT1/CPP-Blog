@@ -20,6 +20,39 @@ stack, but it is stroed in the ram. memory is used to store data.
 stack and heap work differently but are the same. we ask cpp data from these locations and the os returns the block.
 the difference is in memory allocation. an int is 4 bytes - finding contiguous memory in the stack and heap is different.
 
+
+heap fragmanetation:
+
+Imagine that you have a "large" (32 bytes) expanse of free memory:
+----------------------------------
+|                                |
+----------------------------------
+Now, allocate some of it (5 different types, 18 byes in total)
+----------------------------------
+|aaaabbccccccddeeee              |
+----------------------------------
+Now, free the first four allocations (14 bytes) but not the fifth:
+----------------------------------
+|              eeee              |
+----------------------------------
+Now, try to allocate 16 bytes. Oops, can't because there are 14 bytes "free" before and after "eeee",
+but no one single block that can fit 16 bytes, even though there's nearly double that much free (28 bytes free).
+On systems with virtual memory, fragmentation is less of a problem than you might think, 
+because large allocations only need to be contiguous in virtual address space, not in physical address space. 
+So in my example, if I had virtual memory with a page size of 2 bytes then I could make my 16 byte allocation with no problem.
+Physical memory would look like this:
+----------------------------------
+|ffffffffffffffeeeeff            |
+----------------------------------
+whereas virtual memory (being much bigger) could look like this:
+------------------------------------------------------...
+|              eeeeffffffffffffffff
+------------------------------------------------------...
+The classic symptom of memory fragmentation is that you try to allocate a large block and you can't, 
+even though you appear to have enough memory free. Another possible consequence is the inability of the 
+process to release memory back to the OS because each of the large blocks it has allocated from the OS, 
+via malloc etc has something left in it, even though most of each block is now unused.
+
 */
 
 #include <iostream>

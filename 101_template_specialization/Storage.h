@@ -133,18 +133,21 @@ public:
 	}
 };
 
-//aside from partially specializing a whole class, partial specialization also allows us to 
-//partially specialize a class instance as a parameter to a function:
-//assume the  following "normal  function" (normal becuase it doesn't belong to a class, declared in global namespace):
 
-//for example, the function parameter "storage" is partially specialized here as Storage<bool, size>& storage
+//aside from partially specializing a whole class, partial specialization also allows us to 
+//partially specialize a class instance as an ARGUEMTN to a function:
+//assume the  following "normal  function" (normal becuase it doesn't belong to a class, declared in global namespace):
+// the function parameter "storage" is partially specialized here as "Storage<bool, size>& storage"
 //origianlly (Storage<T,size>& storage)
 //why partially? because we didn't specialize the non-type parameter "int size" only bool was explicitly
 //specified, size remained as a non-type parameter, not explictly specified as a literal, and can receive
 //any int we want to specify
 
-//NOTE: THIS IS NOT A FUNCTION PARTIAL SPECIALIZATION - BUT RATHER we partially specialize the class as a parameter.
-//partial function specialization is not allowed according to the standard 
+//NOTE: THIS IS NOT A FUNCTION PARTIAL SPECIALIZATION - we didn't create another function called
+// storage_pointer with some of the template parameters specialized!
+// BUT RATHER we partially specialized the argument "storage" itself, no additional storage_pointer
+// functions are created! partial function specialization is not allowed according to the standard!
+// This allows the client to call this function via: "storage_pointer<5>(storage)
 template<int size>
 void storage_pointer(Storage<bool, size>& storage)
 {
@@ -193,35 +196,36 @@ void test2<double,5>(double w) //now T sepcialized as double, and int specialize
 
 
 /********************Solving code duplication when fully/partially specializing templates *********************/
-//when specializing a class we lose all of its content just to give an answer for a case
-//where specific, explicit types are needed (e.g: class Storage with T as a double, and size as 15)
+//when specializing a class we have to rewrite the code for the specialized class, just to give an answer for a case
+//where specific, explicit types are needed (e.g: class Storage with T as a double, and size as 15).
 //all of Storage's members are lost in the specialized class. inhertiance can solve this problem and reduce
 //code duplication and increase reuse. 
+
 //this also gives somewhat of an answer to the fact that we cannot partially specialize normal/member functions
 //(e.g a print function in Storage template, cannot be partially specialize to take a double (replaces T) and 
 //int size (not specialized, remains non-type param.):
 
 
 //tl;dr - template inhertiance saves code duplication when fully/partially specializing templates:
-//1. create non-specialized template A
-//2. create non-specialized template B which derives from non-specialized template A
-//(optional) create a partial/fully specialized template B which derives from partial/fully specialized template A
+// the trick is to use inheritance: create another class B that inherits from class A, and then 
+// specialize both A and B, while both the specialized version of B inherits from A.
+// so we:
+// 1. original class A
+// 2. new class B which inhertis from A (allows for B to inherit code of A)
+// 3. both B and A are specialized and these specialized versions still inherit from eachother
 
 
 //long version:
 //1. create a base non-specialized template class - this will be our "Storage" declared and defined class.
 
 //2. create a derived non-specialized template class that inherits from the non-specialized base class
-//IN ESSEENCE WE CREATE A NON-SPECIALIZED-TEMPLATE INHERITANCE
+//IN ESSEENCE WE CREATE A NON-SPECIALIZED-TEMPLATE INHERITANCE.
 template <typename T, int size>
 class StorageDerived : public Storage<T, size>
 {
 public: //public so it can be built, otherwise the implicit default ctor will be private
 };
-//********************************************************************************
-//the reason we don't specialize StorageDerived rightaway is because we must first
-//create a non-specialized version of a template class before we can specialize it!
-//********************************************************************************
+
 
 //3. fully/partially specialize the derived class and inherit from a  fully/partially  specialized base class
 //SPECIALIZED INEHRTIANCE!
@@ -231,6 +235,9 @@ class StorageDerived<double, size> : public Storage<double,size>
 public:
 };
 
+// because StorageDerived inherits from Storage, StorageDerived gets the code of Storage via inheritance.
+// Because the specialized StorageDerived ALSO inherits from the same specialized "Storage"
+// then the code of specialized Storage will ALSO be inhertied by the specialized StorageDerived
 
 
 

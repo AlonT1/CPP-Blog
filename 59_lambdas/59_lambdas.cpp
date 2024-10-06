@@ -18,12 +18,9 @@ void for_each2(const std::vector<int>& values, const std::function<void(int)>& f
         func(value);
 }
 
-
 int main()
 {
     std::vector<int> values = { 1,5,4,3,5,4 };
-
-
     /*
     lambdas - an unnamed function object capable of capturing variables in scope.
     lambdas are syntactic sugar for classes that act like a function (functors see 58a_functor for details).
@@ -122,6 +119,12 @@ int main()
     as opposed to the existing conversion function of the non-capture lambdas which simply returns
     the address of the "body function" to a function pointer that the lambda is being assigned to.
 
+    Also note the following from the standard:
+    A lambda can only be converted to a function pointer if it does not capture,
+    from the draft C++11 standard section 5.1.2 [expr.prim.lambda] says (emphasis mine).
+    https://stackoverflow.com/a/28746827
+
+
     So how do we pass a capturing lambda to a function?
     we can use std::function which is a function wrapper.
     shown in example2 with function for_each.
@@ -169,9 +172,8 @@ int main()
 
     __lambda_6_18 lambda = __lambda_6_18{}; //initialiazing a lambda object
     lambda.operator()(4); // equals to lambda(4); //function call
-
-
 	
+
 
     /*********************More "complex" version of a lambda (with captures)**********************/
     int a = 2, b = 5;
@@ -179,6 +181,13 @@ int main()
     //std::function <void(int)> means that the function accepts an int and returns a void
     std::function <void(int)> lambda_x = [&a, b](int value) mutable ->
         void {a = 4; std::cout << value << b << ' ';};
+
+    /********************************************************************************
+    Capturing lambdas CANNOT be assigned to function pointers for reasons explained above.
+    they need to be assigned to an std::function wrapper, and can only be passed
+    to functions that accept an std::function
+    ********************************************************************************/
+
 
     /*Captures explained:
   

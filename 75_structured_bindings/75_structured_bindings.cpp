@@ -1,5 +1,11 @@
 /*
-structured bindings bind specific identifiers to elements of the subobjects/expression
+structured bindings (cpp17) bind specific identifiers (on the left hand side), to the
+elements of the container/class on the right side.
+structured binding seem to work with any container (arrays, vectors, pair, etc...)
+for example:
+std::pair <int, int> w {1,2};
+auto [x,y] = w;
+
 tl;dr
 
 1. hidden variable is created and initialized with the expressions we want to bind to
@@ -78,7 +84,7 @@ int main()
     /*
     the compiler produces the following:
 
-    //__ar is a reference to array (arr) of 2 ints.
+    //__ar is a reference to array (arr) of 2 ints!!!!!!!!!!!!!!!!!!!!!!
     //as opposed to the previous example that created a complete copy of the array
     //here we simply refer to it via an lvalue ref - better performance!
     //remember that an array of references is prohibited  (look for 17_reference)
@@ -137,8 +143,12 @@ int main()
     we our variables to bind to
     2. the compiler creates lvalue references to this temp value.
 
-    same exact story happens with auto& and const auto& with structs
+    same exact story happens with auto& and const auto& with structs.
+
+    Note that if we want to "ignore" some variable we can use "_" which creates a varaible "_"
+    that we will simply not use:
     */
+    auto [p, _] = z;
 
     /*********************** Case 3: binding to a tuple/pair - principles above still hold*/
     float n{}; //0

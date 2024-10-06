@@ -1,10 +1,14 @@
 /*
-virtual functions are invoked via dynamic dispatch (at run time) under 3 conditions:
+virtual functions are invoked  through a polymorphic pointer/ref (at run time - dynamic dispatch) 
+and work under 3 conditions:
 1. Inheritance -  class B inherits from class A
 2. Virtual function override - class A contains a virtual function that class B overrides
 3. polymorphic pointer/ref - a polymorphic pointer/ref of type Base points
 that points/refers to one of the Derived (inheriting) classes.
 we exectue virtual functions through the polymorphic pointer.
+e.g:
+Animal* animal = &cat;
+animal->walk()  // walk() of Cat is exectued, assuming all 3 conditions above are met.
 
 (polymorphism -  symbol that can represent multiple types -
 the pointer/ref can represent either Dog/Cat)
@@ -43,6 +47,14 @@ Only member functions can be declared virtual (friend functions cannot be virtua
 they are not part of the class)
 
 Note that virtual functions in themselves are not necessary for polymorphism
+
+additional advantages can be found in 29_interface_pure_virtual_functions. in short
+(extensiblity+flexibility: Pay(CreditCard&) can accept Visa, AmericanExpress (all inherit from CreditCard
+and override it's virtual functions)....
+Encapsulation - CreditCard hides methods that Visa, AmericanExpress, etc... didn't override
+polymorphic array - we can store different credit cards in CreditCard Array and loop through
+it and execute virtual functions that exist in CreditCard.
+
 */
 
 #include <iostream>
@@ -84,24 +96,34 @@ public:
     pure-virtual functions don't have a definition by default, it our job to implement them somewhere, in
     order to instantiate the implementing class.
     
-    2. although classes that have even one unimplemented pure virutal function cannot be instantiated
-    (because they aren't completely concrete), we can have a pointer to that class - this
-    enables polymorphism.
 
-    3.  override keyword specifies that we override a virtual function (this keyword
-    only works with virtual functions!!!!!!!!)
-    override keyword not mandatory for functions that override virtual functions
+    3.  When class Animal has a non virtual function walk() and class Cat that inherits
+    from Animal and also has a walk() function - This isn't an override!!!!!
+    walk() of Cat simply HIDES (SHADOWING) walk() of Animal - no vtables are involved
+    Note that "Animal* anim = &cat;" is still considered polymorphic pointer because
+    Cat inherits from Animal, but invoking anim->walk() will not invoke walk() of Cat.
+    (of course Cat cat; cat.walk() will invoke walk() of Cat).
+    BUT! when Walk() of Animal is virtual and then Cat also defines a Walk() - then 
+    it is considered an override, therefore only in this situation (virutal functions)
+    override keyword can be used.
+    
+    4. override keyword not mandatory for functions that override virtual functions
     This keyword helps preventing bugs (raises error - overriding function doesn't
     match the base's virtual function or if the base function isn't marked as virtual when we
     try to virtually override it.)
 
-    4. overriden virtual functions can be also marked as virtual - NOT MANDATORY
-    BUT MORE READABLE telling us that the function overrides a virtual function)
+    5. overriden virtual functions can be also marked as virtual - NOT MANDATORY:
+    if Cat inherits from Animal and no one inherits from Cat (final), then Walk()
+    of Cat can "live" without the virtual keyword and be satisfied only with "override".
+    If Tiger inherits from Cat, Walk() of Cat SHOULD be marked with Virtual to help us see
+    that Walk() of tiger overrides a virtual function - This is for readability only.
+    As long as Walk() of Animal is marked virtual, all Walk() funcs down the line are implicitly
+    virtual.
 
     combining "override" and "virtual" keywords on a function that overrides a virtual function
     helps readability, because we can be certain that the function overrides a virtual function.
 
-    5. "override" can only be used only when defining/declaring a function inside the class.
+    6. "override" can only be used only when defining/declaring a function inside the class.
     e.g: in a header file that contains the class delcaration,
     we can declare functions with "override" inside the clas, but the function's definition in .cpp
     file will cannot be marked as override - The same goes for the virtual and friend keyword

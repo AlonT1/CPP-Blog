@@ -70,6 +70,8 @@ Advantages for using header files:
 */
 using namespace std;
 #include <iostream>
+// Car.h will have all the "major" includes (vector, string, etc.)
+// the implementation file Car.cpp imports Car.h and therefore includes everything that Car.h included.
 
 class Car
 {

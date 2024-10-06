@@ -50,9 +50,12 @@ int main()
 	//- MEMORY LEAK!  int* array  of Derived will not be deleted!
 
 	/*
-	Because the type of "poly" ptr is Base, and  the dtor of Base is not marked as virtual, cpp doesn't know 
-	that there is additional destructor in derived. (with overriden virtual methods cpp knows with the help of a vtable to 
-	execute the correct overriden function, also applies during the destruction of the object).
+	Although the run time type of "poly" ptr is Derived, and the dtor of Base is not
+	marked as virtual, cpp doesn't know  that there is additional destructor in derived. The
+	with overriden virtual methods cpp knows with the help of a vtable to 
+	execute the correct overriden function, also applies during the destruction of the object.
+	the lack of "virtual" keyword "disables" the vtable mechanishm, therefore the pointer "poly"
+	is considered by its compile time type "Base" and not "Derived".
 
 	*************************************************************************************
 	WHENEVER WE WRITE A CLASS THAT SUPPOSED TO BE SUBCLASSED and be used in

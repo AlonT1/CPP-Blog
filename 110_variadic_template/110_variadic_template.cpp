@@ -40,10 +40,9 @@ double sum(int count, ...)
 	double sum{ 0 };
 	va_list list; //macro programmed to accept a parameter list represented by ...
 
-	// va_start is a macro that allowes us to initialize "list" with the parameters that come 
-	//AFTER "count" parameter, for example (4,1,2,3,4), list is initialized with (1,2,3,4)
-	//the 1st 4 represents count parameter, tells how many variables we're passing)
-	va_start(list, count); //now list equals to "1".  (1,2,3,4) is 
+	// by using the function call sum(4,1,2,3,4) for sum(int count,...) count is initialized with 4
+	// and we're left with (1,2,3,4). va_start is a macro that allowes us to initialize "list" (1,2,3,4)
+	va_start(list, count);
 
 	for (int arg{ 0 }; arg < count; ++arg)
 	{
@@ -66,7 +65,9 @@ va_arg requires us to inform the type of the expressions represented by the elli
 the argument 2.4  in the ellipsis with an "int" provided to va_arg, would cause the compiler only to read
 the first 4 bytes (the size of the int), while 2.4 spans over 8 bytes, leaving the latter
 4 bytes unread, thus we're getting an incorrect read.
-Conclusion: no type checking exists with ellipsis - we have to trust the caller to provide only ints
+Conclusion: no type checking exists with ellipsis - we have to trust the caller to provide only ints.
+(with variadic templates, we can provide a pack with different types, but when initializing a vector
+with a pack of different types we will get an error!).
 
 2. it is possible to make mistake in the count parameter that denotes how many arguments
 are passed to the ellipsis (ellipsis themselves don't store the number of argument contained in it)
@@ -118,9 +119,13 @@ A variadic template is a class or function template that supports an arbitrary n
 variadic templates provide strong type checking, and are much safer then the technique
 above (can easily receive multiple arguments with different types, like any other template function).
 
+because variadic templates utilize forward (universal) references, the parameter pack
+of the variadic template can accept different types at the same type (int,float,....)
+and from different value categories (lvalue int, rvalue float...)
+
 The following examples show a recursive and iterative way of using a variadic function:*/
 
-/***************************************** recursive example:
+/***************************************** recursive example:*****************
 template types and arguments explained:
 variadic functions are implemented as recursive functions and they MUST have 2 template types to work:
 1. "typename T" - a template parameter type. will represent a function parameter called "current_iterated"
@@ -163,13 +168,48 @@ auto summarizer() //base case function
 	return 0;
 }
 
-// to support variadic templates, we must have these 2 parameters.
-// template parameter pack must be the last parameter
+
 template <typename T, typename... Values> //"typename... Values" == "typename ...Values" == "typename ... Values"
 auto summarizer(const T& current_iterated, const Values&... values) //return auto type deduction (read 108_auto_if_constexpr)
 {
 	return current_iterated + summarizer(values...);
 }
+
+/*
+
+when running: summarizer(1,2,3), the compiler produces the following three functions:
+
+template<>
+int summarizer<int, int, int>(const int & current_iterated, const int & __values1, const int & __values2)
+{
+  return current_iterated + summarizer(__values1, __values2);
+}
+
+template<>
+int summarizer<int, int>(const int & current_iterated, const int & __values1)
+{
+  return current_iterated + summarizer(__values1);
+}
+
+template<>
+int summarizer<int>(const int & current_iterated)
+{
+  return current_iterated + summarizer();
+}
+
+This happens because when the compiler encouters: "current_iterated + summarizer(values...),
+it produces a template (specialization) of summarizer for each call. for example, the first call
+has current_iterated (value of 1) , and the pramaeter pack contains 2 arguments (2,3).
+in the next call to summarizer, current_iterated is 2 and the template pack contains 3.
+in the last call, only the current_iterated (3) is supplied, and the pack is empty,
+so summarizer is called without arguments "summarizer()" and returns 0, which causes
+the stack to unwind with the following calculation:
+3 + 0 = 3 (last call)
+2 + 3 = 5 (second call)
+1 + 5 = 6 (first call)
+
+*/
+
 
 
 
@@ -215,12 +255,12 @@ occurs. What happens is that a sequence of
 */
 
 
-/****************************Iterative Example:
+/****************************Iterative Example:****************************
 over an unpacked template parameter pack*******/
 template<typename... Values> // Values is a template type parameter pack
 void iterator_loop(Values... values) // values is of type Values template type parameter pack
 {
-	for (auto x : {values...} ) //ONLY WORKS WITH AUTO!!!!
+	for (auto x : {values...} ) //ONLY WORKS WITH AUTO (not T)!!
 		std::cout << x << '\n';
 }
 
@@ -231,8 +271,10 @@ to construct an std::initializer_list. same goes for {values...}
 where "values" pack is unpacked inside the brace-init-list and used to create an
 std::initializer_list, where x iterates through it.
 
-the compiler generates the following code for the for loop above:
+the compiler generates the following code for the call "iterator_loop(1,2,3)":
 
+void iterator_loop<int, int, int>(int __values0, int __values1, int __values2)
+{
 	std::initializer_list<int> && __range1 = std::initializer_list<int>{4, 2, 4, 5, 6};
 	const int * __begin1 = __range1.begin();
 	const int * __end1 = __range1.end();
@@ -241,8 +283,16 @@ the compiler generates the following code for the for loop above:
 	  int x = *__begin1;
 	  std::cout.operator<<(x);
 	}
-
+}
 more info about range based loops in 5_loops.
+
+Although we can provide a pack with different types , in this example,
+the pack must also be of one type, it is used to initialize an std::initializer_list, which
+also must be of single type.
+To overcome this to some extent, if we call: iterator_loop(1,2,3.5), this will yield an error
+because 3.5 is a double and 1,2 are ints, but we can cast the pack into an int via:
+
+for (auto x : {static_cast<int>(values)...} ) {....}
 */
 
 
@@ -346,26 +396,27 @@ class Vector
 public:
 	double m_vector[dim];
 
-	//args is a template parameter pack whose type is a T universal (forward) reference
-	//see (113b universal forward references).
-	//This means that:
-	//1. T&& will become either an lvalue ref or rvalue according to the value category
-	//of each one of the values in parameter pack args (they can be either prvalues, lvalues or xvalues).
-	//2. This ctor is a variadic function: "args" can "take in" infinite number of values as a parameter pack (
-	//3. the values that "args" can take in must all be of type T (a single type), although the compiler
-	//is smart enough to perform promotions to match different types, for example: despite that
-	//the values (3.14, 5, 6) are double, int, int - the compiler will promote the ints to doubles 
-	//to match a single type (read 69_casting)
-	//4. args is a function parameter of type T&&... (T is a forward reference to a template pack).
-	//5. m_vector{args...}: m_vector array undergoes direct-list initialization,
-	//specifically (direct-list initialization), where 
-	//{ args... } is surronded by and expanded in braced-init list.
-	//note that this isn't an aggregate initialization, since the size of the array
-	//is known (m_vector[dim]), and aggregate initialization with arrays only
-	//occurs when the size of the array is  known, e.g: "int arr[] = {1,2,3};"
+	/*args is a template parameter pack whose type is a T universal (forward) reference
+	see (113b universal forward references).
+	This means that:
+	1. T&& will become either an lvalue ref or rvalue ref according to the value category
+	of each one of the values in parameter pack args (they can be either prvalues, lvalues or xvalues.
+	and of different types(int, char, float...)
+	2. This ctor is a variadic function: "args" can "take in" infinite number of values as a parameter pack (
+	3. the values that "args" can take in must all be of type T (a single type), although the compiler
+	is smart enough to perform promotions to match different types, for example: despite that
+	the values (3.14, 5, 6) are double, int, int - the compiler will promote the ints to doubles 
+	to match a single type (read 69_casting)
+	4. args is a function parameter of type T&&... (T is a forward reference to a template pack).
+	5. m_vector{args...}: m_vector array undergoes direct-list initialization,
+	specifically (direct-list initialization), where 
+	{ args... } is surronded by and expanded in braced-init list.
+	note that this isn't an aggregate initialization, since the size of the array
+	is known (m_vector[dim]), and aggregate initialization with arrays only
+	occurs when the size of the array is  known, e.g: "int arr[] = {1,2,3};"
 
-	//With param. pack we directly assign pack to the vector (at compile time!), 
-	//while std::init_list requires #include + looping the initializer list (105_std_initializer_list)
+	With param. pack we directly assign pack to the vector (at compile time!), 
+	while std::init_list requires #include + looping the initializer list (105_std_initializer_list)*/
 
 	template <typename ...T> //template parameter pack T
 	Vector(T&&... args) : m_vector{ args... } {} 
@@ -383,7 +434,7 @@ public:
 	  reference T&&, therefore no collpasing occurs and the forward reference
 	  converges to an rvalue ref (see 
 
-	2. the parameter can be directly assigned only to a not-yet-created array.
+	2. the parameter pack can be directly assigned only to a not-yet-created array.
 	  if the array is already created, we need to loop over the pack and assign
 	  the values to the array 1 by 1.
 
@@ -391,9 +442,11 @@ public:
 	  int dummy[sizeof...(args)] = { args... };  //unpack
 
 
-	4. the parameter pack can inhebit different types:
+	4. the parameter pack can inhabit different types:
 
-	template<class ...Ts> void g(Ts... args){ }
+	template<class ...Ts> 
+	void g(Ts... args){ }
+
 	int main() { g(1, 0.20000000000000001, "a")); }
 
 	translates to:
@@ -401,6 +454,11 @@ public:
 	template<>
 	void g<int, double, const char*>(int __args0, double __args1, const char* __args2)  { }
 	int main() { g(1, 0.20000000000000001, "a")); }
+
+	BUT! when try to initialize a vector with a parameter pack with different types, we will
+	get an error because templates can hold only a single type. In addition, in the function iterator_loop(),
+	the pack must also be of one type, becase the pack is used to initialize an std::initializer_list, which
+	also can be of single type
 
 
 	5. The compiler has a "soft spot" for template constructors WITH UNIVERSAL REFERENCE:

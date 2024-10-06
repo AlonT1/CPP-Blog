@@ -70,7 +70,7 @@ public:
 class Entity3
 {
 public:
-	int x = 5; // in-class member init. (aka non-staic member init.) during the construction,
+	int x = 5; // default member init. (aka non-staic member init.) during the construction,
 	//the ctor wins (x=5 is disregarded completely), if the ctor doesn't initialize it, then the in-place wins
 	int y;
 	Entity3() //overriding implicitly declared default ctor - Calling Entity3 e; will no refer to this ctor

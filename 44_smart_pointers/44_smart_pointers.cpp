@@ -7,7 +7,7 @@ because they are allocated on the stack). Inside the dtor the smart ptr has
 performs a  "delete" on the pointer it houses that is pointing to dynamically allocated object.
 This is technqiue is called RAII (Resource Acquisition IS INITIALIZATION) (26_destructor).
 **********************************************************
-Therefore, smart pointers can only point to heap allocated objects, otherwise
+Therefore, smart pointers can only setup to store  heap allocated objects, otherwise
 the delete operator in its dtor will fail because "delete" cannot be executed on
 pointers that point to stack allocated objects.
 **********************************************************

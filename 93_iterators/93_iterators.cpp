@@ -136,9 +136,14 @@ int main()
 	*/
 
 	/*
-	Important Note: after we read a through a stream via a while loop or an iterator,
-	we might reach the end of it. therefore, to reread the stream we need
-	to clear error flags (specifically eof) - stream.clear() and then rewind stream.seekg(0)
+	Important Note: after we read a through a stream (including a file stream) via a while loop or an iterator,
+	or a getline, we might reach the end of it. therefore, to reread the stream we need
+	to clear error flags (specifically eof) - stream.clear() and then rewind stream.seekg(0).
+	seekg(0) alone isn't enough, After the EOF flag has ben set, you will not be able to extract anything.
+	You have to clear those flags to be able to extract again.
+	seekg sets the position of the next character to be extracted from the input stream.
+	seekg(0) sets the positin to the start of the file
+
 	*/
 
 #endif

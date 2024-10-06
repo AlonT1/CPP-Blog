@@ -72,8 +72,9 @@ int main()
     there isn't much need for polymorphism anyway(?)
     ************************************************************************************
     Note that dynamic dispatch only works when we invoke a function from an instance, based
-    on the run-time type of that instance (asteroid_ref run-time type is ExplodingAsteroid,
-    therefore we will invoke collide_with of ExplodingAsteroid).
+    on the run-time type of that instance from which we invoke the function
+    (asteroid_ref run-time type is ExplodingAsteroid,
+    therefore we will invoke collide_with of ExplodingAsteroid as expected).
     As seen in the "problem" example below, dynamic dispatch DOES NOT work in a scenario where we 
     want to invoke a method based on the run-time type of an ARGUMENT!
     ************************************************************************************/
@@ -91,7 +92,7 @@ int main()
     is not possible because static dispatch , a.k.a linking the call with its implementation at 
     compile time - only occurs at compilet time - while the run-time type of an object 
     can only be evaluated at run-time when it is directly used.
-    therefore "spaceship_ref" is supplied to a function suppurting Spaceship& (the underlying type
+    therefore "spaceship_ref" is supplied to a function supporting Spaceship& (the underlying type
     of the ref known at compile-time) and not to a function  which supports the run-time type of spaceship_ref
     which is ApolloSpaceCraft because it only known at run-time (the run-time type can be queried via
     3 techniques as seen in 122_double_dispatch), after the dispatch already occured.
@@ -103,7 +104,7 @@ int main()
     
 
     SpaceShip& spaceship_ref = apollo_spacecraft; //although spaceship_ref refers to an ApolloSpaceCraft object......
-    asteroid.collide_with(spaceship_ref); // (1) Asteroid collides with SpaceShip and not with ApolloSpaceCraft!!!
+    asteroid.collide_with(spaceship_ref); // (1) Asteroid collides with SpaceShip and not with ApolloSpaceCraft (run-time type of spaceship_ref)!!!
     asteroid_ref.collide_with(spaceship_ref); //(2) ExplodingAsteroid collides with SpaceShip and not with ApolloSpaceCraft!!!
     /**************************************************************
     Bottom line: if ptr x of type A points to B (polymorphic), B inherits and overrides a virtual function from A,

@@ -7,7 +7,7 @@
 /****************CRTP (Curiously Recurring Template Pattern)****************
 coined by Jim Coplien in 1995 after observing this recurring pattern.
 
-1. The naive solution (as seen in 122_double_dispatch), violating DRY and repeating ourself:
+1. The naive solution (as seen in old_double_dispatch), violating DRY and repeating ourself:
 instead of class A exclusively holding foo(), we copy and paste foo() directly into B & C.
 Then static dispatch will deduce "this" as B or C since foo() is defined inside B & C.
 The problem with this tactic is that we violate DRY. As seen in 122_double_dispatch,
@@ -30,36 +30,52 @@ to T which represents the run-time type of the reference - helping class A in im
 functions that utilize "this" keyword in once place (in class A), instead
 of duplicating the same functions to class B,C,D... just because we can then
 utlize "this" within them to know if we're inside B, C or D.
-Now we can keep one function in A and use "this" combined with the parameter type 
+Now we can keep one function in A and use "this" combined with the parameter type
 and know who "this" actually refers to.
 ********************************************************************************
 
 in our case:
 Vehicle is a template and class Mercedez inherits from Vehicle and parametrizes
 the template parameter to Mercedez (itself). Same goes for Lamborghini.
-
-This enables us to parameterize the polymorphic ref/ptr with the run-time type
-it points/refer to, thus making it available to know at compile-time:
-
+********************************************************************************
+Because we inherit from CRTP, i.e Vehicle is a template, and Lamborghini inherits
+from Vehicle<Lamborghini>, this enables us to parameterize the polymorphic ref/ptr with the run-time type
+it points/refer to, thus making it available to know at compile-time.
+In other words, Vehicle<Lamborghini> can point to Lamborghini class because Lamborghini
+inherits from Vehicle<Lamborghini>:
+********************************************************************************
 (1) Vehicle<Lamborghini>* vehicle_ref = new Lamborghini();
 vs
 (2) Vehicle* vehicle_ref = new Lamborghini();
 
-with (1) we can know that vehicle_ref points to (its run-tim type is) Lamborghini
-thanks to the fact that we parametrize it with <Lamborghini>,
+
+with (1) we can know that vehicle_ref points to (its *run-time type) is Lamborghini
+thanks to the fact that we parametrize it with <Lamborghini>.
+*run-time type - valid only when the pointer is polymoprhic, inheritance, and
+overriding of virutal functions occur.
+
 with (2) we can only know the run-time type of vechile_ref at run time using
 3 techniques shown in 122_double dispatch (dynamic_cast, typeid  and double dispatch)
 
 Now we can use functions declared in A and utilize "this" combined with the parameter
-type T which contains the run-time type of the ptr/ref - 
-we can cast "this" to T! 
-for exampel in Vehicle class, in func visit, we cast "this" (which is always a Vechile) to T 
+type T which contains the run-time type of the ptr/ref -
+we can cast "this" to T!
+for exampel in Vehicle class, in func visit, we cast "this" (which is always a Vehicle) to T
 (Lamborghini - the run time type of the pointer). This saves us duplicating
 the visit function to Mercedez and Lamborghini for the mere need to know who "this"
-is (when using "this" within a function in Lamborghini, "this" will 
-always refer to Lamborghini). Now we can leave visit() in Vehicle and cast 
-"this" to T where T is the run-time type of the ptr/ref, in other words we can 
-declare T is as either Lamborghini or Mercedez.*/
+is (when using "this" within a function in Lamborghini, "this" will
+always refer to Lamborghini). Now we can leave visit() in Vehicle and cast
+"this" to T where T is the run-time type of the ptr/ref, in other words we can
+declare T is as either Lamborghini or Mercedez.
+
+
+this is static polymorphism
+https://www.youtube.com/watch?v=-WV9vWjhI3g
+i.e no virutal functions are involved as opposed to 122_double_dispatch.
+both 122_double_dispatch and 122a_crtp allow for polymorphic parameter
+but 122a_crtp allows this at compile time (without virtual functions), 
+while 122_double_dispatch DOES uses virutal tables (run time construct).
+*/
 
 
 struct Rock;
@@ -73,25 +89,30 @@ struct RockVisitor
     void invoke_collision(Lamborghini* lamborghini);
 };
 
-template <typename T>
+template <typename T> // T is Lamborghini for sure!
 struct Vehicle
 {
+    // because T reveals that Vehicle is Lamborghini, by casthing "this" to T (lamborghini,
+    // invoke collision now accepts Lamborghini
     void visit(RockVisitor rock_visitor) { rock_visitor.invoke_collision(static_cast<T*>(this)); }
 };
+
 struct Mercedez : /*the following is the CRTP*/ Vehicle<Mercedez> {};
 struct Lamborghini : Vehicle<Lamborghini> {};
 
 struct Rock
 {
     template <typename T>
-    void collide_with(Vehicle<T>* vehicle) // T is Lamborghini
+    void collide_with(Vehicle<T>* vehicle)  // T is Lamborghini!
     {
-        RockVisitor rock_visitor{ this };
-        //vehicle is of type Vehicle<Lamborghini> and when calling visit of 
-        //Vehicle we utilize the fact that T represents Lamborghini!
-        //thus we cast this to Lamborghini. Essentially T preserves the identity (run-time type)
-        //of Vehicle but this is done at compile-time! 
-        vehicle->visit(rock_visitor); 
+        RockVisitor rock_visitor{ this }; // "this" is an instance of Rock (this class)
+
+        // vehicle is of type Vehicle<Lamborghini> and when calling visit of 
+        // Vehicle we utilize the fact that T represents Lamborghini!
+        // thus we cast "this" to Lamborghini (see the visit() in Vehicle)
+        // Essentially T preserves the identity (run-time type)
+        // of Vehicle but this is done at compile-time! 
+        vehicle->visit(rock_visitor);
     }
 
     void collide_with(Mercedez* mercedez) { std::cout << "Mercedez Collsion"; }
@@ -105,5 +126,7 @@ int main()
 {
     Rock rock;
     Vehicle<Lamborghini>* vehicle_ref = new Lamborghini();
-    rock.collide_with<Lamborghini>(vehicle_ref);
+    rock.collide_with(vehicle_ref); //equivalent to rock.collide_with<Lamborghini>(vehicle_ref):
+    //  if we pass a type Vehicle<Labmorghini>* to a function accepting a Vehicle<T>*
+    // then the T in the function will be Lamborghini!!!!!!!!
 }

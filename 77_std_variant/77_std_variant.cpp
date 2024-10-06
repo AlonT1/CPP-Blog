@@ -14,9 +14,10 @@ int main()
     data = 2; // now data is ONLY an int
     std::cout << std::get<int>(data) << std::endl; // get the int 
 
-    //check the type of the data to do a "safe" get (ensuring that data is a string when try to get a string)
+    //check the current type that data represents to do a "safe" get 
+    // (ensuring that data is a string when try to get a string)
     data.index(); // which index (each type is an index - string is 0, int is 1)
-    if (data.index() == 0) {} // if data is a string
+    if (data.index() == 0) { std::string m = std::get<std::string>(data); } // if data is a string
 
     //better alternative
     auto str = std::get_if<std::string>(&data); // if not string - > returns null

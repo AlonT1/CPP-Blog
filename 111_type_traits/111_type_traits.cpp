@@ -36,7 +36,7 @@ int main()
         static const bool value = false;
     };
 
-    //if the parameterized type is "float" the following struct is generated:
+    //if the parameterized type is "float" the following struct is generated: // from here we get the answer!
     struct is_floating_point_float {
         static const bool value = true;
     };

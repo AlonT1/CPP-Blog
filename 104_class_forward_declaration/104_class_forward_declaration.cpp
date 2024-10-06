@@ -3,14 +3,20 @@
 
 /*
 tl;dr
-use pointers to classes as fields instead of instance variables.
+use pointers/refs to classes as fields/function parameters instead of instance variables
 in the latter the compiler requires the class to be defined before it can be used as a field within
 another class (may cause dependency, header includes and  ordering issues , as explained below),
-while the former only requires forward declaration to the class, the ptr can be repointed and may even
-reduce the size of the class (size of pointer instead of a full sizeof an instance variable).
+while the former only requires forward declaration to the class. This happens because with instances/refs
+the compiler must know the size of the object before they can be used, hence they must be defined
+before usage, while with ptrs, the compiler doesn't need to know the size of the object it points at.
+the size of ptr itself is known (64 bits), and as long as there is  aforward delcaration the compilation
+will work (the linker will later link the definition to the delcaration).
+
+in addition ptrs can be repointed and may even reduce the size of the class 
+(size of pointer instead of a full sizeof an instance variable).
 
 Note: in general, in cpp we use forward declaration when we use an identifier
-before it is defined. the forward declaration satisfy the compiler, promising it
+before it is defined. the forward declaration satisfies the compiler, promising it
 that the definition exists somewhere. The definition will be found by the linker
 (after compilation stage), which will link the forward declartion with the implementation.
 */

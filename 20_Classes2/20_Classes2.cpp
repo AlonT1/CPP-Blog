@@ -8,7 +8,7 @@
 class Log
 {
 public:
-    enum class Level // MUST DEFINED above its usage!!! //enums are without namespaces! no Log::Level::... but Log::Info 
+    enum class Level // MUST be defined above its usage!!! //enums are without namespaces! no Log::Level::... but Log::Info 
     {
         ERROR = 0, WARNING = 1, INFO = 2
     };

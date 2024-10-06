@@ -20,7 +20,7 @@ public:
     //return type isn't necessary because the object is effectively converted to an int
     //and this function "explains" what this conversion means
 
-    //int serves both as the function name and the reutrn type
+    //int serves both as the function name and the reutrn type - unique for conversion function
     explicit operator int() const //const - function promises not to modify member variables
     {
         return 8.5; //note the double here, explanied below

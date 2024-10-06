@@ -32,8 +32,6 @@ struct Vec4
 			// b represents another instance of t,m that aligns with z,w (in the struct above)
 		};
 	};
-	
-	
 };
 
 std::ostream& operator<< (std::ostream& stream, Vec2 vec2)

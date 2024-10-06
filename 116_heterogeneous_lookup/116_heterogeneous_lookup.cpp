@@ -78,7 +78,7 @@ int main()
     employees.find(e);
 
     //this problematic becuase we need to create a redundant temporary object just to perform
-    //a search. The solution:
+    //a search. The solution steps:
 
     //1. choose a class member that will be used for searching - the id in this case
 
@@ -126,13 +126,14 @@ int main()
     //when no compare function is assigned when initializing the container, the container
     //defaults to the default compare functor it is assigned with as a default parameter.
     //with map the compare is std::less<Key> -> in our case std::less<std::string>.
-    //this means that the map is ordered via the key, using std::less<std::stromg> which orders via operator<
+    //this means that the map is ordered via the key, using std::less<std::string> which orders via operator<
     //of std::string (overloads oeprator<).
 
     // the 3rd template parameter type defaults to std::less<std::string> if not specified otherwise
     std::map<std::string, int> map{ {"hello",1} }; 
 
-    //the problem is that std::less<std::string> can only compare two std::string objects.
+    //the problem is that by using "find", which relies on std::less<std::string>, the compiler
+    // can only compare two std::string objects.
     //to accommodate this fact, the compiler actually constructs a redundant std::string
     //via "hello" just to perfrom the lookup.
     //This happens despite the fact that an std::string is perfectly comparable with const char*

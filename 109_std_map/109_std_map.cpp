@@ -27,9 +27,9 @@ was 1 intentionally paired with a 0 or 0 was returned as a result of
 operator[] constructing a default 0 int object. This especially bad if default construction
 of the type is very slow, assuming a very slow, heavy class.
 
-2. find() when we are not sure if the object exists or not.
+2. find() (solves 0 problem above) when we are not sure if the object exists or not.
 find() returns an iterator to found element(key-value pair)/ or end of map if element not found,
-decoupled from null values like operator[] above.
+decoupled from 0 values like operator[] above.
 
 3. try_emplace when we need to know if the insertion was successful
 (a key-value pair with our input key wasn't there)
@@ -100,7 +100,7 @@ int main()
     int value = map[0];
     if (value) // false (returns 0) but the key of 0 exists!
         std::cout << map[0] << '\n';
-    //note: better use cpp17 if with initializing statement conditional if(int value = map[0]; map!=0)
+    //note: better use cpp17 if with initializing statement conditional if(int value = map[0]; value !=0)
     //see 12_conditions_branch
 
     //indeed key 2 isn't in the map, but operator[] returns a default construct
@@ -151,6 +151,7 @@ int main()
         //via move semantics to save copies myMap.insert(std::move(node));
         //emplace won't work because we are not using the constructors of the types we've chosen.
 
+    //changing the key of map node(key-value pair)
     auto myMap = std::map<std::string, int>{ {"one", 1}, {"two", 2}, {"three", 3} };
     auto node = myMap.extract("two");
 
@@ -166,7 +167,7 @@ int main()
         m.insert(std::pair<std::string, std::string>("fourth", "alex"));
     std::cout << result.first->first << '\n'; //access the iterator to the inserted or already existing pair
     //(accessing the first element of this pair - meaning getting the key)
-    std::cout << result.second << '\n'; // bool that says whether the element is
+    std::cout << result.second << '\n'; // bool that says whether the element was successfully inserted
 
     //short version to the above
     //auto type deduction + structured bindings [it, result] that accepts the iterator
@@ -174,12 +175,13 @@ int main()
     //require <std::string, std::string>, it deduces these types from the arguemnts ("fifth, "avi")
     auto [it1, result1] = m.insert(std::pair("fifth", "avi"));
     
-    //Note that although "fifth" key already exists, the pair will still be redundantly built!
+    //Note that although "fifth" key already exists, the pair will still be redundantly built, but not inserted,
+    // i.e result2 is false
     auto [it2, result2] = m.insert(std::pair("fifth", "avi"));
 
 
-    /**********************map::emplace() - more performant than insert*/
-    //emplace directly uses the ctor (inplace) of pair which map wraps around and the ctor of pair
+    /**********************map::emplace() - more performant than insert, and without std::pair*/
+    //emplace directly uses the ctor (inplace) of std::pair which map wraps around and the ctor of pair
     //will use the the ctors of the key and value, in the same
     //way that an emplace on vector<Test> will utilize one of Test's ctor, and is 
     //even more performant (no need to construct a pair outside and then provide it into the
@@ -208,7 +210,8 @@ int main()
     //emplace directly constructs a unique_ptr, thus the second argument needs
     //to be an expression that is supported by a ctor that can construct unique_ptr
     //(move or make_unique), we cannot pass int_ptr1, because there isn't a ctor
-    //that accepts this expression inside std::unique_ptr.
+    //that accepts this expression inside std::unique_ptr, a unique_ptr cannot even be assigned (copy)
+    // with another unique_ptr (only moved) on the contrary std::string can accept a const char*.
 
     /*
     the problem with emplace() is that whether the insert is successful or not,
@@ -231,7 +234,7 @@ int main()
     auto [it3, result3] = m2.emplace("shalom", std::move(int_ptr2));
     std::cout << *int_ptr2;
 
-    if (!result3) // Alright the insertion failed because we assume that 
+    if (!result3) //  the insertion failed because we assume that 
     //a pair with the key "shalom" already exists, let's do something else with int_ptr2.
     { 
         do_something_else(*int_ptr2); // Or can we? int_ptr2 is now null, resources stolen
@@ -268,7 +271,7 @@ int main()
         std::cout << "key: " << itr->first << " " << "value: " << itr->second << " | ";
     std::cout << '\n';
      
-    // for each 
+    // for each - auto represents "std::pair<std::string_view, std::string_view>"
     for (auto& pair : m1) //remember "by-reference"! better performance, no unecessary copies
         std::cout << "key: " << pair.first << " " << "value: " << pair.second << " | ";
     std::cout << '\n';

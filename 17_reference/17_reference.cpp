@@ -3,11 +3,12 @@
 //a reference is a stubborn alias of an object. 
 
 //note: passing by reference to a function can be emulated via a pointer to pointer:
-//caller: int x = 5  foo(x), callee: foo(&x)    can be emulated by  int* x = &y  f caller: foo(&x)   callee (int **x)
+//caller: int x = 5  foo(x), callee (the actual function signature): foo(&x)  
+// can be emulated by  int* x = &y  f caller: foo(&x)   callee (int **x)
 //derefercing x will access a pointer which has the same address and same value that exists in the scope of the caller,
 //in the same way that references have the same address and the same value as the value they refer to (aliases)
 
-//references cannot be reassigned, be assigned with a nullptr
+//references are like pointers, but with restrictions cannot be reassigned, be assigned with a nullptr
 //C++ references are favored over pointers wherever possible because they cannot be
 //null, appropriately express by-reference intent, and have better readability 
 //because of no dereferencing (*, ->) jumble.
@@ -76,7 +77,8 @@ int* test()
 int vals[] = { 1,2,3,4,5 };
 int& set_values(int i)
 {
-    return vals[i]; //returning  an alias of that memory location - this is not the simple value!
+    return vals[i]; 
+	//returning  an alias of that memory location - this is not the simple value!
     //we return an lvalue of that number - a variable with location in memory, not a temporary prvalue
     //changing the returned reference, will change the number "inside" the array.
     

@@ -7,37 +7,107 @@ https://stackoverflow.com/questions/33874548/c-what-is-the-need-of-both-buffer-a
 https://www.codeproject.com/Questions/342008/how-the-cout-statement-works-in-cplusplus-and-how
 https://superuser.com/questions/86999/why-cant-i-name-a-folder-or-file-con-in-windows
 https://stackoverflow.com/questions/10518608/buffered-and-unbuffered-stream
-
-Streams connect between our program and another entity (file, keyboard, display...).
-the definition of streams is a sequence of bytes accessible sequentially, but in cpp
-context streams mean a full mechanism that handle input and output between our program and an entity.
-they're abstractions, we don't know EXACTLY how they work.
-Some streams use buffers - the buffer (also called std::streambuf or "input sequence")
-is managed by the stream. the stream wraps around the streambuf.
-Between the stream and stream buffer a process of serialization / deserialization occurs:
-the stream performs r/w operations on the stream buffer that holds raw bytes.
-when writing (serializing), the stream converts integers, strings, etc. to raw bytes 
-(possibly with additional info about the types?) and sends them to the buffer
-when reading (deserializing), the stream reads the raw bytes from the buffer converts them to the actual
-types they are meant to represent.
-https://stackoverflow.com/questions/8116541/what-exactly-is-streambuf-how-do-i-use-it
-
-i/o stream objects std::basic_istream (or simply istream - cin is object of class istream) and std::basic_ostream
-(or simply ostream, cout is object of class ostream) all implement a streambuf (std::basic_streambuf)
-https://en.cppreference.com/w/cpp/io/basic_streambuf
-cout and cin global objects control output and input to the stream buffer (i'm assuming
-both stream objects cout and cin have different stream buffers. 
-
-***Serialization: turning an object in memory (class, string, int...) into a stream of bytes that can be stored on disk as a file
-an object is stored in memory in pure bytes, for example: 0x61 0x62. the compiler knows that this are two integers,
-but as pure bytes they can be chars, doubles, etc. therefore during serialization into a file the process ensures
-to encode those bytes with additional information (for example the type of the objects).
-Deserialization: the exact opposite - taking a serialized file and turning it into an object in memory, compatible
-to be manipulated by the compiler
-https://www.tutorialspoint.com/java/java_serialization.htm
+https://www.programmerall.com/article/7175645838/
 
 
-Why a buffer is needed?
+https://stackoverflow.com/questions/38652953/what-does-stream-mean-in-c
+https://www.cplusplus.com/reference/iolibrary/
+https://stackoverflow.com/questions/10518608/buffered-and-unbuffered-stream
+https://stackoverflow.com/questions/213907/stdendl-vs-n
+
+
+The point of view of the stream mechanism is puts the program (code) at the center:
+1. we take input into our program from an input stream.
+2. we output out from our program into an output stream.
+
+in computing, streams are a sequence of bytes accessible sequentially.
+In cpp, a stream is an object (interface) that allow us to 
+interact with two types of streams:
+1.  a stream of bytes representing a string
+2.  a stream of bytes representing a file
+
+stream objects in cpp are divided mainly into two types:
+1. input stream (istream) - a stream object that only allows taking input from it into our program.
+We cannot write data to this object, except for when
+it is initialized with some data! istream has 2 main subclasses:
+	a. istringstream - a stream object that stores a string (bytes that represent a string). e.g:
+	std::istringstream iss{"hello"};
+	iss >> my_string; // input the data from the stream into our program (my_string)
+	b. ifstream - a stream object that stores a stream of bytes representing file. e.g:
+	ifstream file{text.txt}; // takes in an existing file
+	std::getline(file, my_string); // input the data from the stream into our program (my_string)
+	
+2. output stream (ostream) - a stream object that only allows outputing data to it from our program.
+We cannot take input from this object. we are allowed of course to initialize it.
+ostream has 2 main subclasses:
+	a. ostringstream - a stream object that stores a string (bytes that represent a string). e.g:
+	std::ostringstream oss;
+	iss << my_string; // output data to the stream from my_string
+	iss.read; // we can then read the stream
+	b. ofstream - a stream object that stores a file (bytes that represent a file). e.g:
+	ofstream file{text.txt}; // creates a new file that the prgoram will output data to
+	file << "hello"; // outputs hello into the the file (text.txt).
+
+Another stream object exists: iostream - supports both input and output to/from them 
+by inheriting both from istream and ostream. Therefore, it also has 2 subclasses:
+1. stringstream - we can output textual data to it and take the data it stores as input to our program
+2. fstream - we can output data to a file and take input from a file
+
+istream, ostream and iostream inherit from ios class, which in turn inherits from ios_base
+
+IMPORTANT NOTE: officialy, in cpp all stream and buffer class names above are prefixed with "basic_",
+e.g: std::basic_iostream, std::basic_stringbuf, etc
+
+https://stackoverflow.com/a/25569849
+At program startup, three text streams are predefined  by the environment and need not be opened explicitly —
+1. standard input (for reading conventional input): std::cout (inherits from ostream), associated with c's stdout.
+the stream is pre-connected to a terminal displayed on a monitor (console).
+we use the insertion operator <<, to insert (output) data to the stream from our file
+2. standard output (for writing conventional output): std::cin (inherits from istream), associated with c's stdin.
+the stream is pre-connected to the keyboard.
+we use the extraction operator >>, to extract data the input that the stream holds.
+3. standard error (for writing diagnostic output): std::cerr (inherits from ostream), associated with c's stderr.
+we also use the insertion operator << with this stream. 
+
+
+A stream may contain a "buffer" field (memory on the ram, an array)
+that actually store the bytes. there are two types of buffer classes:
+1. stringbuf - string buffer, found as a field within string streams objects 
+(stringstream, istringstream, ostringstream).
+2. filebuf - file buffer, found as a field within file stream objects (fstream, istream, ostream).
+both stringbuf and filebuf classes inherit from streambuf class (virtual).
+Thus, a stream object is said to be high-level interface to the low-level buffer.
+
+A buffered stream can be "flushed", meaning that all the accumulated characters
+in buffer ("array") are "cut and pasted" to a destination (e.g: file) at once.
+A stream may also be unbuffered (without a buffer), thus no flushing occurs
+(no buffer to flush). In this case the data reaches the destination (e.g: file) 
+immediately  by using the stream object as an interface.
+
+Flushing output on a buffered stream means transmitting all accumulated characters to the file. 
+
+
+Most of the examples we've seen so far use unbuffered I/O. This means each read or write request is handled directly by the underlying OS.
+
+A stream may hold a buffer but the question is how the buffering is done, i.e how the
+buffer is managed. there are three types of buffering in cpp:
+
+1. Unbuffered  - No buffer exists. The data reaches the destination
+as soon as possible. the flushing is done on a byte-to-byte basis (performance hit)
+
+2. Line buffering - the flushing of the buffer occurs when a new line character is
+encountered
+
+3. Full buffering - the flusing of the buffer occurs when the buffer is full.
+Considered optimal since we flush less than line buffering (i.e better performance)
+
+
+
+
+
+
+
+Why a buffer is needed (a side from storing data)?
 	Working with files is expensive performance wise. Therefore some streams have a buffer
 	(temp memory on ram - faster then hard disk), where the streams can copy the file to the buffer and perform
 	r/w operations on it there, and when all the changes are done, copy the changes back to the file (flushing the buffer).
@@ -46,15 +116,26 @@ Why a buffer is needed?
 
 	diagram: Program<-----STREAM Mechanism(optionally buffered)------>Entity
 
-	If there was no buffer, the program would write (get flushed) byte-by-byte to the file itself - this is cpu
-	heavy but the information reaches the destination / from the destination fast without a buffer
-	as mediator.
-	the buffer decouples the program and the file - making r/w operations everything faster.
-	"instead of copying character 1 by 1, we memorize all sentence and copy it to our brain
-	(the buffer), the writing down is flushing."
+	If there was no buffer, the program would write (get flushed) byte-by-byte to the file itself -
+	this is cpu heavy but the information reaches the destination / from the destination immediately 
+	without a buffer as mediator.
+	Instead, the buffer decouples the program and the file - making r/w operations everything faster,
+	because we write to a memory on the ram(fast) and then "flush" (i.e) write the contents
+	of the buffer as a block.
+	
+	
+	
+	
+
+
+
+
+
+
+
+
 	we can make cout unbuffered with the following statement:
 	std::cout.setf(std::ios::unitbuf);
-
 
 	example: taken from https://stackoverflow.com/questions/10518608/buffered-and-unbuffered-stream )
 	assuming that std::cout is connected to the terminal (console)
@@ -63,8 +144,9 @@ Why a buffer is needed?
 
 	std::cout << 1 << "hello" << ' ' << "world" << '\n';
 	a buffereless cout would cause 4 writes to a file named "con" (CONsole) used for input/output to the console.
+	
 	Instead, std::cout is an object of ostream (buffered) class - so we write
-	to the buffer of the stream very fast and from there the buffer can be flushed.
+	to the buffer of the stream very fast and from there the buffer can be flushed,
 	meaning it will be emptied out to the console, and displayed there.
 	The buffer can be flushed in the following scenarios:
 
@@ -89,7 +171,6 @@ Why a buffer is needed?
 	std::cin >> x;  //the buffer of cout is flushed here to the console! (because we've used cin)
 	https://en.cppreference.com/w/cpp/io/manip/flush
 
-
 	5.  a new line character '\n' also causes std::cout buffer to flush:
 	(according to https://stackoverflow.com/questions/42430701/does-new-line-character-also-flush-the-buffer):
 	The 8 cpp stream objects (cin, cout, cerr, clog, wcin, wcout, wcerr, wclog)
@@ -98,19 +179,24 @@ Why a buffer is needed?
 	Synchronization means that alternating between c and cpp streams produces consisted results, e.g:
 
 	std::cout << "he";
-	fprintf(stdout, "ll"); // printing to stdout (default file descriptor of the operating system)
+	fprintf(stdout, "ll"); // printing to c's stdout (default file descriptor of the operating system)
 	std::cout << "o";
 
 	prints hello as expected.
 
-	The problem is that the default buffering mode of stdout is _IOLBF (when stdout is connected
-	to interactive stream, e.g: console). _IOLBF means line buffering - 
-	The buffer is flushed when a new-line character ('\n') is written, when the buffer is full, or when input (std::cin) is requested
+	This synchronization comes with a cost:
+	The default buffering mode of stdout is _IOLBF (input output line buffering),
+	where the buffer is flushed in the following scenarios:
+	1. when the buffer is full
+	2. when the input (std::cin) is requested
+	**************************************************************************
+	3. when a new-line character ('\n') is written, and this is problematic because instead of waiting until
+	the buffer is full and then flushing, in this mode we flush with every new line (costly operation).
 	(https://www.ibm.com/docs/en/i/7.3?topic=functions-setvbuf-control-buffering).
-	Because std::cout is synchronized with the line-buffered stdout, this means that a newline charater inserted into std::cout
-	or stdout WILL ALSO CAUSE THE BUFFER associated with both of them TO FLUSH.
+	**************************************************************************.
 	("The object cout controls output to a stream buffer associated with the object stdout." as stated in the standard:
 	https://stackoverflow.com/questions/26975876/is-stdcout-buffered).
+
 	Note that non-interactive streams (e.g: file streams) have a buffering mode of _IOFBF (full buffering mode).
 	cppreference goes even further by stating this means that synchronized cpp streams are in practice unbuffered
 	- they are line-buffered - but this causes each I/O operation on the stream to be immediately flushed and repetitive
@@ -151,7 +237,7 @@ The following streams are buffered - data is streamed from the program into a da
 or the data is streamed from a data producer into the program:
 
 	Input streams ("in" to our program) -
-	diagram: Program<-----STREAM Mechanism(optionally buffered)<------Data Producer
+	diagram: Program (consumer)<-----STREAM Mechanism(optionally buffered)<------Data Producer
 
 	data producer, such as a keyboard, a file, or a network
 	inputs data into our program via stream. istream class (also called basic_istream -
@@ -162,7 +248,7 @@ or the data is streamed from a data producer into the program:
 
 
 	Output streams ("out" from our program)-
-	diagram: Program----->STREAM Mechanism(optionally buffered)------>Data Consumer
+	diagram: Program (producer)----->STREAM Mechanism(optionally buffered)------>Data Consumer
 
 	used to stream output from a particular data consumer, such as a monitor, a file, or a printer
 	into a buffer. The ostream (also called basic_ostream - for basic output stream operations)
@@ -173,21 +259,26 @@ or the data is streamed from a data producer into the program:
 
 	The iostream class can handle both input and output, allowing bidirectional I/O.
 
-Standard stream is a pre-connected stream provided to a computer program by its environment. the following
-are examples of standarad streams:
-
-	1. std::cin object is an object of type (inherits from) istream and is preconnected to the keybaord,
-	therefore when we type on the keyboard (data producer) we dump data into the iostream and this data is extractable via cin
-	which is the interface through which we interact with iostream.
-	we can only read from cin, thus we can only extract from it >> (extraction operator).
+	*take input from producer, output to consumer
 
 
-	2. std::cout class object to the standrad output (monitor), cout is an object of class (inherits from) ostream,
-	and is connected to the monitor. we can only write to it, thus we can only insert to it with << (insertion operator).
-	WE PRODUCE DATA AND THEN PROVIDE IT TO A DATA CONSUMER via cout which in turn dumps the data to the ostream 
-	and displays the dumped data on the monitor.
+As initially opened, the standard error stream is not fully buffered;
+the standard input and standard output streams are fully buffered
+if and only if the stream can be determined not to refer to an interactive device.
 
-	both cin and cout can be rerouted to interact with another resource.
+
+
+
+https://www.tutorialspoint.com/java/java_serialization.htm
+***Serialization: turning an object in memory (class, string, int...)
+into a stream of bytes that can be stored on disk as a file.
+an object is stored in memory in pure bytes, for example: 0x61 0x62. the compiler knows that this are two integers,
+but as pure bytes they can be chars, doubles, etc. therefore during serialization into a file the process ensures
+to encode those bytes with additional information (for example the type of the objects).
+Deserialization: the exact opposite - taking a serialized file and turning it into an object in memory, compatible
+to be manipulated by the compiler
+
+
 
 Observation - with istream we can read data and then: 1.use it 2. output it to a data consumer
 			  with ostream we can only output data to a data consumer

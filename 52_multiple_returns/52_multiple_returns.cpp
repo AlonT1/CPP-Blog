@@ -84,8 +84,8 @@ int main()
     std::cout << std::get<2>(tup) << std::endl; // get second
     //std::get is also used for accessing elements from std::array and std::pair
 
-    //strategy 5 - pairs -  like tuple, but only for pairs. offers better syntax than tuple's std::get<0>(tuple)
-    //pairs are an extension of tuples. has nicer syntax then tuple for member retrieval
+    // strategy 5 - pairs -  a type of tuple, but only for pairs (2 elements). 
+    // offers better syntax than tuple's std::get<0>(tuple) for element retrieval (first and second).
     std::pair<std::string, int> pair = func5();
     std::string text = pair.first;
     int num = pair.second;

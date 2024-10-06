@@ -1,13 +1,31 @@
 #include <iostream>
-//additional info can be found in 31_array
 
-//a pointer just holds a memory address (just an integer) - it can be void*. but to manipulate it it must be of some type such as int*
+/*******************************************************************************
+A pointer (type modifier) - to - integer stores(points to) the address of the 1st byte of the variable it points to.
+This 1st byte can represent the start of a single integer, and its possible there are consecutive
+integers stored in the same block(array). (replace integer with any other type).
+
+How many consecutive elements are there, if any ? (might be single) - we have to keep track of!
+the pointer itself doesn't tell us that (unlike stack arrays that we can take the sizeof).
+
+why pointers were invented:
+1. instead of copying arrays (expensive), we can pass to a function a pointer to that array.
+2. enables to create complex data structures with dynamically allocated structs, such
+as linked list containing "new"ed up nodes.
+3. They are used in conjuction with the heap, as they store the address of dynamically allocated data.
+
+Why C uses asterik for the symbol of pointers? because B did (the predecessor)
+* *****************************************************************************/
+
+//additional info can be found in 31_array
+//a pointer just holds a memory address (just an integer) - it can be void*.
+//but to manipulate it it must be of some type such as int*
 //A void pointer can be useful if the programmer is not sure about the data type of data inputted by the end user.
 //pointer arithmetic can not be performed in a void pointer. 
 void func(void* a, int z)
 {
     if (z == 1) //user says that the void pointer points to an int
-        std::cout << *(int*)(a); //*((int*)(a)) cast pointer to an an int and then dereference it
+        std::cout << *(int*)(a); //*((int*)(a)) cast pointer to an an int and then dereference it (read from r to l, unless parenthesis)
     else if (z == 2) // user says the the void pointer points to a char
         std::cout << *(char*)(a); //*((char*)(a)) cast pointer to a char and then dereference it
 }
@@ -16,8 +34,10 @@ int main()
 {
 
     int var = 10;
-    void* ptr = &var; //& address of operator returns a void pointer to its operand with its type, e.g: (int*)temp where temp points
-    //to the starting mem loc of var.  temp is assigned by copy initialization to ptr_int (the content of the pointer 
+    void* ptr = &var; //& address of operator returns a void pointer to its operand
+	//with its type, e.g: (int*)temp where temp points
+    //to the starting 1st byte mem loc of var (the first byte of var).
+	// temp is assigned by copy initialization to ptr_int (the content of the pointer 
     //(mem address of var) , no r/w is possible - the compiler doesn't know the type
     //*ptr = 10; // void pointer!! we have to inform the compiler it's an int - thats when types come in
 
@@ -38,7 +58,9 @@ int main()
     //is 4 bytes.
 
     //for example:
-    //ptr points to (contains the value): 0x0000002C6933F745 (the start of var) (16 hex digits, each digit 4 bits = 64 bits)
+    //                                   high bytes----lower
+    //ptr points to (contains the value): 0x0000002C6933F745 (the start of var)
+	//(16 hex digits, each digit 4 bits = 64 bits)
     //(add. of 1st byte)    0x0000002C6933F745  0A   (0A in hex = 10 in decimal).
     //(add. of 2nd byte)    0x0000002C6933F746  00
     //(add. of 3rd byte)    0x0000002C6933F747  00
@@ -56,6 +78,8 @@ int main()
     *ptr_int = 12; //read or write to data (manipulating 4 bytes starting from the
     //gining address of var to which ptr_int points to
 
+    int* ptr1, ptr2; // ptr1 is the pointer to integer, while ptr2 is an integer, more accurate is:
+    //int *ptr1, ptr2;
 
     int* w; // declaring w as a pointer to an int (read right to left) - it isn't initialized yet!
     //doesn't points to nowhere! but the variable itself IS defined in a location in memmory
@@ -74,7 +98,7 @@ int main()
     //means jumping 1 byte forward from the start of the array to reach the 2nd element -- ptr arithmetic
     //if int*, the compiler would have jumped 4 bytes
     memset(buffer, 0, 8);  //starting from the address of buffer, fill 8 bytes with 0
-    char** ptrt = &buffer;
+    char** ptrt = &buffer; // return a pointer to buffer (a pointer to char), so we get a pointer to a pointer to char
     delete[] buffer;
 
 
@@ -92,7 +116,7 @@ int main()
     //*ptr1 == get data of ptr1 (0xb) which is a memory address, retrieive the data that lies in this memory address
     // *ptr2 means - reveal data at the memory address which is stored in the data of ptr2 (0xc) -> the revealed data is 0xb
     // **ptr2 == *(*ptr2) == *(0xb) means reveal data of memory address 0x2 -> 2
-
+    // dereferncing occurs naturally from the outer --> inner most pointer
     //**ptr2's-data --> *(*ptr2's-data) --> *(*(0xc)) -> *(0xd) -> 2
     //values of pointers (the memory address of what thier pointing at) is stored in little endian (67 45 23 01) -> can be converted to big (01 23 45 67)
     //leftmost column in vs memory window is memory adress th columns to the right are the stored values (Data).

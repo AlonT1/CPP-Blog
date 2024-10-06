@@ -1,6 +1,9 @@
 #include <iostream>
 
-/*tl;dr
+/*
+template friend function who is friends with a template class
+
+tl;dr
 there are 2 approaches for having a template function inside a template class:
 assuming class C and foo is a friend of C:
 

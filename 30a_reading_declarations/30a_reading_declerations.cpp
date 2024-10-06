@@ -51,6 +51,9 @@ int nums[2]{ 1,2 };
 int (&arr)[2]{ nums }; // arr is a reference to an array of 2 ints (called nums)
 //int& arr[2]; // arr is a array of 2 lvalue ints - ERRROOORRRRR! array of references are not allowed
 
+void (Foo::* func_ptr)(int) = &Foo::func; // see 58_function_pointers
+//void (Foo::* the_pointer)(int) means: func_ptr is a pointer to a member of a class Foo that is 
+// a function that accepts int and returns a void
 
 /********abstract declarators
 c standard allows abstract declarators, types not associated with a name, used for casting,
@@ -64,10 +67,13 @@ name should be in:
 2. left of the leftmost []
 3. left of all the lefmost ()
 
-for the abstract decleration: char*[]  -> char* x[]
-for the abstract decleration: void(*)()  ( (unnamed) pointer to a function returning void)  -> void(*p)()
-
+examples:
+for the abstract decleration: char*[]  -> (unamed is an array of char pointers) ->  (with identifier: char* x[])
+for the abstract decleration: void(*)() -> ( (unnamed) pointer to a function returning void)  -> with identifier: void(*p)()
+	void(*(int, int, int))(int, int, int) -> (unamed) is a function (int, int,int) returning a pointer to a function
+	(int,int,int) that returns a void -> with identifier: void(*p(int, int, int))(int, int, int) 
 */
+
 
 /*
 Note: the rhs is NOT A DECLARATION , but it is an expression

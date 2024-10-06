@@ -1,5 +1,5 @@
 /*
-initialization of a variable provides its initial value at the time of construction
+initialization of a variable provides its initial value at the time of construction (not yet created obj).
 
 global notes:
            compiler generates.....
@@ -32,7 +32,7 @@ class Entity2
 {
 public:
     int m_x;
-    explicit Entity2(int x) : m_x{ x } {}
+    explicit Entity2(int x) : m_x{ x } {} // explicit - explained below
 };
 
 class Entity3
@@ -46,9 +46,13 @@ class Entity4
 {
 public:
     int m_x, m_y, m_array[2];
-    //can refer to an existing std::initializer_list or constructed via a braced-init-list
-    //(const lvalue refs are expanded to accept prvalues - braced-init-list constructs
-    //a temporary std::initializer_list and is assigned here, prolonging its lifetime)
+    // by reference: avoid unecessary copies + cannot be null (safer). The problem: can change
+    // the argument causing side effects, thus applying constant (safer for integrity of 
+    // the object outside the function). want to change it? make a copy.
+    // in addition, while references alone do not accept prvalues (temporary with no ID,
+    // such as 5), the const attached pronlongs the lifetime of temporary values, allowing
+    // to accept temporary initializer_list built with braced-init-list ("{}"),
+    // which only exists for the duration of that constructor call.
     Entity4(const std::initializer_list<int>& list)
     {
         int index{};
@@ -71,7 +75,7 @@ const int x = 5;
 
 /************************Zero initialization**************************
 https://en.cppreference.com/w/cpp/language/zero_initialization
-occurs only with global variables, static and non-static, where they are 
+occurs only with *global* variables, static and non-static, where they are 
 initialized with default values without any explicit initialization
 note that local vars without explicit initialization are assigned with garabe values*/
 double array[3]; //zero-initialized to three 0.0's
@@ -91,7 +95,7 @@ int main()
     For auto (local) variables (auto because the storage is claimed automatically
     at the end of the scope) we can divide default initialization into 2:
 
-    1. Default initialization for POD (plain old data- int, char, double....):
+    1. Default initialization for non global POD (plain old data- int, char, double....):
     leads to indeterminate values!
     */
 
@@ -139,7 +143,7 @@ int main()
     Nothe that copy initializaltion only works with non-explicit constructors, as opposed
     to direct initialization which works with both explicit and non-expicit ctors"*/
     
-    //error! implict conversion of 4 into Entity2 object can only happen if the ctor
+    //error! implicit conversion of 4 into Entity2 object can only happen if the ctor
     //of Entity2 is non-explicit, and because it is explicit no implict conversion can occur
     //when using copy initialization (or when using any other form of init. for that matter).
     //Entity2 entity4 = 4; 
@@ -159,7 +163,10 @@ int main()
     list initialization mirros the behaviour of value, scalar, direct and copy initialization
     with the added restriction that narrowing conversions are not allowed
     *Note: brace-init-list is not an expression, therefore has not type.
-
+    * ******************************************************************************
+    In addition {}, can be used only during initialization, emphasizing that we are giving
+    a value to a not-yet-created object. (= can be used both for created and not-created objects).
+    *******************************************************************************
     all the following are considered list initialization from c++11 onwards:
 
     1. value - list initialization - essentially exactly the same as the pre c++11
@@ -193,7 +200,7 @@ int main()
 
     /*6. std::initializer_list:
 
-    braced-init-list can be used to construct std::initializer_list in the
+    braced-init-list aka ("{}") can be used to construct std::initializer_list in the
     following scenarios:
     
     1. if a constructor accepts an std::initializer_list, then the braced-init list
@@ -201,15 +208,19 @@ int main()
 
     *Important Note!!!! when using list initialization, a.k.a using braced-init-list
 	("{}"), the compiler will favor constructors with std::initializer_list as parameter
-    first!! for example in the following statement "Entity4" has a ctor that accepts
-    and std::initializer_list and a ctor that accepts two ints. since we use list-initialization,
-    the compiler chooses the ctor with std::initializer_list.
+    first, such as: Entity4(const std::initializer_list<int>& list) 
+    vs ctors as:
+    Entity4(int x, int y) : m_x{ x }, m_y{y} {}
+    std::initializer_list<int> is a standard library container in C++ that represents an i
+    nitializer list, which is a lightweight container-like object used to initialize
+    a sequence of elements. This adds the abillity to iterate the inputs like a list.
     How to enforce the compiler to choose the second ctor with the two ints?
-    apply direct-initialization via (), as seen with "entity10": */
+    apply direct-initialization via (), as seen with "entity10" var: */
 
     //direct-list initialization where the brace-init-list constructs an std::initializer_list
 	Entity4 entity7{ 1,2 }; //compiles to Entity4 entity8 = { 1,2 };
     //copy-list initialization where the brace-init-list constructs an std::initializer_list
+    // which only exists for the duration of that constructor call.
     Entity4 entity8 = { 1,2 };
     //direct initialization, the comiler selects the second ctor with the two ints
     Entity4 entity10(1, 2);
@@ -246,7 +257,4 @@ int main()
 
     more detailed on range_based loop in 5_loops
     */
-
-
-
 }

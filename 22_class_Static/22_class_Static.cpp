@@ -15,10 +15,11 @@ struct Entity //public by default
 	/*1. we can define them outside the class as examplified below, only then they will
 	become a complete (defined) type
 
-	2. const/constexpr static int x = 4;
+	2. inline(cpp17)/const/constexpr static int x = 4;
 	The standard states that const/constexpr static ints are constant literals, meaning
 	that 4 and x are equivalent - both are prvalues, don't take up space, no performance overhead,
 	and both don't have an identity (memory address) - see 24_enums for similar techniques.
+	https://stackoverflow.com/questions/50033574/why-initialization-of-static-member-variable-is-not-allowed-inside-class-but-ini?rq=1
 	
 	3. inline static int s_x = 4 //since cpp17 - inline allows to declare and define static
 	members just like non static members.
@@ -85,19 +86,21 @@ struct Entity //public by default
 		return var;
 	}
 
-	void print() //every non-static class gets an instance of the class as a hidden parameter
+	void print() //as opposed to static methods, every non-static method gets an instance of the class as a hidden parameter
 	{
 		std::cout << x << ", " << y << std::endl;
+		// a non-static method (print()) CAN call a static method (print_static(), but not vice versa.
+		// in other words, an object is aware of the class (and its static methods) but a class isn't aware of its objects
+		print_static(); 
 	}
 
-	static void print_static() //static methods can only communicate with static class members and functions
-	//only belong the class itself and not to any specific object -> Entity::print_static() is ok!
+	static void print_static() //static methods can only communicate with static class members and static functions
+	//since they only belong to the class itself and not to any specific object -> Entity::print_static() is ok!
 	{
 		//"this" keyword cannot be used in static functions, because this function belongs
 		//to the class, and not for any specific instance.  
 		static int x = 4;
 		std::cout << s_x << ", " << s_y <<  std::endl;
-
 	}
 };
 
@@ -122,6 +125,29 @@ static void print2(Entity e) //static here means belongs to this transation unit
 }
 
 
+struct Animal
+{
+public:
+	static const int w = 4;
+	static void walk() { std::cout << "walking"; };
+};
+
+struct Crocodile : public Animal
+{
+	static void bite()
+	{
+		walk(); // static methods are inherited, but can be invoked only through static member functions.
+	}
+
+	void breathe()
+	{
+		// a non-static method (print()) CAN call a static method (print_static(), but not vice versa.
+		// in other words, an object is aware of the class (and its static methods) but a class isn't aware of its objects
+		walk(); 
+	}
+};
+
+
 //static vars are initialized at the start of the exectuion (before main) and die with it 
 int main()
 {
@@ -133,4 +159,7 @@ int main()
 
 	void(*function1)(void) = Entity::print_static; // function1 is pointer to a static function inside
 	//a class which returns void and takes in void params
+
+	Crocodile croc;
+	croc.breathe();
 }

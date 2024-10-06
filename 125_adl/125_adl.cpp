@@ -40,6 +40,7 @@ int m = ::t; //t is qualified to the  global namespace where its declared and de
 namespace Z { int t = 0; }
 int k = Z::t; //t is qualified to the namespace Z where its declared and defined
 
+
 /*2. Unqualified name lookup - when a name is used without scope resolution operator.
 categroized into two:
 
@@ -93,6 +94,7 @@ namespace A
 }
 
 A::Entity e;
+
 //because e is of type Entity and qualified to A, ADL will look for func1
 //in the global namespace, and if it isn't there, a look up based on the argument
 //"e" namespace will be performed - searching for func1 in namespace A where it is found

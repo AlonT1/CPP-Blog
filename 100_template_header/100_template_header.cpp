@@ -24,12 +24,12 @@ tl;dr******************************************************************
 non-template version of Array class:
 
 1. Preprocessing: forward declerations of Array.h are included in main.cpp via the preprocessor
-2. Compiler (to assembly): Conversion to assembly (.s) of main.cpp and  the defintions of Array inside Array.cpp
-(forward declarations satisfy the compiler - "definitions exist somewhere")
-each cpp compiled as a seperate unit
-3. Assembler: the assembler compiler usses the assembly of phase 2, produces machine code in obj. files per cpp file
-4. Linker: links obj of main.cpp with array.cpp  -> the forwrard declerations of class Array that were included
-in main.cpp via Array.h are now linked with the definitions inside array.cpp
+2. Compiler (to assembly): Conversion to assembly (.s) of main.cpp and Array.cpp (contains defintions of Array).
+at this moment main.cpp only contains the forward declarations of Array.h.
+(forward declarations satisfy the compiler - "definitions exist somewhere"). 
+each cpp is compiled as a seperate translation unit, unaware of other translation unity.
+3. Assembler: the assembler compiler uses the assembly of phase 2, produces machine code in obj. files per cpp file.
+4. Linker: the forward declarations of Array.h included in main.cpp, are linked  with array.cpp  -> the 
 (definitions satisfy the linker)
 (many classes can use Array by including Array.h and the linker will link these forward declerations to a single
 source file that contains their defintion (one defintion rule), also reduces compile time, link times and binary size.
@@ -44,14 +44,15 @@ template version of Array class:
 	is copied into main.cpp with the requested type (Array<int> arr;   -> int version of Array class is stenciled out,
 	a class that contains forward declerations of type int). the binary will include this forward declarations in main.obj.
 
-	b. array.cpp - ******BECAUSE FILES ARE COMPILED ATOMICALLY, 
+	b. array.cpp - ***********************BECAUSE FILES ARE COMPILED ATOMICALLY, 
 	getLength() IN array.cpp WON'T BE STENCILED OUT because array.cpp (and the compiler) have no indication that an 
-	Int version of class Array was instantiated in main.cpp., THEREFORE we're LEAVING THE FORWARD DECLARATION
-	of getLength() INCLUDED by the "Array.h" header IN MAIN.CPP WITHOUT DEFINTION, that should have came from array.cpp*****.
-	(definitions for uninstantiated tempaltes such as getLength() in array.cpp are only stenciled at compile-time,
+	Int version of class Array was instantiated in main.cpp via "Array<int> intArray(12)".
+	THEREFORE we're LEAVING THE FORWARD DECLARATION of getLength() INCLUDED by the "Array.h" header IN MAIN.CPP WITHOUT DEFINTION, that should have came from array.cpp***********************************************.
+	where is the definiton?
+	definitions for uninstantiated tempaltes such as getLength() in array.cpp are only stenciled at compile-time,
 	and array.cpp has no indication that a stencil was instantiated, therefore the definition of the class
 	won't be even included in the binary! same goes for unused templates, they are only included in the binary
-	if they are stenciled out, otherwise their code won't be appear in the program, as opposed to non-templated definitions.)
+	if they are stenciled out, otherwise their code won't be appear in the program, as opposed to non-templated definitions.
 	(compilation is done per-file, atomically, they don't "communicate" with each other during this phase).
 	This is in contrary to a non-templated function / class definitions that would have been compiled into a binary, even if not used.
 
@@ -84,12 +85,13 @@ template and non-template classes:
 	compile time, link times and binary size. IN ADDITION (linkers may optimizie this duplications?? really not sure about this one)
 
 2. inl (inline) file (more structured, but doesn't solve bloating)
-	invloves two files:
-	a. an header file that contains the class with forward declerations
-	b. an inl file with function definitions of the forward declerations (Essentialy simulates the definition source cpp file).
-	c. the inl file is included in the header file. This achieves the same result as in the previous technique
-	(single, fully-defined header), but more structured.
 
+	very similar to the solution above:
+	we have an header file, that like above will include both forward declarations AND defintions, but!
+	we separate the definitions into a file called .inl, and then include .inl to the header file.
+	then, like above we include the header file to other to any .cpp that wants to use Array class.
+	this is a more structured solution.
+	
 	inl files have no significance to the compiler, they are just a way of structuring the code for readability, JUST AS .h, .hpp etc.
 	have no meaning to the compiler. In other words, the extensions of the files we INCLUDE don't have a meaning, they are
 	dumped in the cpp's by the preprocessor (in terms of compilation, cpp extension does matter - the compiler looks for a main function there,
@@ -99,7 +101,7 @@ template and non-template classes:
 	be "inlined". The extension of the file could also be an .h, it doesn't matter, the extension just informs us about the
 	purpose of the file.
 
-afterwards that header file could be included in cpp files that want to use the template class.
+afterwards that header file, could be included in cpp files that want to use the template class.
 Upside: code is more organized. downside: additional file ".inl" file and we didn't solve the potential bloat problem.
 
 
@@ -117,7 +119,9 @@ Upside: code is more organized. downside: additional file ".inl" file and we did
 	b. defintion file - a cpp file (Array.cpp)
 	c. templates.cpp file - includes Array.h, Array.cpp (not recommended, breaking best practice by including a cpp)
 	and then we ****explicilty instantiate the Array template in the template.cpp file with the following statement*****:
+	***********************************************************************************************
 	"template class Array<int>;" the compiler will stencil out an Array<int> (class Array {...int types..}).
+	***********************************************************************************************
 
 	Remember that the problem here is having a definition of a function (belonging to a templated class) inside
 	a y.cpp while the template is stenciled out in x.cpp (with forwrard declarations), and because x isn't aware of y
@@ -129,17 +133,16 @@ Upside: code is more organized. downside: additional file ".inl" file and we did
 	all inside a single cpp file, the compiler will succesfully generate an int Array stencil.
 
 	d.********and then we can include Array.h (forward declarations) in other cpp files who wants to use the stenciled out
-	version defined inside templates.cpp.********** 
+	version defined inside templates.cpp. the forward declarations will satisfy the compiler, and the linker
+	will link those forward declarations with stenciled definitions in templates.cppp********** 
 	Instead of providing each cpp file that wants to instantiate our template class a complete fully defined version of the template
 	(like in method 1 (all in header) or method 2 ( header with inl) - both of them do not contain explicit instantiation of the class,
 	we rely on the client to instantiate the template),
 	here we pre-instantiate the template successfully in templates.cpp (because it contains all forward declarations+ definitions
 	+explicit instantiation and then each cpp file that wants to use the templated class:
 	i.e: a .cpp file can instantiate the tempalte via: "Array<int> intArray(12);"
-	and this .cpp will be provided with forward declarations (Array.h) that will be linked up with the already-pre-instantiated
+	templates.cpp will be provided with forward declarations (Array.h) that will be linked up with the already-pre-instantiated
 	and defined template that resides in templates.cpp file.
-
-
 	Note: the file that includes an "Array.h" must obviously instantiate the class, otherwise the forward
 	declerations included by "Array.h" won't even be included in the binary to be linked up with the defintions inside templates.cpp
 	(uninstantiated templated-class are not included in binary).
@@ -207,6 +210,13 @@ have been compiled into an Array.obj which would have been linked up succesffuly
 in main.obj
 
 
+*************************************************************************************
+declares a specialization of the template, with potentially different body.
+template <> void foo<int>(int& t); 
 
+causes an explicit instantiation of the template, but doesn't introduce a specialization. 
+It just forces the instantiation of the template for a specific type.
+template void foo<int>(int& t);
+*************************************************************************************
 
 */

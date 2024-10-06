@@ -1,292 +1,92 @@
 ﻿/*
-Terms and Definitions:
-
-Instruction - a single operation of a processor.
-Program - a set of instructions to cpu. stored on non-volatile memory (disc).
-created by programming languages (binary code). When executed, their loaded into ram and read by cpu,
-Software - made up of two or more programs (many files)
-Application - application software (=app) - a set of programs that make up a software.
-Operating system - software which manages hardware, software resources and services.
-Task - a set of instructions loaded in memory ran by a thread. in practice this means a program/app.
 
 
-Process - program loaded into memory by OS, has at least 1 thread running a task.
-every process is in one of the following state:
-ready (when other process is running), running (by the cpu), waiting (for some event, e.g: i/o),
-every process has a PCB given to it in its creation (process control block, a data structure) that contains:
-1. a memory layout : text (binary code), Data segment (static/global vars), 
-BSS (Uninitialized global and static vars), stack segment (for the single thread), heap segment.
-OS kernel space (read 26_destructor for more info). the memory layout is "spread" across
-the unique space address (a chunk of memory) that each process has 
-2. registers (quickly acessible memory on the cpu) - although a cpu has a single set
-of registers, the cpu can load the registers of the process from the PCB, when different processes
-starts and resumes back during context switching (detailed below). e.g: program counter register
-(a.k.a instruction pointer - stores the address of the next instruction to be executed, when switching
-back to the process we left, this registers tells us what is the next instruction)
-3. Process id
-4. memory limits
-5. scheduiling priorities
-6...... (95+ fields)
+READ "Operating System OS.docx" first
+
+tl;dr
+1. starting child thread - std::thread(func, args...) t- 
+starts a thread which runs func(), supplying args to func.
+2. determine relationship between parent and child (MANDATORY - error otherwise) -
+    a. t.join() - parent is blocked and waits
+    for the child thread to finish (going through all func() statements)
+    b. t.detach() - parent is detached from child, parent continues execution
+    and won't wait for child
+
+3. std::mutex mutex - ensures that a single thread deals with a critical section at a time.
+how it works:
+    a. parent thread instantiates "std::thread(func())" and parent itself invokes func(),
+    remember that only one thread should access func() at time.
+    b. the thread that reaches func() 1st, performs "mutex.lock()" (locks the door) 
+    c. the 2nd thread the encouters "mutex.lock()" sees that the mutex (door) is locked,
+    thus it waits (blocked) until the mutex (door) is unlocked.
+    d. at the end of func(), 1st thread executes "mutex.unlock()" (unlocks the door).
+    c. the 2nd (blocked) thread notices the mutex (door) is unlocked and continues to execute
+    func's statements
+    notes:
+    i. The mutex should be a global object - to allow both threads to lock and unlock the same door
+    (threads share the same global variable of the process)
+    ii. critical section - a section of code that multiple threads "compete" to execute - 
+    concurrent accesses to shared resources such as std::out can lead to unexpected or erroneous behavior.
+    iii. instead of "mutex.lock()" threads can execute "if(mutex.try_lock()) else..." - if a thread sees
+    that the mutex (door) is already locked by another thread, it won't wait for the mutex (door)
+    to unlock and continue "else". Or if(mutex.try_lock()_for(std::chrono::seconds(3)) else... - 
+    ultimatum - the thread will wait no more then 3 seconds for the mutex (door) to unlock, after
+    that the thread will continue to do something else.
+
+4. the followings are wrappers around a mutex. they offer the same abillities as mutex
++ their dtors unlocks the mutex automatically (when leaving a scope).
+"std::lock_guard<std::mutex> lock(m);" where m is "std::mutex m:
+automates unlocking when leaving the function.
+RAII wrapper to mutex. "m" is global. when "lock" is instantiated in func(), the mutex is locked,
+and when leaving func(), the dtor of "lock" unlocks the mutex.
+std::unique_lock offers additional options - in cost of performance:
+a. when no arguments : "std::unique_lock<std::mutex> lock(mutex);" //equivalent to std::lock_guard<std::mutex> lock(mutex);
+b. std::unique_lock<std::mutex> lock(mutex, std::defer_lock); //
+locking / locking is deferred to us, we can manually execute "lock.lock()/unlock() whenever we want "
+c. std::unique_lock<std::mutex> lock(mutex, std::try_to_lock); (analgous mutex.try_lock): 
+if (lock.owns_lock()) ...else...
+d. std::unique_lock<std::mutex> lock(mutex, std::try_to_lock_for); (same as try_lock_for)
+if (lock.try_to_lock_for(std::chrono::seconds(4)))... else... 
+
+5. conditional variables - where t2's continuation is dependant some condition (i.e if...)
+e.g: t1 notifies t2 that it should check the predicate of the cv. this predicate
+(func returning bool) queryies if some global variable was indeed modified, and if it did,
+t2 can continue. check the example below , where t1 wants to withdraw_money() via "money-=500;",
+but performs "cv.wait()" to wait  for a "cv.notify()" (notification) from t2 add_money() i.e deploys money+=500;
+This notification causes t2 to check  the condition (predicate) of cv (return true if money>0) and thus it continues
+to withdraw 500;
+
+6. Future and promise: enables t1 to pass information, to waitiing t2 thread without global variables.
+as opposed to conditional variables, where the thread evaluates a condition, to check if it should continue.
+a promise is an object "moved" to a thread, hoping the thread,
+will "fulfill" the promise, i.e will set a value to the promise. since values (promises)
+are set in the future, the values are stored in a future object, and a thread is blocked
+until the promise is fulfilled.
+code:
+void perform_task(std::promise<int>&& promise) { promise.set_value(10);}
+in main....
+std::promise<int> promise; //promise to be fulfilled (value to be set) by another thread
+std::future<int> future = promise.get_future(); // promises are fulfilled in the future thus we store the answer in a future obj
+std::thread t(perform_task, std::move(promise)); //promises MUST BE MOVED to thread that will fulfill the promise.
+int promised_value = future.get(); // blocks the current thread until promise is fulfilled, will equal 10;
+
+7. std::async - automates setup of promise, and thread creation. (no promise need to be moved, more natural syntax)
+bool is_even(int num) { return (num % 2) == 0;} //promise fulfileld by simple return, no need for promise arg
+in main...
+std::future<bool> future = std::async( is_even, 4); //creats a thread, a promise, and links it to a future obj.
+bool returned_value = future.get(); // true - future.get() can appear only once - crash otherwise!
 
 
-Concurrency of tasks whether it is asynchronous or synchronous(when dealing with a single core)
-is implemented via Scheduling of tasks, done by the operating system by the means of different algorithms.
-
-Long-Term Scheduler -  its duty is to bring the process from the JOB pool to the Ready state for its execution.
-Short-Term Scheduler - responsible for selecting one process from the ready state for scheduling it on the running state.
-some are preemptive (stop a job and schedule another, all done within small time slices which represent
-the runnning time alloted per task).  (round robin, shortest remaining time first) and some are non-preemptive 
-(process keeps the cpu until it is terminated/done) (Shortest job first, first come first served).
-Medium-Term Scheduler -  suspends processes (transfer to waiting queue - e.g: when process waits for i/o)
-
-The queues (ready, waiting) store the pcb of processes (chrome pcb, powerpoint pcb).
-
-          Long-Term Scheduler                 Short-Term Scheduler
-Job Pool----------------------->Ready Queue-------------------------->CPU---->exit
-                                     ↑                                  |
-                                     |                                  |
-                                     ---------I/O Waiting Queue←--------
-                                                                    ↑
-                                                         Medium-term scheduler
-
-The scheduling algorithms of the short-term scheduler decides which process will be selected to run.
-The actual switching between "ready" and "running" processes is done via context switching.
-
-context switching - cpu performs Context Swithching which enables multitasking - switching from
-one thread to another: this could be switching between threads within the same process
-or switching between two processes because we need to reach one of their threads.
-EVENTUALLY THE THREADS ARE SCHEDULED - they are considered as the unit of work.
-we may need to switch between threads of different processes or between threads within a process.
-
-scheduling example (preemptive), by storing and resuming execution in later points:
-*p1 (process 1), PCB (process control block).
-thread of p1: ----running->-----------------waiting--------------------------------------->
-CPU: ----------interrupt p1->---save state into PCB1, reload PCB2---------------------->
-thread of p2: ----waiting--------------------------------------------------running----->
-
-This is done by the scheduling algorithms describe above.
-switching between processes through context switching requires loading it into RAM - performance heavy
-(via MMU which maps virtual memory address of a process to a physical ram address - described below),
-in contrast to switching between different threads within the same process where we
-save and restore registers such as stack and instruction pointers (threads live in the stack
-of the process, detailed below), thus context switching between
-threads in the same process typically occurs faster than context switching between processes
 
 
+Notes:
+1. the loading of each file can occur on each seperate thread (saving performance), but the insertion
+to a shared global vector should occur via mutex
 
-How to create a process?
-fork() command - creates a "child" process of the "parent process":
-    a. creates and initializes the PCB (process control block)
-    b. initializes the stack inside the PCB with a full copy of the "parent" process
-    c. puts the "child" process in the "ready" queue.
-
-Thread - (a.k.a thread of exectuion) - conceptually considered as the unit of execution that lies within a process.
-a process can have multiple threads. its an ordered sequence of instructions that can be processed by a single CPU core.
-Note that processes are performance heavy (have their own PCB intercomuunication, own files), and they help
-solving multittasking (word - gets input, checks spelling, formats text...).
-A multithreaded process has its own memory layout (text, static data, data segment....),
-and each thread has its own stack representing it, within the stack of the process.
-(in addition to its own set of registers - this why the thread is considered a unit of work,
-its registers manipulates data and its part of the stack saves variables and stack frames of functions).
-so if there are 2 threads, the memory layout of the process has 2 stacks inside the stack
-that represents the process (processes have only one heap - the heap of process). 
-Therefore if a process dies its resources and threads die as well. 
-
-
- +--------------------------+
- |    kernel space          |
- +--------------------------+
- | Stack of thread 1        | also called "thread stack"
- |--------------------------|
- | Stack of thread 2        |
- |--------------------------|
- |                          |
- | (grows-downwards)        |
- |                          |
- |         F R E E          |
- |        S P A C E         |
- |--------------------------|
- |     (grows upwards) Heap |
- +--------------------------+
- |    Initialized data      |
- |         segment          |
- +--------------------------+
- |     Initialized to       |
- |        Zero (BSS)        |
- +--------------------------+
- |      Program Code        |
- +--------------------------+
-
-Threads can be viewed as a lightweight process since:
-1. threads share the same address space of the process (occupy the same memory).
-2. no context switching between processes (no MMU, no mapping between virtual and
-physical addresses via a lookup table) - although threads do go through scheduling.
-Instead of context switching, and because threads are essentially in the stack of the process,
-we can simply move the stack and instruction pointer to the specific thread of the process. 
-3. threads share the same global variables, resources (e.g: opened files), permissions as the process
-(although they do have unique local variables and function calls on their portion of the stack).
-
-Threads have their own   stack, registers,
-attributes (policies, for scheduling), thread specific data...
-But unlike processes they don't share files, heap, scheduling attributes,
-global variables, initialized to zero (BSS) global and static variables, 
-and don't have interprocess communication
-(pipes, semaphores, etc..), their address space is the same as the process,
-so they don't need a whole new memory layout (heap, text, BSS, data segement) of their own -
-they share the data that exists in the process (Unlike forking (duplicating) processes
-where a COMPLETE COPY of everything (heap, files, resources, stack, data) is created.
-The code itself, any resources and files belong to the process and are shared across the threads
-
-***********************************************
-in fact, when a process is created (which has 1 thread by default), the initial reigsters and
-stack of the process actually belong to the thread! the process doesn't have a stack
-and registers of its own, they are all unique per thread within the process. if we create additional threads
-we'll have 2 stack frames in the stack of the process and 2 sets of registers.
-
-Advantages  threads vs processes include:
-1. Lower resource consumption of threads: because threads share the same resources
-of the process, an application can operate using fewer
-resources than it would need when using multiple processes.
-2. Simplified sharing and communication of threads: unlike processes, which require
-a message passing or shared memory mechanism to perform inter-process communication (IPC),
-threads can communicate through data, code and files they already share.
-
-Disadvantages - threads vs processes
-1.  if a thread crashes - the process may crash due to threads sharing the same address space,
-an illegal operation performed by a thread can crash the entire process;
-therefore, one misbehaving thread can disrupt the processing of all the other threads in the application.
-On the other hand, if a program supports multi-processes like chrome where each tab is a process - 
-if one process (tab) crashes, the rest of tabs (processes) remain functioning.
-2. debugging is hard with multithreads, its easier to debug processes because they are more
-"atomic", no data races, they are all unique with their own memory layout.
-3. processes are scalable we delegate process a to machine 1 and process b to machine 2,
-while threads exist withing the memory space of a single process.
-
-
-Within the context of a process, threads can be thought of the actual unit of work -
-
-
-The os manages memory
-fastest memory speed                        slowest memory speed
-expensive (price)                           cheapest (price)
-
-registers----------cache-------------ram----------disk
-
-1GB of the address space is reserved for the kernel. the remaining
-space is the actual memory layout model (stack, heap, text, data...)
-
-How memory is allocated for processes?
-    1. A process is given its own address space - this initial chunk of memory is called
-    a virtual address space allocated by the OS specifically for the process. It's called
-    virtual because the process thinks it has all the physical memory for itself (e.g: 4GB)
-    2. The MMU - Memory Management Unit (CPU Component) -
-    maps the virtual addresses of the process to real physical adresses on the RAM,
-    done using a lookup table stored in the ram (the app (process) still thinks its the only one running,
-    writing to any virtual address it wants), the MMU manages everything, the app doesn't
-    care about other processes. for example
-    Process1 occupies 0-100 virtual memory addresses,
-    Process2 occupies 0-100 virtual memory addresses,
-    The OS (via the MMU) maps process 1 to 100-200 and process2 to 300-400 address of the physical ram.
-    Note that the MMU can decide to fragment (split) the processes into multiple chunks across the ram.
-    When an app requests a resource, the MMU looks it up in the pysical memory and retrieves it
-
-    The problem is that a naive lookup table that performs a mapping of 1-to-1 between each virtual memory
-    address to a physical address will be huge! for example:
-    assume a 300MB process => 2,400,000,000 bits / 32 bits sytsem => 75,000,000 memory addresses!
-    (because each memory address on a 32 bit system is 32 bit long). therefore the lookup table
-    must have 75,000,000 pointers! because each address is 32 bit long, the size of each pointer
-    is 32 bit => 32 bit * 75,000,000 pointers =>  300MB for the mapping! while the process itself is 300MB!
-
-    Solution: using pages - the physical memory is divided into different blocks - pages - 4k (4000 bits) in size
-    and the MMU maps virtual address into these pages.
-    so now the page table weighs: 300MB process => 2,400,000,000 bits / 32 bits system / 4k (4000 bits) =
-    18570 bits => 0.002 MB needed instead of 300mb previously
-
-    When an address is repeatedly needed, instead of repeated RAM access, the CPU
-    has a cache of recently looked up address (translation lookaside buffer TLB), 
-    storing recently accessesd addresses of pages.
-
-    When MMU can't find an entry for mapping between virtual and physical memory - 
-    causes a segmentation fault (crash) (e.g: when an app tries to access a forbidden location).
-    A page fault occurs when a program attempts to access data from the virtual sapce,
-    but it is not currently located in the system RAM.
-
-    Virtual memory has another meaning: when an operating system that compensates
-    shortages  of physical memory by transferring pages of data from random access memory
-    to disk storage.
-
-
-concurrency - Execution of multiple tasks at the same time, not necessarily simultaneously (parallel).
-Parallelism - when multiple tasks run at the same time and in parallel(on a multiple core cpu)
-
-Synchronous - tasks are executed one after the completion of the other (eat-> done then sing->done).
-Asynchronous - "jumping" between execution of multiple tasks while the tasks aren't necessarily
-finished (executing task "a", stopping task "a", switching to task "b", stopping task "b"
-returning to task "a").
-
-Concurrency in a single core cpu: 
-only non-parallel concurrency can exist in a single core cpu, because there aren't
-more cores that can work in parallel.
-1. Non-Parallel synchronous:
-Thread (cpu) executes task 1 until its finished -> executing task 2
-2. Non-Parallel Asynchronous:
-core (cpu) executes task 1 -> stop task 1 -> runs task 2 -> stops task 2 -> runs task 1
-**a task means a process who must have a single thread
-https://www.studytonight.com/operating-system/cpu-scheduling
-
-
-Concurrency in a multicore cpu:
-The concurrency here is parallel because each core handles 1 thread 
-(or 2 threads if hyperthreading enabled).
-1. Parallel Synchronous (switching a task only after completing one):
-core1: task1 finished -> task6 finished -> task 4 wip...
-core2: task2 wip....
-core3: task5 finished -> task7 finished -> task 8 wip...
-core4: task3 wip....
-
-2. Parallel Asynchrnous (each thread is time slicing):
-core1: task1 wip -> task6 finished -> task 1 wip...
-core2: task2 wip....
-core3: task5 wip... -> task7 wip... -> task 5 finished -> task 7 wip...
-core4: task3 wip....
-
-
-CPU - electronic circuit inside the computer that carries out program instructions
-(e.g: mainpulating registers and performing arithmetic calculations).
-reads 0's and 1's the make up the machine code.
-when firing an application the code for that program is taken from the hard drive 
-and stored in the RAM before being fed to the cpu which reads instructions from the ram.
-
-
-Core - Physical Core - Mult-core processor - 1 cpu (processor) which integrates additional 
-individual physical processors (=cores) into one integrated circuit. performance gain is usually 
-not doubled due to imperfect alogrithms that don't implement multi threading. 
-multi-core processors were developed to help CPUs run faster as  it became more difficult 
-to increase clock speed (how quickly each physical core retrieves and interprets instructions - the speed
-1 core can handle successive set of instructions from a single program (e.g: Microsoft word).
-this means that 4 cores can parallely and independenly run and manage 4 different programs
-
-Multithreading: can have 2 meanings:
-1. refers to a program that can take advantage of a multicore cpu.
-2. a process having more than one thread.
-
-Hyper Threading - hyper threading enables a single core to interact concurrently with 2 threads
-instead of 1. So instead of processing a single set of instructions from a single thread,
-the physical core can switch very fast between two different thread (not parallel! but concurrent!),
-each have their own set of instructions. This maximizes efficiency when the 1st
-thread is "resting" and the 2nd thread needs "attention".
-
-Logical cores - number of physical cores * number of threads that can run on each core.
-e.g: an inte core i5 processor has 4 phyiscal cores and suports hyperthreading like most cpu's
-thus 4 physical cores * 2 threads possible per core
-(thanks to hyperthreading, exists per single physical core) = 8 threads
-Logical cores are the actual cores that the OS "sees".
-
-How many threads to should we create in our program:
-at max one-to-one ration with the PHYSICAL core count. more then that performances gets worse.
-some say that the max is the the number of logical cores
-https://stackoverflow.com/questions/4828296/how-many-threads-can-i-run-concurrently
-
+2. Locking Granularity:
+- Fine-grained lock: protects small amount of data, but more risk of dead lock, trickier programming
+- Coarse-grained lock: protects big amount of data, but we lose opportunity for more parallelism.
+lock should be not too fine and not too course.
 */
 
 #include <iostream>
@@ -389,31 +189,44 @@ void add_money()
 
 void withdraw_money()
 {
-    std::unique_lock<std::mutex> lock(mutex); //condition variable only works with unique_lock!
+    /*
+    the mutex goal is to synchronize the access of threads to the critical section that consists
+    of std::cout and money which are global variables - if both threads will manipulate
+    them at the same time unexpected behaviour will occur.
 
-    /*the wait functions sends this_thread to sleep. Therefore before it goes to sleep
-    the wait function of the conditional variable needs to know the mutex to unlock it, allowing
-    other blocked threads to continue their job, otherwise the sleeping thread will never unlock
-    the mutex.
-    once the conditional variable is notified, the thread will wakeup and check the prdicate
-    (2nd parameter - a function that retuns a bool) and only if it returns true,
-    the thread will continue, otherwise if it returns false - it will be remained block!
+    cv.wait will cause the thread to "wait" for a notification, essentially, the thread
+    will sleep until it will be notified to wakeup and check the predicate.
+    The problem is that the thread sleeps while the mutex is locked, therefore
+    the access to the function is blocked for no reason and the mutex seemingly will be locked
+    for ever. thus, the cv mechanism unlocks the mutex while it waits for notification
+    (granting access for other threads), and will lock the mutex only when it is waken up.
+    once awake, the thread will wakeup and check the prdicate (2nd parameter - a function that retuns a bool)
+    and only if it returns true, the thread will continue continue to execute the following statements,
+    otherwise if the predicate returns false - it will unlock the mutex and keep on waiting.
     Note: when the thread wakes up and finds that the condition is false - this is called
     a spurious wakeup.
+    We can also use cv.wait_for for a duration, after it will it unlock the mutex.
 
-    inefficient alternative to "wait":
-    1. A while 
-    which constantly  checks the same predicate - this causes redundant
-    looping and perforamnce hit
-    2. std::this_thread::sleep_for(std::chorno::seconds(?)) but it is hard
-    to estimate how much time the thread needs to sleep to wait for the other
-    thread to get the job done. conditional variables solve this
-    because they get notified.
-    
-     */
-    cv.wait(lock, []() {return money > 0;});
+    ********************************************************
+    conditional variables can help us determine the order of execution between threads.
+    ********************************************************
+    */
+    std::unique_lock<std::mutex> lock(mutex);
+    // predicate seems as a must! without it we may miss a wake up or a spurious wake up can occur
+    cv.wait(lock, []() {return money > 0;}); 
     money -= 500;
     std::cout << "money withdrawn: " << money << '\n';
+
+    /*
+     inefficient alternative to "wait":
+     1. A while
+     which constantly  checks the same predicate - this causes redundant
+     looping and perforamnce hit
+     2. std::this_thread::sleep_for(std::chorno::seconds(?)) but it is hard
+     to estimate how much time the thread needs to sleep to wait for the other
+     thread to get the job done. conditional variables solve this
+     because they get notified.
+    */
 }
 
 
@@ -459,8 +272,7 @@ int main()
     a single thread, the stack of the thread IS the stack of the process.
 
     The constructed thread "t" is the child of t parent thread "main" - this is expressed
-    by the fact that we need to choose a relationship between them - in the next step.
-    In practice though the -*/
+    by the fact that we need to choose a relationship between them - in the next step.-*/
     int a = 1;
     std::thread t(func, std::ref(a));
 
@@ -498,12 +310,12 @@ int main()
     //threads cannot be copied via "=" only moved. t is empty now.
     std::thread t2 = std::move(t);
 
-    /*the number of threads  we create at most must equal to the number of cores
+    /*the number of threads  we create at most must equal to the number of physical cores
     on the cpu. Creating more threads then available cores is called oversubscription
     and it is not efficient
     returns number of logical cores (physical cores * how many threads each core can run)
     this is the number of cores the cpu actually sees.*/
-    std::cout << "number of cores: " << std::thread::hardware_concurrency() << '\n';
+    std::cout << "number of cores: " << std::thread::hardware_concurrency() / 2 << '\n';
 
     //There is no guarantee about the finishing order of  threads - the parent may finish
     //before the child and vice versa.
@@ -518,19 +330,31 @@ int main()
     /*Race Condition - a condition where the outcome of a program depends on the relative
     execution order of one or two threads that try to read/write to the same resource cocurrently.
     Same resource means a global object (file, variable, instance...), a reference passed between 2 threads...
+
     Critical Section - A piece of code that consists of shared resources by threads, such as
     global variables or global objects (std::cout), where concurrent access to these resources
     can lead to unexpected behaviour.
+
     Mutex - synchronizes the access of threads to the critical section.
     in practice, ensuring that one thread locks (i.e take ownership of the mutex)
     and therefore can be certain that he is the only thread that can access the critical section.
-    THIS CAN ONLY HAPPEN WHEN BOTH THREADS GOVERN THE SAME GLOBAL MUTEX OBJECT:
-    before entering the critical section the  thread must lock access to the resource to 
-    use it exclusively and at the end the thread should unlock the mutex to allow other threads to do the same thing.
+    THIS CAN ONLY HAPPEN WHEN BOTH THREADS GOVERN THE SAME GLOBAL MUTEX OBJECT, i.e
+    since global vars of process are shared among threads that live in that process,
+    thus the global mutex is known by both threads - they both aware of its status
+    and can lock/unlock it: 
+    before entering the critical section the thread must lock access to the resource to 
+    use it exclusively and at the end, the thread should unlock the mutex to allow other threads to do the same thing.
+    *****************************************************************************************
     Like a bathroom, where each person(thread) locks the door (mutex) when entering and
     unlocks the door (mutex) when leaving allowing other people (threads) to come in and do the same thing,
     all manipulate the same mutex (key-door), synchronizing their order for entering the bathroom
     (order of exeution of the ciritical section).
+    *****************************************************************************************
+    
+    What happens of the same thread locks an already locked mutex?
+    the thread sleeps (following statements will not be executed),
+    and waits until the mutex is unlocked. When the mutex becomes unlocked, the thread
+    wakes up and locks the thread again.
     */
     std::thread t(func_lock);
     /*the mutex (locking and unlocking) in func2_lock causes mutual exclusion (mutex),
@@ -570,7 +394,7 @@ int main()
 
     /*another options instead of the standard lock():
     1. try_lock function of the mutex:
-        The thread that performs a "lock()" on the critical access gains exclusive
+        The thread that performs a "lock()" on the critical section gains exclusive
         access to it while the other threads that try to execute the function are waiting for
         the mutex to be unlocked (blocked).
         Maybe we can utilize the waiting threads for another job?
@@ -604,7 +428,8 @@ int main()
         the ctor won't lock the mutex, the locking is deferred for another time - done manually by us.
         std::unique_lock<std::mutex> lock(mutex, std::defer_lock);
         lock.lock(); //now it is locked
-        the constructor essentially call the lock function of the mutex it wraps
+        in addition we can unlock the mutex manually, and lock it again just like a regular std::mutex.
+        just like lock_guard, the death of the  unique_lock will unlock the mutex.
     2. try_to_lock:
         std::unique_lock<std::mutex> lock(mutex, std::try_to_lock);
         if(lock) {....} //overrides bool conversion function to return the lock.owns_lock()
@@ -618,7 +443,11 @@ int main()
         unique_lock can be instantiated as above:
         std::unique_lock<std::mutex> lock(mutex);
         and we can use the member functions that are identical to try_lock, try_lock_for,
-        try_lock_until. */
+        try_lock_until. 
+        
+        unique_lock has more options than lock_guard, but it comes at a price of performance:
+        unique_lock is more demanding than lock_guard.
+        */
     func_uniquelock();
     t.join(); //rule of thumb: 
 #endif
@@ -663,12 +492,10 @@ int main()
     Note - Sleep vs Wait:
         a. Sleeping thread: A thread that owns the mutex (has locked it) and went to sleep (inactive, will not be scheduled
         for a certain amount of milliseocnds). A sleeping thread keeps the mutex locked + the thread is inactive
-        in itself, so no one can access the critical section, until thread wakes up and unlocks the mutex.
+        itself, so no one can access the critical section, until thread wakes up and unlocks the mutex.
         we can use  std::this_thread::sleep_for(std::chrono::seconds(5)) to make a thread goes to sleep.
         in itself, the sleep function will not unlock the mutex, we can do this manually if we want
-        b. Waiting Thread: A thread that owns the mutex, but before it starts to "wait" meaning it
-        becomes inactive, it unlocks the mutex to allow other threads to manipulate
-        the critical section. Waiting threads will wake up only when other threads notify them to this via
+        b. Waiting Thread: Waiting threads will wake up only when other threads notify them to this via
         the notify function. the wait() function of a conditional variable both unlocks the mutex
         and causes the thread to wait (be inactive) until notified by other threads using the notify_one()
         or notify_all() function of the conditional variable object.
@@ -789,10 +616,5 @@ int main()
 
 }
 
-/*
-Notes:
-1. the loading of each file can occur on each seperate thread (saving performance), but the insertion
-to a shared global vector should occur via mutex
-*/
 
 

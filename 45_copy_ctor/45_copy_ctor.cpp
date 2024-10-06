@@ -58,21 +58,21 @@ public:
         also causes an inifinite copy ctor loop! if the copy ctor was: String(const String other) 
         and the call was String a = b  where b is an existing String object, 
         and a is said to be initialized with a copy-ctor:
-            1. a = b -> copy ctor of "a" is invoked
-            2.  in the copy ctor of String, lvalue b (has an address) is used to 
-            initialize lvalue (has an address) "other" object with a copy of b-
-            which can only be done via a copy ctor of String class because "other" is of type String.
-            This in turn invokes the copy ctor of String where we once again try to
-            initialize lvalue "other" with a copy of "b",  which invokes the copy ctor infinitely.
-            In other words we invoke a String's copy ctor to complete a copy (a=b) 
-            and in that copy ctor we invoke String's copy ctor again to complete "other = b" copy,
-            and from this point we'll call String's copy ctor again and again trying to copy b to other.
+            1. a = b -> copy ctor of "a" is invoked. because "a" is not-yet-created, and
+            we try to construct and initialize it with already-created "b" object, 
+            cpp ALWAYS invokes a copy ctor (if "a" was already-created a copy assignemnt
+            would have been invoked).
+            2. then b would have been assigned to "other", i.e "String other = b" (because
+            we want to copy b")
+            this would have invoked another copy ctor where "other" would again been assigned with
+            b, and so forth in an endless loop.
             To solve this, "other" now becomes  a const lvalue ref and when assigned with lvalue b, "other"
             becomes an alias for b, and there is no need to initialize "other" with a complete copy of "b" - "other" IS b.
-            the great thing is that by concept, copy ctor doesn't perform any changes on the "other" object because it is a const
-            the copy ctor's intent is to perform a deep copy of "other" (aka "b") without modifying it, so "b" is 
-            is safe from any changes, whether its is an rvalue which is about to die, or an lvalue used by other components,
-            both (rvalue and lvalue) are acceptable arguemnts for a const lvalue ref.
+          
+    3. the great thing is that by concept, copy ctor doesn't perform any changes on the "other" object
+    because it is a const. the copy ctor's intent is to perform a deep copy of "other" (aka "b"), 
+    without modifying it.  "b" is  is safe from any changes, whether its is an rvalue which is about to die,
+    or an lvalue used by other components ( both (rvalue and lvalue) are acceptable arguemnts for a const lvalue ref).
      
     */
     String(const String& other) //other is the object we want to copy

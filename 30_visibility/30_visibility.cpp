@@ -12,7 +12,7 @@ struct Entita
 };
 
 
-//friend - a friend can access private members of the class
+//friend -  friend function can access private members of the class through the object whose the function is friends with
 class Entity
 {
 private: //implicit - only this entity class can r/w to this variables, all dervied (inherited) + instances can't acess private members

@@ -13,7 +13,7 @@ static library parts:
 2. header file(s) - library.h, included into our code to use the library.
 contains forward declarations to the functions in .lib.
 
-Integration with our code/program:
+Behind the scenes of the integration of a library with our code/program:
 1. .obj - our compiled (machine) code, generated after compile stage.
 .obj contains compiled library function calls from our code, for example:
 library_func(), enabled by the "include" of the forward declarations in 
@@ -22,7 +22,7 @@ the compiler at compilation stage, promising that the function definitions do
 exist and prepared to be used at linking stage.
 2. .exe - During linking stage, the linker links .obj and the .lib. 
 This causes the library function calls we made in our code (compiled into .obj) 
-to be linked up with their body, a.k.a definitions (that exists in .lib). 
+to be linked up with their body, a.k.a definitions (that exists in .lib (library we use)). 
 The linker then outputs a .exe.
 
 Creation (example in project 49a_static_math_library):
@@ -60,7 +60,7 @@ the build of our project - this ensures consistency of both of them - working al
 updated code.
 
 Notes:
-1. after the .exe is needed, the .lib is not needed (the function definitions it contains are
+1. after the .exe is created, the .lib is not needed (the function definitions it contains are
 fully embedded into our .exe).
 2. a change in the functions of the library (modification to .lib) will require
 us to relink our code (.obj) with the modified .lib and produce a new .exe.

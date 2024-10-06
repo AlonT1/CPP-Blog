@@ -3,25 +3,25 @@
 
 //https://www.cppstories.com/2018/09/visit-variants/
 
-struct Vehicle {};
-struct Lamborghini : Vehicle {};
-struct Mercedez : Vehicle {};
+struct Shape {};
+struct Circle : Shape {};
+struct Rectangle : Shape {};
 
-struct Rock 
+struct XmlExporter
 {
-    void operator()(const Mercedez&) { std::cout << "Mercedez\n"; }
-    void operator()(const Lamborghini&) { std::cout << "Lamborghini\n"; }
+    void operator()(const Rectangle&) { std::cout << "Exporting Rectangle info\n"; }
+    void operator()(const Circle&) { std::cout << "Exporting Circle info\n"; }
 };
 
 int main() 
 {
     /*
     tl;dr
-    Animal* animal = &cat; animal->walk() - via rtti the compiler knows to run walk() of Cat.
-    Vehicle* vehicle = &mercedez; rock.collide_with(Vehicle) - because functions are binded
-    at compile time, the run-time type of vehicle(merecedez) cannot be deduced
+    Animal* animal = &cat; animal->walk() - via rtti the compiler knows to invoke walk() of Cat.
+    Shape* shape = &circle; xml_exporter.export(shape) - because functions are bound
+    at compile time, the run-time type of shape(Circle) cannot be deduced
     (RTTI available only at run-time), thus the call
-    invokes collide_with which takes in the underlying type of the ptr (Vehicle*) => std::visit 
+    invokes export which takes in the underlying type of the ptr (Shape*).
     ************************************************************************************************
     std::visit solves this - it can invoke the correct function based on the run-time type of a ptr/ref.
     ************************************************************************************************
@@ -52,13 +52,13 @@ int main()
     */
 
 
-    // car can be either Lamborghini or Mercedez - and we decide to init car
-    // with Mercedez(), hence car is of type Mercedez
-    std::variant <Lamborghini, Mercedez> car{ Mercedez()};
-    Rock rock;
+    // shape can be either Circle or Rectangle - and we decide to init car
+    // with Circle(), hence shape is of type Circle
+    std::variant <Circle, Rectangle> shape{ Circle()};
+    XmlExporter xml_exporter;
 
-    // std::visit unveils the run-time type of car (Mercedez) and is fed to the correct
-    //function of rock which takes in a Mercedez type.
-    //this isn't possible with a "classic" call rock.collide_with(car) (explained above).
-    std::visit(rock, car);
+    // std::visit unveils the run-time type of shape (Circle) and is fed to the correct
+    //function of xml_exporter which takes in a shape type.
+    //this isn't possible with a "classic" call xml_exporter.export(shape) (explained above).
+    std::visit(xml_exporter, shape); // the xml exporter "visits" the shape..
 }

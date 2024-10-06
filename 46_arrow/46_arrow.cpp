@@ -1,6 +1,6 @@
 /*
--> is called element selection through pointer - overloadable
-. is called element selection by reference (indirection) -  not overloadable
+-> is called element selection through pointer (either on stack or heap) - overloadable
+. is called element selection by reference (object on stack) (indirection) -  not overloadable
 they have the same precedence and associativity (read left-to-right)
 */
 #include <iostream>

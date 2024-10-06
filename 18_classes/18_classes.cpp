@@ -8,8 +8,9 @@
 //making programming easier and logical. the methods inside classes are just encapsulated function in a namespace, 
 //and varaibles are stored in memory like inside a single type like
 //a struct, inline one after another according to their order of declerations.
-//it is perfectly viable to program without classes, they just make life easier in terms of organization
-class A {}; //require ; at the end just like "int x; " requires ";" at the end - both are types
+//it is perfectly viable to program without classes, they just make life easier in terms of organization.
+//class A defines a new disctint type "A".
+class A {}; //requires ";" at the end just like "int x; " requires ";" at the end - both are types
 
 class Player //"class" is the "class-key" - can be "struct" or a "class". "Player" is the class-head-name
 { // the following block is called the "member-specification"
@@ -21,14 +22,18 @@ the public interface defines how programs using the class will interact with the
 
 */
 public: //access specifer
-	int x=1, y=1; //inline definition of x,y at delcaration, instead of initializing them via ctor
+	int x = 1, y = 1; //default member intiailization - instead of initializing them via ctor
+	int z = x; // in cpp, as opposed to C# a field can be default initialized with another non-static member
 	int speed = 1;
-	 
-	//Note class members can use each other during initialization at declaration. for example:
-	int z = x;
+	// fp is a pointer to a member function of Player that takes in 2 ints and returns void, and is assigned with
+	// the adress of the move() function (where its stored in memory).
+	// Note that this "void(Player* fp)(int,int) = &Player::move;" won't work, we have to use the scope resolution
+	// operator ::, because the latter declares a pointer to a Player object, while the former declares
+	// a pointer to a member function and indeed we want a pointer to a function, not to a to some object
+	void(Player::* fp)(int,int) = &Player::move; // fp  is a pointer, see 58_function pointers for how to invoke
 
 	Player() {}
-	void move(int xa, int ya) //method
+	void move(int xa, int ya) // a member function, aka method
 	{
 		x += xa * speed;
 		y += ya * speed;
@@ -57,7 +62,7 @@ int main()
 	of the class and the size of the class as a whole will be 4 bytes
 	*/
 
-	Player player;
+	Player player; //equivalent to "class Player player;"
 	/*
 	The statement above is equivalent to Player player = Player() or more fully
 	Player player = Player::Player() in result but not in performance.
@@ -71,11 +76,33 @@ int main()
 	player is not yet-created, we invoke a copy initialization (in the latter example)
 	*/
 	Player player3 = Player();
-	player.move(1, 1);
+	player.move(1, 1); // "." operator is called "member of object" oeprator, allows the direct access to members
 	std::cout << player.x << std::endl;
+	(player3.*(player3.fp))(2,3); // function call through function pointer accessed via pointer-to-member ".*" - see 57b:
+	Player* player2 = new Player{};
+	(player2->*(player2->fp))(2, 3); // access member through a pointer to an object on the heap
+	Player* player4 = new Player();
+	player4->x; // "->" operator is called member of pointer operator, access to membmer through pointer
 
-	Player* player2 = new Player;
-
+	/*
+	We can take the size of the class itself, not only the members.
+	The size includes the sum of the sizes of all non - static data members,
+	plus any padding added by the compiler to align data members correctly.
+	Note that heap allocated variables will not be accounted for, for example an pointer
+	to an array of 5 ints, will contribute only 8 bytes (the size of the pointer), and the
+	size of the array itself will not be accounted for because of two reasons:
+	1. the new memory block is not part of the object itself, unlike the stack allocated variables
+	2. because cpp doesn't keep  track of the sizes of dynamically allocated data ("don't get what you don't pay for")
+	for example in:
+	class MyClass
+	{
+		int* ptr; // only 8 bytes
+	public:
+		MyClass() : ptr(new int[10]) {}  // constructor allocates memory on the heap
+		~MyClass() { delete[] ptr; }  // destructor frees the memory
+	};
+	*/
+	std::cout << sizeof(Player);
 	/*
 	Important Note: in Java Player e = Player(), means that e is a class reference to a Player object of type Entity.
 	in other words e is just a reference/pointer to the location in memory where the data stored on the heap. in some sense it is
@@ -125,5 +152,20 @@ Note 3:
 functions in the body of the class + friend of functions of that class, can
 access the private members of each instance through "this" (pointer to the current
 instance) or through any other instance of the class.
+
+
+Note 4:
+ a->b == (*a).b
+"->" member access through pointer to an object (if we have a pointer to an object
+we can access the object's members via "->") 
+"." member access through object (if an object as allocated on the stack, we can access
+it's members directly via ".") *a -> indirection.
+
+Note 5:
+unlike free functions, member functions can call each other regardless of their order!
+for example, methodA can call methodB despite the fact methodB is declared and defined
+AFTER methodA. this works because A function defined within a class definition 
+is an inline function.
+https://stackoverflow.com/a/9192159
 
 */

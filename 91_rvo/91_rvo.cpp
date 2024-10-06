@@ -1,4 +1,8 @@
-/*Return Value Optimization*/
+/*Return Value Optimization
+tl;dr
+trust the compiler to perform a return without performing a redundant copy.
+no need to "move" back the object.
+*/
 #include <iostream>
 
 class Entity

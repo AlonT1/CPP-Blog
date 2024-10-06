@@ -21,8 +21,5 @@ int main()
 	const std::string_view str = "hello";
 	if (int pos = str.find("e"); pos != std::string::npos) //npos means not found (-1)
 		std::cout << "char found at position " << pos;
-
-
-
 }
 

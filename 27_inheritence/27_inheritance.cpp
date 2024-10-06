@@ -44,7 +44,8 @@ public:
     Entity {x,y} is a delegating ctor (giving Entity the info needed to construct the base class)
     when deailing with inheritance, member initialization can continue after calling delegating ctor.
     when not dealing with inheritance (delegating a ctor in the same class), no member initialization
-    is allowed after the delegation
+    is allowed after the delegation.
+
     default parameters work because the default arguments must be filled from the end
     to allow statements such as  Player player("shalom", 4.0f), 1.0f for y is default, although
     y is not specified in the ctor call. why default arguments must be filled from the end (rightmost (trailing))?
@@ -55,9 +56,9 @@ public:
 
     Note:  When implementing your constructors, consider how you might keep 
     the number of constructors down through smart defaulting of values.
+
     */
     {
-        Entity(x, y);
         std::cout << "Player ctor" << std::endl;
     }
     void print()
@@ -72,12 +73,28 @@ class Animal
 {
 public:
     int x = 10;
+    Animal()
+    {
+        std::cout << "Animal ctor\n";
+    }
+    ~Animal()
+    {
+        std::cout << "Animal dtor\n";
+    }
 };
 
 class Dog : public Animal
 {
 public:
     int y = 8;
+    Dog()
+    {
+        std::cout << "Dog ctor\n";
+    }
+    ~Dog() 
+    { 
+        std::cout << "Dog dtor\n";
+    }
 };
 
 /*

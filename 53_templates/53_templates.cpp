@@ -32,7 +32,8 @@ float returner(float value)
 }
 
 /*
-Template for functions:
+* ********************************Template for functions*****************************
+
 templates solve this, cleaning up the repeating code
 evaluated at compile time when we call it!! only then it is created in the source code
 typename T - the name of the type. templates implicitly identifies the PRIMITIVE parameters through their type. 
@@ -88,7 +89,12 @@ min(++i, ++j) evaluated as(++i < ++j ? ++i : ++j)
 The template equivalent:
 */
 
-template <typename T>
+// default template argument: if the template type is not specified during
+// template instantiation, (e.g boo(3) instead of boo<int>(3)), or if
+// the compiler cannot deduce the the template type from the function call argument
+// then the template will revert to the default template type.
+
+template <typename T = int> 
 T min(T x, T y)
 {
     return x < y ? x : y;
@@ -107,6 +113,9 @@ solution: use two typenames T and U, but which one would be the return value?
 this question is answered in (108 auto_if_constexpr) - in short use auto,
 as a return type, the compiler will deduce the return type at compile time
 based on the underlying type of the return value.*/
+
+
+
 
 /*********************************Template Classes**************************/
 /*
@@ -146,10 +155,10 @@ private:
     T m_array[N]; 
 
 public:
+    //**************************************************************************************
     //when denoting the name of the class ("Array") it is implicitly equivalent to "Array<T,N>",
     //which can be written explicitly.
-    //Note that this "feature" does not work in function templates, when writing them
-    //we must denote the full template type with <> brackets
+    //**************************************************************************************
     void test(Array& array) {}
     T get_size()const { return N; }
 };
@@ -184,7 +193,8 @@ specialized as opposed to template functions, as seen in 101_template_specializa
 as seen above, template type deduction for functions is supported, and since cpp17
 class template type deduction (CATD) is also supported:
 */
-std::array array1{ 4, 5, 6 }; //the template arguemnt is deduced as initializer list
+std::array array1{ 4, 5, 6 }; //the template arguemnt is deduced as <int, 3>, 
+// i.e the type is int, and the size of the array 3.
 
 //custom example for CATD:
 template <typename T, typename W>
@@ -212,7 +222,6 @@ class Array<int, int>
 };
 
 */
-
 
 
 int main()
@@ -315,4 +324,20 @@ T multiply (U x, T y, V z) {}
 to work with all cases we need to template them. If we want a template function/class 
 to work differently given a specific template parameter, we need to specialize the
 function/class (give the template a concrete definition).
+
+
+6. automatic template deduction, always evaluates to the type of the object - 
+a simple lvalue (e.g: "int") regardless if we provide the call with a prvalue, xvalue or lvalue.
+
+7.
+when we specify a template parameter - the generated template recieves
+the type as-is (like a preprocessor):
+
+if foo is a function: foo<int&>(x) //remember that x is an identifier for an already-created object
+// and thus an lvalue expression.
+the generated template will be:
+template<>
+void foo<int &>(int &x) {}
+
+i
 */

@@ -16,7 +16,7 @@ int main()
     std::cout << sizeof Player;// size of is an operator, not a function! doesn't require parenthesis
 
 
-    //1. tl;dr operator new (explicit call to operator new function - can be overloaded as seen above)
+    //1. tl;dr operator new (can be overloaded)
     //-  performs only memory allocation (chunk of memory in the requested size arguemnt), and returns a void pointer to it
     Player *p1 = (Player*) operator new (sizeof Player); //operator new (calls the "new" function - operators are function) 
     //allocates raw memory - malloc style! cpp requires an explicit cast 
@@ -42,10 +42,28 @@ int main()
     {
         return malloc(size);
     }
+
+    in C operator new is equivalent to malloc, for example if we have the following struct:
+    struct Node
+    {
+        struct Node* next;  (in C we denote full type "strcut Node", CPP allows to omit "struct" keyword)
+    };
+
+    //malloc asks the OS for a memory at the sizeof(struct Node), malloc returns a void* to that chunk
+    //of memory, and then we cast the void* to a "struct Node*"
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+
+    using typedef we can shorten the declartion above:
+    //(Node becomes alias for "struct node", but we must use "struct node" inside the struct
+    //since the alias Node is not yet delcared inside the scope of the struct
+    typedef struct node { struct node* next; } Node;
+    Node* node = (Node*)malloc(sizeof(Node));
+
     */
 
-    //2. tl;dr new expression (keyword) - allocates memory, constructs an object there, and returns
-    //(expression because it is evaluated to a single output...) a pointer type T (casted) to that location
+
+    //2. tl;dr new expression (keyword) - allocates memory, constructs an object there using the arguments in (),
+    //and returns (expression because it is evaluated to a single output...) a pointer type T (casted) to that location
     Player* p2 = new Player(); 
     //new expression (built in keyword) does three things:
     //1. invokes "operator new", aka, calls the new function to allocate memory to accomodate sizeof(player) as described above

@@ -3,12 +3,12 @@
 the important takeaways:
 1. int*** x; can be better read as "int** *x" meaning x is a pointer to an int**,
 thus it can be assigned with an int**
-
+(in reality though all three "*" are a type modifier that belongs to the declarator "x"
 
 2. a pointer to X can be assigned with:
-	1. X (single instance)
-	2. array of X
-	3. a pointer of the same type
+	1. address of X (single instance)
+	2. address of array of X
+	3. a pointer of the same type (copy assignment of the value (memory address that another pointer "holds")
 
 	note: 1 and 2 are the same since in concept - in c/c++, the address of an array represents
 	the 1st object in that array, therefore in both cases we point to an object of
@@ -16,8 +16,8 @@ thus it can be assigned with an int**
 	(stack allocated - contiguous, if heap - potentially fragmeneted).
 
 	e.g: "int** x" (x points to a pointer to an int) can be assigned with:
-	1. int* (single instance)
-	2. array of int*
+	1. address of int* (single instance)
+	2. address of array of int* (the address of the first element of the array)
 	3. a pointer of the same type (int**)
 
 	example in diagram (left represents bullet 1, right represents bullet 2)
@@ -49,14 +49,12 @@ the address of the first pointer in set2 -  thus retrieving the first
 pointer of set 2.
 (set2 can contain an array of pointers or a single pointer as explained above).
 
-
 Bonus: dereferencing x twice "*(*(x+1))":
-a. *(x+1): will retrieve the object whose address stored in x (which is a pointer to an int*)
+*(x+1): will retrieve the object whose address stored in x (which is a pointer to an int*)
 - retrieves the 1st object in set 2, but since we increment by 1 we get the 2nd object in that set,
 which is the 2nd pointer to an int - can store a single/array of ints).
 b."*(*(x+1))":  now we have the 2nd pointer from set 2 - we dereference (outer parenthesis)
-this pointer and retrieve the object whose address is stored in this pointer which is
-the int array object of {3,4}.
+this pointer and retrieve element 3 (1st element of {3,4}).
 
 
 4. types such as "int****....* x" DOESN'T NECESSARILY IMPLY MULTI DIMENSIONAL ARRAYS!
@@ -95,6 +93,48 @@ set1    set2    set3(ints)
 		* ----> {3,4,7,8,9}
 		* ----> {5,6,5,3}
 
+
+Notes:
+1. int x{ 5 };
+int* ptr { &x }; //works because &x returns a pointer to "x", which is the same type as "ptr"
+int** ptr1 { &ptr } //&ptr returns a "pointer to a pointer" "ptr", the same type as "ptr1"
+
+2. 	
+// "carrots" is a pointer to an array of 4 doubles.
+// in the example below, it points to the first element of the [3][4] array, 
+// which is array {1,2,3,4} (indeed array of 4 doubles)
+// the fact that the 2d array [3][4] has 3 elements (each element is array of 4 doubles),
+// does not affect "carrots" pointer, which simply points to the first element of the array {1,2,3,4)},
+**********************************************************************
+// it doesn't need know about the other 3 elements, it only needs to be aware about the size
+// of the immediate array it points to!!!! (because cpp is row-major order, thus the memory
+// is traversed by column (1 then 2 then 3,.....)
+**********************************************************************
+
+double(*carrots)[4]{ new double[3][4] {{1,2,3,4}, 
+									   {3,4,5,6}, 
+									   {1,4,6,2}} };
+
+for derefercing: "carrots[2][3]" or  (*(*carrots+2)+3) - dereferncing
+the pointer (address) to the 2nd row, and from there we add 3 to the dereferenced pointer(address)
+so we could dereference the 3rd element
+
+//equivalent to above
+double** carrots2 = new double* [3];
+for (int i{ 0 }; i < 3; ++i) carrots2[i] = new double[4];
+
+
+3. c/cpp is a row-major order, meaning that it stores  2d array contigously (on stack,
+with heap, a.k.a free store, contgious storage isn't guaranteed), in the following
+manner:
+
+if we have the following 2d array:
+a11	a12	a13
+a21	a22	a23
+a31	a32	a33
+
+row-major order (c/c++) stores data in this order: a11, a12, a13, a21, a22, a23, a31, a32, a33
+column-major order	(matlab) stored data in this order: a11, a21, a31, a12, a22, a32, a13, a23, a33
 
 
 */
@@ -161,17 +201,18 @@ int main()
 	stack allocated:*/
 	int array2d[3][2]{ {1,1}, {2,2}, {3,3} }; //3 columns and 2 rows
 
+
+
 	/*heap allocated:
 	All the concepts that apply to 1D array apply here also, albeit a new concept
 	is revealed with a 2D ARRAY:
 
 	int is a pointer. now comes the interesting part. what does he points to?
 	it points the address of a pointer to an int! in other words, int** can be assigned with:
-	1. a pointer to an int (which in turn can point to an int, array of ints or another int*
-	as explained in "1D array")
-	2. array of pointers to an int.
+	1. address of a pointer to an address of a  single int 
+	2. address of array of pointers to an int
 	*1 and 2 are the same - in both cases int** will point to the address of pointer to an int,
-	2 simply states this "pointer to an int" is the first in an array.
+	2 simply states this "pointer to an int" is the address of the first element in an array.
 	3. another int** (copy assignment)
 	
 	the main point is that a statement like the following: "int**** x" can be

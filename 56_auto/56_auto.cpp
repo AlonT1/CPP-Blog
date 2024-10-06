@@ -60,7 +60,18 @@ int main()
     const std::unordered_map<std::string, std::vector<Device*>>& devices = dm.get_devices();
     //very long type -> alternatives:
 
-    //1. "using" alternative
+    /*1. "using" alternative
+     
+    The using declaration introduces a name into the declarative region in which the using declaration appears
+    (like in the example below). it is a declaration because we declare a new name to be used.
+    The using directive allows all the names in a namespace to be used without the namespace-name as an explicit qualifier.
+    (for example using namespace std; we can write cout without std::cout).
+    https://stackoverflow.com/a/16153962
+    In computer programming, a directive or pragma (from "pragmatic") is a language construct that specifies how a compiler
+    (or other translator) should process its input. Directives are not[disputed – discuss] part of the grammar of a 
+    programming language, and may vary from compiler to compiler.
+    https://en.wikipedia.org/wiki/Directive_(programming)
+    */
     using DeviceMap = std::unordered_map<std::string, std::vector<Device*>>;
     const DeviceMap& devices = dm.get_devices();
 

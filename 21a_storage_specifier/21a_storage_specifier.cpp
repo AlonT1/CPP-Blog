@@ -1,8 +1,10 @@
 /*
 storage specifier controls:
-1. storage duration - lifetime of the object (execution - termination / new - delete/ block start - block end)
-2. the type of linkage (no,internal,external)
-3.  storage in memory (stack, static)
+1. storage duration - lifetime of the object (execution - termination(static) / new - delete/ block start - block end)
+2. the type of linkage (no,internal (static),external)
+3.  storage in memory (stack, *static, heap)
+*initialized static/global vars are stored in data section,
+unitinialized global/vars are stored in .bss section
 * but not the scope - the visibility of the identifier in the project (block, file) (this is determined by the block {} they are inside
 or whether they are in the global namespace)
 Note: Storage duration vs scope: an identifier can have a storage duration from lifetime to execution, but only scoped to a block
@@ -21,7 +23,8 @@ Linkage: internal linkage (name can be referred to from all scopes in the curren
 Scope: block / file  (depends on decleration)
 Sotrage in memory: static storage
 Notes:
-1. global variables have default static storage duration (execution - termination), and external linkage by default ( "extern"  keyword allows referring to it- 
+1. global variables have default static storage duration (execution - termination), and external linkage by default 
+( "extern"  keyword allows referring to it- 
 (global var "int t=5" in x.cpp can be referred by declaring "extern int t" in y.cpp)
 2. declaring global variables as static, modifies its linkage to internal
 3. functions declared at file scope are global with external linkage (unless declared as static - causes internal linkage)
