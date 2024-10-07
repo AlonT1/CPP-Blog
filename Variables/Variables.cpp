@@ -1,14 +1,11 @@
 
 /*
-in 
-
-
-there are three types of variables: values, pointers, references
-float, double, bool are all primitive types
-symbols - classes, functions, constants, variables...
+3 variable types in cpp: values, pointers, references. 
+primitive types (POD): float, double, bool: 
+symbols: classes, functions, constants, variables...
 
  computer stores all data as a sequence of bits. 
- A variable’s type tells the computer how to translate that sequence of bits into a meaningful value
+ A variableâ€™s type tells the computer how to translate that sequence of bits into a meaningful value
 
 integer types (fundamental data types, built in the language):
 char (1 byte), short(2 bytes), int (4 bytes), long (4 bytes***), long long (8 bytes)
@@ -19,8 +16,8 @@ float (4 byte, 6 decimal places), double (8 byte, 15 decimal plcaes), long doubl
 these sizes are determined by the os - the data model for windows x64 is the LLP64 data model.
 the c/cpp standard doesn't specify these sizes!
 
-int is 4 bytes because x86 processors (and thus x64) can directly fetch a 32 bit wide field
-from memory. memory is divided into "words" (x86 word - 32 bit (4bytes),  x64 word - 64 bit (8 bytes)
+int is 4 bytes because x86 processors can directly fetch a 32 bit wide field
+from memory. memory is divided into "words" (x86 word - 32 bit (4 bytes),  x64 word - 64 bit (8 bytes)
 and an int easily fits into a word of x86 systems, therefore it can easily be fetched with single access
 to that specific word (address which stores the int). x64 can store 2 ints in a single word!
 
@@ -49,7 +46,7 @@ can be declared signed or unsigned. e.g: signed int x;  unsigned int y;
 #include <iostream>
 
 
-size_t w=4; //  the size of the WORD depends on the os/cpu
+size_t w=4; //  size_t is a size of a WORD - depends on the os/cpu
 /*
 size_t defined in a header as :
 #ifdef _WIN64  
@@ -68,7 +65,7 @@ int main()
     std::cout << sizeof(size_t) << std::endl;
 
     decltype(x) y = 4; //y is a float because x is a float
-    //decltype(entity/expression) specifier inspects the declared type of the entity/expression
-    //typeid inspects the RTTI (real-time type of the object):
+    //decltype(entity/expression) specifier inspects the declared (compile-time) type of the entity/expression
+    //typeid inspects the RTTI (real-time type information of the object):
     //for example, Animal* anim = &Cat - the run-time type of anim is Cat but the decltype is Animal*
 }
