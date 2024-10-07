@@ -67,5 +67,6 @@ int main()
     decltype(x) y = 4; //y is a float because x is a float
     //decltype(entity/expression) specifier inspects the declared (compile-time) type of the entity/expression
     //typeid inspects the RTTI (real-time type information of the object):
-    //for example, Animal* anim = &Cat - the run-time type of anim is Cat but the decltype is Animal*
+    //for example, Animal* anim = &Cat - then decltype(anim) --> Animal*, decltype(*anim)--> Animal& (a type of reference to Animal
+    // typeid(anim) --> Animal*
 }
