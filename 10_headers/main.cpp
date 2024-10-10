@@ -45,16 +45,14 @@ in visual studio project settings.
 
 /*
 Form 1 - #include < xxx >
-First, looks for the presence of header file in the current directory. If not found,
-then it searches in the preconfigured list of standard system directories.
-searches only the compiler predefined paths and the paths specified in the "include additional headers"
-in visual studio project settings.
+The preprocessor searches for the header file in the standard system directories
+(e.g., directories where C++ standard library headers are stored) and
+in "include additional headers" in visual studio project settings.
 mainly used for external files not written by the programmer itself
 
 Form 2 - #include "xxx"
-This looks for the presence of header file in the current directory from where directive is invoked.
 mainly used for external files  written by the programmer itself, such as "log.h".
-include " " first searches the current folder (the folder of the source file that performs the include)
+include " " first searches the current folder (where the header is)
 and then reverts to search in the same way as include<>
 */
 
