@@ -131,14 +131,19 @@ int main()
 /*
 Note 1:
 Player p; //p is a class object of type Player stored on the stack (instance variable).
-p.name => "." Operator is called "member access thorugh object".
-p stores the object "inline", across the stack frame.
+
+p.name --> "." operator = member access through object (if an object as allocated on the stack, we can access
+it's members directly via ".")
+a->b == (*a).b
+Deref the pointer (indirection) ---> get the object ---> access its "b" member
+The object can be either on the stack (inlined object?) or on heap.
 
 Player *p = new Player; //p is a pointer of type Player which points to an object
 of type Player that is allocated on the heap via "new expression (keyword" which does 3 things:
 1. requests from the os to allocate memory at the size of Player (invokes operator (function) new()) and returns a void pointer
 2. constructs Player object at the allocated memory
 3. implicitly converts the returned void* into a Player*
+
 
 Note 2:
 a class cannot have an instance of itself as a field, whether the filed is static or not
@@ -153,19 +158,11 @@ functions in the body of the class + friend of functions of that class, can
 access the private members of each instance through "this" (pointer to the current
 instance) or through any other instance of the class.
 
-
 Note 4:
- a->b == (*a).b
-"->" member access through pointer to an object (if we have a pointer to an object
-we can access the object's members via "->") 
-"." member access through object (if an object as allocated on the stack, we can access
-it's members directly via ".") *a -> indirection.
-
-Note 5:
 unlike free functions, member functions can call each other regardless of their order!
 for example, methodA can call methodB despite the fact methodB is declared and defined
 AFTER methodA. this works because A function defined within a class definition 
-is an inline function.
+is an inline function, while free functions are not implicitly inline.
 https://stackoverflow.com/a/9192159
 
 */
