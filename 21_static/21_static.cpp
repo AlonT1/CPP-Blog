@@ -17,11 +17,5 @@ int main()
 {
     int x = 2; //storage class specifier controls: storage duration + linkage in cpp storage duration is implicitly auto by default (block scope, local)
     // in cpp 11 auto means a deduced type
-
-    std::cout << t_var << std::endl;
-
-    //static in a function means infinite lifetime (as opposed to scoped lifetime)
-    //and one time initialization
-    static int s_variable = 5;
 }
 
