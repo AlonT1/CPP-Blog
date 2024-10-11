@@ -6,6 +6,13 @@ the first element of the array.
 
 #include <iostream>
 
+// "int (&array1)[2]" - "array1" is a reference to an array of ints (read 30a).
+//note that it is mandatory to write how many elements are in the array
+void printElements(int (&array1)[2]) 
+{
+  int length{ static_cast<int>(std::size(array1)) }; // we can now do this since the array won't decay!
+}
+
 // array decayed into a pointer. in effect we just passed a memory address to 
 // the first element of the array. Thus we lose the "dimensionality" of the 
 //array (sizeof(arr) returns the size of a pointer).
@@ -65,16 +72,7 @@ int main()
 	/************Important Note: the decay is not permanent! we can still pass 
 	"arr" to functions that accpet array as a parameter!
 	example:
-
+	*/
 	int arr[2] {1,2};
 	printElements(arr);
-
-	// "int (&array1)[2]" - "array1" is a reference to an array of ints (read 30a).
-	//note that it is mandatory to write how many elements are in the array
-	void printElements(int (&array1)[2]) 
-	{
-	  int length{ static_cast<int>(std::size(array1)) }; // we can now do this since the array won't decay!
-	}
-*/
-
 }
