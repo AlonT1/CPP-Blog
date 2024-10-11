@@ -1,10 +1,5 @@
 #include <iostream>
-// a->b == (*a).b
-// -> member access through pointer to an object (if we have a pointer to an object
-//we can access the object's members via "->")
-// . member access through object (if an object as allocated on the stack, we can access
-//it's members directly via ".")
-// *a -> indirection
+// see 18_classes first
 class Log
 {
 public:
