@@ -87,17 +87,16 @@ enum class Color : long
 enum class Heights // enum names
 {
     Small, Medium, Large //the enumerators - representing 0, 1, 2
-}; //definition of an enum
+}/*Altitudes; // Creates an enum variable or...*/;
+Heights Altitudes; // alternative to create an enum variable (not called an object)
 
 /*
 The decleration above is equivalent in principle to the following syntax:
 int  x;
 
-"enum class Heights" is equivalent to "int" - in both we declare a type and both
-reside in the decl-specifier-list of the declaration which contains the underlying type
-*enum class Heights - we not only declare a type, we also DEFINE a user-defined type 
-called Heights using the curly braces
-
+"enum class Heights" - Heights is a user-defined type, unlike "int" (built-in type) - both types
+resides in the decl-specifier-list part of the declaration which contains the underlying type
+see 30b_declarations_declarators
 "Altitudes" - is equivalent to "x" - giving an identifier to to the heights enum
 both reside in the init-declarator-list
 
@@ -136,7 +135,7 @@ private:
     enum { SIZE = 100 };
     int weapons = SIZE;
 
-    /
+    /*
         method is similar to:
     1. #define SIZE 100
     only that that the enum hack occurs at compile time, the #define example occurs at preprocessing time.
