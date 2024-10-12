@@ -5,14 +5,14 @@ conistent way to initialize variables and objects.
 
 uniform initialization can be used in two ways on objects
 1. direct-list initialization - initialization of a named variable with a braced-init-list {}
-2. copy-list initialization - initialization of a named variable with a braced-init-list after an equals sign
+2. copy-list initialization - initialization of a named variable with a braced-init-list after an = sign
 compiler-wise they are both evaluated to the same expression as seen below.
 */
 
 
 int main()
 {
-/*******************uniform initialization on primitives************************
+	/*******************uniform initialization on primitives************************
 
 	Uniform initialization (performed via {}) warns against narrowing 
 	(as opposed to direct initialization - performed via (), 
@@ -50,15 +50,13 @@ int main()
 
 
 	/* If the object is an array of unknown size, and the supplied brace-enclosed
-	initializer list has n clauses, the size of the array is n. 
-	(Note that the object in this case cannot be a non-static data member: a member must have complete type.) */
+	initializer list has n clauses, the size of the array is n.  */
 	int arr[] = { 1,2,3 };
 
 	/*******************uniform initialization on objects*************************/
-	
 	//uniform initialization can be used in two ways on objects
 	// 1. direct-list initialization - either of a class via ctor or an aggregate
-	//also called aggregate initialization 
+	// also called aggregate initialization 
 	// aggregate - class/array with no private/protected/static members"
 	struct Vector2 { int x; int y; };
 	Vector2 vec2{ 1,2 }; // aggregate direct list initialization
@@ -82,23 +80,30 @@ int main()
 
 	are evaluated by the compiler to the same statement:
 	Vector3 vector3 = Vector3{1,2,3};
-
+	which can brace-initialize aggregates, or invoke the ctor of exists + narrowing protection, more modern.
+ 
 	while  Vector3 vector3 (1,2,3) is evaulated to:
 	Vector3 vec3 = Vector3(1, 2, 3);
+	which simply invokes the ctor without the benefits above
+ 	
 	********************************************/
 	
 
 	/**************Uniform initialization solves vexing parse*********************/
 	struct B { B() {} };
 	struct A { A(const B& b) {} };
-	B b(); //parsed as a forward declaration to a function called b taking no parameters & returns B
-	A a(B()); // parsed as a forward declaration to  function called "a" aking B() and returns A
+	B b(); //parsed as a forward declaration to a function called b taking no parameters and returns B
+	// can be read also as a creation object b of type B.
+	A a(B()); // compiled as "A a(B(*)())" (cppinsights) which means that we are declaring a function "a" that returns A
+	// and takes in a function pointer to a function that takes nothing and returns B
 
 	//uniform initialization solves this:
-	B bb{}; //creating an object! no more parsing as a forward declaration
-	A aa{ B() }; // creating an object! no more parsing as a forward declaration
+	B bb{}; //creating an object bb of type B! no more parsing as a forward declaration
+	A aa{ B() }; // creating an object aa of type A whose ctor takes an annonymous B() object ! 
+	// no more parsing as a forward declaration
 
 	//*pre cpp11 the way to overcome the vexing parse was with extra paranhesis:
-	A cc((B()));
+	A cc((B())); // instead of "A cc(B())", the extra paranthesis imply that this is not a function declaration
+	// but a construction of an object cc with a ctor that takes in annonymous B()
 
 }
