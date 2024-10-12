@@ -25,13 +25,12 @@ struct Entity //public by default
 	members just like non static members.
 
 	4. Not recommended because it isn't syntactically clear:
-	static USER-DEFINED members such as classes, can be defined and returned from a function, e.g:
+	with class members - static USER-DEFINED members such as classes, can be defined and returned from a function, e.g:
 	class {	static MyClass c;  static MyClass get_instance() {return c;} }
-	invoking Class::func() will construct the static "c" class member (probably due to return-by-value invoking
-	a construction of the member c.
-	This doesn't work for pod's:
+
+	with pod members - invoking func() will cause a linking error because x isn't defined nowhere.
 	class { static int x;	static int func() {return x;} }
-	invoking func() will cause a linking error because x isn't defined nowhere.
+	
 .
 	Notes:
 
@@ -141,7 +140,7 @@ struct Crocodile : public Animal
 
 	void breathe()
 	{
-		// a non-static method (print()) CAN call a static method (print_static(), but not vice versa.
+		// a non-static method (breathe()) CAN call a static method (walk(), but not vice versa.
 		// in other words, an object is aware of the class (and its static methods) but a class isn't aware of its objects
 		walk(); 
 	}
@@ -159,7 +158,7 @@ int main()
 
 	void(*function1)(void) = Entity::print_static; // function1 is pointer to a static function inside
 	//a class which returns void and takes in void params
-
+	Animal::walk(); // execute a static function through a class - because it bleongs to a class
 	Crocodile croc;
 	croc.breathe();
 }
