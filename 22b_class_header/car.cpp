@@ -58,14 +58,12 @@ float Car::get_speed()
 }
 
 
-
-
-
-
 //user access control doesn't apply for defining private/protected/public forward declarations 
-//of classes via scope resolution operator (::)! this only applies for creating definitions!
-//However using/reading  static private members / functions via scope resolution is forbidden
-//(static because private members/functions belong to the class, only then :: operator is relevant)
+// of classes via scope resolution operator (::) for the sake of defining them!
+// However actually using  private member variables / functions via scope resolution is forbidden
+// they can only be accessed through an object.
+// With the exception of static vars/functions members of a class only then :: operator is relevant
+// for usability because these symbols actually belong to the class, and not to a specific object
 void Car::transform()
 {
 
