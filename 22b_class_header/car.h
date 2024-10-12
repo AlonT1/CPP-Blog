@@ -2,6 +2,8 @@
 
 /*
 Reminder:
+Header file - the interface
+cpp file - the implementation.
 headers contains forward declerations - all cpp files that want to use Car 
 class can include this header file. forward declerations satisfy the compile -
 "the definitions exists somewhere", during linkage the forward declerations will
