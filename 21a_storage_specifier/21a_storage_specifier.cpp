@@ -16,9 +16,10 @@ Storage duration (lifetime): block start - block end - the storage is claimed au
 Linkage: no linkage (The name can be referred to only from the scope it is in). auto & register can't be declared globaly (file scope)
 Scope: block visibility
 Storage in memory: stack
+Note that a pointer can be on the stack while it points to an object on the heap.
 
 2. static  - 
-Storage duration: execution-termination (single decleration+initialization+definition
+Storage duration: execution-termination (single decleration+initialization+definition)
 Linkage: internal linkage (name can be referred to from all scopes in the current translation unit.)
 Scope: block / file  (depends on decleration)
 Sotrage in memory: static storage
@@ -65,7 +66,7 @@ int x = 5; //global variable, static life time (execution-termination), on the s
 int main()
 {
     int x = 2; //automatic storage specifier - scoped to main and lifetime duration bound to main. stored in stack
-    int* w = new int; //dynamic - allocated here, until delete. allocated in heap
-    //t = 2;
+    int* w = new int; //w is stack allocatd pointer, pointing to a dynamically allocated object on the heap
+    // that exists until we use delete operator on w. w itself is "auto".
     std::cout << t << std::endl; // prints 5, declared global int t = 5 and referred here by extern
 }
