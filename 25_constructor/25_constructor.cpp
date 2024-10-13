@@ -4,9 +4,8 @@
 
 //Entity1 is an aggregate object
 //contains implicitly-declared constructor (the declaration is implicitly done by the compiler
-//if the user doesn't provide a DEFINED constructor) this implicit default constructor will become
-//an IMPLICITLY-defined constructor when Entity1 type object will be constructed during compilation
-// which means that this line will be added to Entity1 "inline Entity() noexcept = default;"
+//if the user doesn't provide a DEFINED constructor). At construction of Entity1, this implicit default constructor will become
+//an IMPLICITLY-defined constructor which means that this line will be added to Entity1 "inline Entity() noexcept = default;"
 class Entity1 
 {
 public:
@@ -29,12 +28,12 @@ public:
 	{
 		std::cout << t;
 	}
-	Entity2(const Entity2& other)
+	Entity2(const Entity2& other) // copy ctor
 	{
 		x = other.x;
 		y = other.y;
 	}
-	Entity2(Entity2&& other)
+	Entity2(Entity2&& other) // move ctor
 	{
 		x = other.x;
 		y = other.y;
@@ -42,7 +41,7 @@ public:
 		other.y = 0;
 	}
 
-	Entity2& operator= (const Entity2& other)
+	Entity2& operator= (const Entity2& other) // move operator when lhs is already defined
 	{
 		if (this == &other)
 			return *this;
@@ -50,7 +49,7 @@ public:
 		y = other.y;
 	}
 
-	Entity2& operator= (Entity2&& other)
+	Entity2& operator= (Entity2&& other) // copy operator when lhs is already defined
 	{
 		if (this == &other)
 			return *this;
@@ -136,10 +135,6 @@ int main()
 	Entity1* e13 = new Entity1; //heap allocation with implicit ctor (indeterminate (garbage) values. returns address of entity1 to e13 ptr.
 	Entity1* e14 = new Entity1(); //new Entity1() zero-initializes pod values, even if no explicit ctor exist!
 
-
-
-
-	
 	/*
 
 
@@ -147,15 +142,16 @@ int main()
 	Entity e{} - >  default initalization {0,0}  - x and y initialized with 0
 	Entity e{3,4} ->  x initialized with 3, y initialized with 4
 	Entity e{3} -> x initialized with 3, y initialized with 0
-	{} is able to initialize variables ONLY when no ctor is available!
-
+ 	When there is a ctor {} will prefer to initialize with a ctor
+  
 	This is allowed because Entity1 is considered an "aggregate" (aggregates pod's) - 
 	an array or class with no user-declared ctors, no private
 	or protected non-static data members , no base classes and no virtual functions. In other words, a simple struct or class
 	that contains ONLY POD'S (plain-old-data: int, float, char...). also valid for std collections, e.g: std::vector<int> a = {1,2,3}
 	*/
 
-	//Entity e{}   works if a ctor has default values in its parameters,  or explicit empty ctor with or without "default"
+	Entity e{}; // vs Entity e; :
+	// the default ctor is a ctor with no parameters.
 	//as opposed  to "Entity e" , the uniform initializer "{}" assigns default values to pod's. 
 	//if  an explicit default ctor exists then uniform initalization won't initialize pod's to defaults (this happens only when 
 	//default ctor is implicit or marked with default)
