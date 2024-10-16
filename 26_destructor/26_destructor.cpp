@@ -42,8 +42,9 @@ int main()
     1. all pod class members (ints, floats...) will be deleted from memory. 
     2. the dtor function is invoked which gives us an opportunity to explicitly use the "delete" operator
     to delete heap allocated class members. not using "delete" to remove them in the dtor, will cause a memory leak
-    (those heap objects will live on in memory)
-    *the "delete" operator cannot be used for entity1 - it only works for pointers (heap allocated objects)
+    (those heap objects will live on in memory).
+    if a ptr points to a dynamically allocated object - using delete on that ptr will remove the object from memory
+    if a ptr points to a stack allocated object - using delete on that ptr is undefined with a warning.
     */
 
     /*************destruction of heap allocated objects*/
@@ -66,8 +67,10 @@ int main()
     1. compiler detects that entity3 has a ctor that accepts a pointer to entity
     2. rhs object is constructed
     3. rhs is implicitly typecast to Scoped pointer, equivalent to "ScopedPointer(new Entity)"
-    4. if copy elision is disabled, a copy ctor copy-initializes lhs via rhs, other wise
-    construction stages 1-3 occur in the memory address of entity3. (explained in 25_constructor)
+    4. using the newly temporary constructed object (prvalue - stealable, no id), a copy ctor copy-initializes entity3 via the temp obj.
+    Note: if copy elision (compiler optimization) is enabled the construction of the temp object directly occurs in the memory
+    address of entity3, instead of constructing it at a separate adress and the copying its properties into entity3.
+    Hence copy elision eliminates unnecessary copying of temp objects.
 
     ScopedPointer serves as a "stack pointer" - it houses a class "Entity" as a class member that has pointers
     to heap allocated objects. when entity3 goes out of scope it is deleted automatically
@@ -90,13 +93,11 @@ To access members of a structure, use the dot operator. Stack var - Struct s
 To access members of a structure through a pointer, use the arrow operator.
 */
 
-/*
-RAII is a programming idiom you have to follow (construction destruction),
-GC is a mechanism that is just there and working for you. In a separate thread, too, 
-while RAII happens in application thread, so there's that.
+/*.
 RAII stand for Resource Acquisition Is Initialization. resource acquired in the constructor
 & released in the destructor of the object.
-used in smart pointers  C++ Don't pay for something you don't use. no measureable overhead.
+used in smart pointers  C++ Don't pay for something you don't use - there is no GC mechanism here like in C#.
+We need to implement RAII as a memory management technique.
 it is also used with files, for example:
 
 void print_file(std::string fname)
@@ -111,12 +112,12 @@ void print_file(std::string fname)
 
 GC (Garbage Collection) like the one in Java, that adds its own overhead, removes some of the determinism 
 (the abillity to explicitly call destructor) from the resource release process and handles circular
-references (not handeled in cpp - variables refering to each other are being releasedc).
+references (not handeled in cpp - variables refering to each other are being released).
 Garbage Collection solves memory management  making it so that the developer doesn't 
 need to pay as much attention to managing those resources.
 RAII solves it by making it easier for developers to pay attention to their resource management. 
 Anyone who says they do the same thing has something to sell you.
-//Herb Sutter’s cppcon 2016 presentation[1] on deferred_ptr[2] : smart pointers are garbage collection.
+//Herb Sutterâ€™s cppcon 2016 presentation[1] on deferred_ptr[2] : smart pointers are garbage collection.
 RAII in CPP means that any allocated resource is bound to some scope. 
 When that scope is left, the resource is destroyed/released automatically.
 Any object allocated by new() MUST be de-allocated by a matching delete().
