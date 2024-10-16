@@ -134,7 +134,7 @@ Player p; //p is a class object of type Player stored on the stack (instance var
 
 p.name --> "." operator = member access through object (if an object as allocated on the stack, we can access
 it's members directly via ".")
-a->b == (*a).b
+a->b == (*a).b  (arrow operator) aka member access through pointer
 Deref the pointer (indirection) ---> get the object ---> access its "b" member
 The object can be either on the stack (inlined object?) or on heap.
 
