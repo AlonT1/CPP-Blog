@@ -49,4 +49,5 @@ int main()
     charachter->jump(4); // executes jump of Character class although the pointer
     //points to mario object! this can be solved by polymorphism which is enabled
     //in cpp by virtual functions - explained in 28_virtual_function
+    // (polymorphism is not possible for stack allocated object)
 }
