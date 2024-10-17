@@ -6,6 +6,7 @@ and work under 3 conditions:
 3. polymorphic pointer/ref - a polymorphic pointer/ref of type Base points
 that points/refers to one of the Derived (inheriting) classes.
 we exectue virtual functions through the polymorphic pointer.
+Note: the pointer can point to either stack or heap allocated array! we both we can achieve virtual functions!
 e.g:
 Animal* animal = &cat;
 animal->walk()  // walk() of Cat is exectued, assuming all 3 conditions above are met.
@@ -27,7 +28,7 @@ Only at run time, during the iteration, we can tell via the Animal ptr, which wa
 to dynamically dispatch based on the run-time type of the ptr (run-time type - the type
 at which the pointer points to).
 
-Therefore, The vtables mechanism helps to resolve the call (animal->walk() (animal polymorphic pointer)
+Therefore, The vtables mechanism (explaine below) helps to resolve the call (animal->walk() (animal polymorphic pointer)
 does walk() belongs to Animal::walk() or does it belong to Dog::walk())
 
 
@@ -42,17 +43,20 @@ and reach the table to determine to which function to actually map to
 The vtable itself is a static array (belongs to the class and share among all instances)
 that contains function pointers.
 in practice no difference in perfromance impact (maybe on embadded where every cpu cycle counts)
+CPU cycle - time (unit) it takes for the cpu to perform a task. e.g: 3Ghz (3 billion cycles per second)
+each cycle lasts 0.33 nanosecond.
 
 Only member functions can be declared virtual (friend functions cannot be virtual, 
 they are not part of the class)
 
 Note that virtual functions in themselves are not necessary for polymorphism
 
-additional advantages can be found in 29_interface_pure_virtual_functions. in short
-(extensiblity+flexibility: Pay(CreditCard&) can accept Visa, AmericanExpress (all inherit from CreditCard
+Advantages:
+can be found in 29_interface_pure_virtual_functions. in short
+1. extensiblity+flexibility: Pay(CreditCard&) can accept Visa, AmericanExpress (all inherit from CreditCard
 and override it's virtual functions)....
-Encapsulation - CreditCard hides methods that Visa, AmericanExpress, etc... didn't override
-polymorphic array - we can store different credit cards in CreditCard Array and loop through
+2. Encapsulation - CreditCard pointer hides methods that Visa, AmericanExpress, etc... didn't override
+3. polymorphic array - we can store different credit cards in CreditCard Array and loop through
 it and execute virtual functions that exist in CreditCard.
 
 */
@@ -66,8 +70,7 @@ public:
     void foo() {};
     virtual std::string get_name() //virtual - tells the compiler to generate a vtable 
         //for this function so if its overriden, the compiler can point to the "overriden" function  
-        //without "virtual", all inherent instances of this base class will refer
-        //to this get_name function, meaning instances of Entity or Player will execute this function
+        //without "virtual": Entity* ptr = new Player();  ptr->get_name() // get_name() of Entity is invoked!
     {
         return "Entity";
     }
@@ -85,13 +88,13 @@ public:
     /*
 
     Note:
-    1. overriding virtual functions is not mandatory. Assume  class C inherits from B which inherits from A,
+    1. An inherting class doesn't have to override a virtual function: Assume  class C inherits from B which inherits from A,
     if virtual func() exists in class A, is overriden in B and we instantiate c where func() is not overriden and
     we execute func() through c, the most derived overriden func() between A and our class (C) will execute,
     therefore func() of B will execute. This is in contrast to pure virtual functions which MUST be implemented
     in the inheriting class, otherwise the inheriting class becomes an abstract class, without the ability to
     instantiate it. A class must be completely "concrete" by implementing all pure virtual functions to be instantiatble.
-    non-pure virtual functions already have a definition when we declare them (can be defined in
+    non-pure virtual functions already has a definition when we declare them (can be defined in
     a external cpp (declaration in a header, definition in a cpp). it is our choice whether inherting classes override them.
     pure-virtual functions don't have a definition by default, it our job to implement them somewhere, in
     order to instantiate the implementing class.
@@ -111,6 +114,8 @@ public:
     This keyword helps preventing bugs (raises error - overriding function doesn't
     match the base's virtual function or if the base function isn't marked as virtual when we
     try to virtually override it.)
+    what if we use override on function that does not override anything? error:
+    main.cpp:23:10: error: ‘void Mario::Jump()’ marked ‘override’, but does not override
 
     5. overriden virtual functions can be also marked as virtual - NOT MANDATORY:
     if Cat inherits from Animal and no one inherits from Cat (final), then Walk()
@@ -126,8 +131,10 @@ public:
     6. "override" can only be used only when defining/declaring a function inside the class.
     e.g: in a header file that contains the class delcaration,
     we can declare functions with "override" inside the clas, but the function's definition in .cpp
-    file will cannot be marked as override - The same goes for the virtual and friend keyword
-    both can be used only inside the class during declaration / definition.
+    file  annot be marked as override - The same goes for the virtual and friend keyword
+    both can be used only inside the class during declaration / definition in the declaration
+    of the class interface (usually done in the header). Here the declratation of th class interface
+    and the actual implementation is all in the same cpp file, so its ok to use "override"  here.
     */
     virtual std::string get_name() override
     {
@@ -188,6 +195,43 @@ int main()
     the virtual table pointer is unique per instance but they all point to the same static vtable of the class.
     Entity and Player both have their own vtables and vpointer to their respective vtables
     for more info see vtable diagram.
+
+    given:
+    Parent* ptr = new Derived(); // Derived inherits from Parent
+    
+    Parent
+    __vfptr: void**---------------------->  Parent Vtable
+    x: int (10)                             ptr to Foo of Parent    
+    virtual Foo: void                       ptr to FooNotOverriden of Parent
+    virtual FooNotOverriden(): void
+        |
+        |
+        ↓
+    Derived------------------------------>  Derived Vtable
+    __vfptr: void**                         ptr to Foo of ***Derived***
+    x: int (10) // inherited from Parent    ptr to FooNotOverriden of Parent
+    y: int (8)
+    Foo() void override
+
+    as seen in 'Deived Vtable" ptr to Foo actually points to Foo of Dervied!
+
+    note about inheritance when the class has virtual to one of its function - 
+    both the base and inherited instance are assigned with a vfptr ptr (8 bytes,
+    like any other pointer) to their own unique virtual table:
+
+    on a 64 bit system (8 byte memory address (64 bit), each hex character is 4 bit, total
+    of 16 digits = 64 bit)
+    Given "Parent p1" its memory block is:
+    0x000000784C1FF9B8 00007ff63936bd90 cccccccc0000000a    
+    (start address)    (add. of vfptr)  (add. of 4 byte int, cccccccc is for padding)
+
+    Given 
+    The memory block of "new Derived"
+    0x000000784C1FFA18 00007ff63936bdb0 cccccccc0000000a cccccccc00000008
+    (start address)    (add. of vfptr)   (inherited x)    (add. of y)
+
+    Note that the inherited "Derived" has all the memory structure of Parent, and it appears first.
+    
     */
     print_name(e2);//player
 
@@ -203,8 +247,12 @@ int main()
     This is a problem called "slicing" (explained in 102_slicing): we instantiated "Player" and assigned it by value to an Entity,
     this assignment by value "slices" the Player-ness from Player, and we remain only with Entity.
     This only happens when assigning the object by value to stack allocated objects,
-    therefore in order to use polymorphism with base classes, we MUST USE POINTERS OR REFERENCES
-
+    therefore in order to use polymorphism with base classes, we MUST USE POINTERS OR REFERENCES to heap allocated object.
+    Virtual functions cannot be invoked using pointers to stack allocated objects for example:*/
+    e4->get_name();
+    /*
+    Because e4 points to a stack allocated Player, the compiler knows exactly the type of E
+    
     Important Note: in Java Entity e = Player(), means that e is a class reference to a Player object of type Entity.
     in other words e is just a reference/pointer to the location in memory where the data stored on the heap. in some sense it is
     similar to the new keyword which also allocates on the heap and returns a pointer address to that location.
