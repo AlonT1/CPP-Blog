@@ -94,8 +94,10 @@ To access members of a structure through a pointer, use the arrow operator.
 */
 
 /*.
-RAII stand for Resource Acquisition Is Initialization. resource acquired in the constructor
-& released in the destructor of the object.
+RAII stand for Resource Acquisition Is Initialization. The better name is Scope-Bound Resource Management - 
+resource acquired in the constructor (new in ctor) & released in the destructor of the object (delete in dtor).
+"Resource" - can be file handles, network sockets, database handles, GDI objects, etc.
+We encapsulate the resource in a local instance of a class that is automatically freed when the obj gets out of scope.
 used in smart pointers  C++ Don't pay for something you don't use - there is no GC mechanism here like in C#.
 We need to implement RAII as a memory management technique.
 it is also used with files, for example:
