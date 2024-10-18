@@ -14,7 +14,7 @@ animal->walk()  // walk() of Cat is exectued, assuming all 3 conditions above ar
 (polymorphism -  symbol that can represent multiple types -
 the pointer/ref can represent either Dog/Cat)
 
-virtual functions enable dynamic dispatch -
+virtual functions, implemented using vtable (explaine below) enable dynamic dispatch -
 when a function call is linked to its implementation at run time
 through a polymorphic pointer, which is especially critical during run
 time when the function call cannot be resolved at compile time, for example:
