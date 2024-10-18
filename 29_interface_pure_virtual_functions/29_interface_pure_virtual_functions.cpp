@@ -144,7 +144,7 @@ Want a C# equivalent interface? have a class with only pure virtual functions
 Want a C# equivalent abstract class? have a class with 1 or more pure virutal functions with optional fields/defined methods
 public IVehicle
 {
-public:
+// C# class members are implicitly public, unless stated otherwise
 	int speed = 0; // can have fields
 	void Drive() { std::cout<<"Driving"; } 
 	// equivalent to c#: "public abstrac void Accelrate();"
