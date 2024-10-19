@@ -110,6 +110,22 @@ c.  volatile char (*fp)(float const), &r = c;
         ii. declarator 2: &r is a reference to a volatile char.
         the declarator includes a modifier/compound type & and the identifier r
 
+Volatile explained:
+
+volatile int flag = 0;
+void interrupt_handler() { flag = 1; }
+
+int main() 
+{
+    while (flag == 0) { // Wait for flag to be set }
+}
+
+flag is set to 0, and in the  while loop the compiler might optimize "flag==0" to 0 because apparently
+the compiler doesn't find code nearby that changes "flag". Volatile tells the compiler
+that a variable's value may be changed at any time, even if a code nearby isn't found - can happen
+in multi-threaded applications, or due to some external event that invokes interrupt_handler.
+
+
 d.  int a=1, f();
     1. decl-specifier-seq: int (type specifier)
     2. init-declarator-list
