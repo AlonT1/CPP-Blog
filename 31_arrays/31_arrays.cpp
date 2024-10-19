@@ -65,25 +65,24 @@ int main()
 	// arr1 is a 1D array, 1x3 matrix, 1 row, and 3 columns (concept more evident below in 2D matrices)!
 	std::cout << sizeof(arr1); // prints 12
 	int size1 = 3;
-	// won't work, size1 must be const, arr1 is only compile time, and size1 can be changed during runtime
-	// for example by user input
-	// int arr1[size1]{ 1,2,3 };
+	// "int arr1[size1]{ 1,2,3 };" won't work, size1 must be const, arr1 is only compile time, 
+	// and size1 can be changed during runtime for example by user input
 	// Recall that array lookup is done by adding multiples of sizeof(array[0]) to 
 	// the address of the first element (see 19_structs for padding)
 
 	/*On the other hand, arr2 is a pointer to a dynamically allocated array, specifically it points to
 	"new int[5]" which returns a pointer to address of the 1st byte of the 1st integer
 	among 5 contguous elements of ints.
-	it iss not fixed at the time of declaration, and is allocated at run time on the heap.
+	it is not fixed at the time of declaration, and is allocated at run time on the heap.
 	taking the sizoeof arr2 returns 8 bytes, because it stores a 64 bit address. But why?
 
 	32-bit windows can use up to 4GB ram when a 32-bit processor and 32-bit os exists.
 	because with 32 bits we have either 32 digits where each can be 0 or 1 (2 options), e.g:
 	0000000000000000000000000000000000000000000000000000000000101001 // represents 42
-	32 bits = 4 bytes = (1 byte = 8 bits)
-	therefore we say that there are 2^32 = 4,294,967,296 unique locations, aka 4 billion
-	combinations of 32 digits, or in other words 4.3 billion bytes, since each 32 bit
-	mem address points to a byte.
+	32 bits = 4 bytes (1 byte = 8 bits)
+	therefore we say that there are 2^32 = 4,294,967,296 unique addresses (4 billion
+	combinations of 32 digits (bits)), each point to some byte. Hence we have 4.3 billion bytes
+ 	available in memory since each 32 bit mem address points to a byte.
 
 	decimal system, base 10 -> 10 digits 0-9, e.g: 123 = 1*10^2 + 2*10^1 + 3*10^0
 	base-2 system (binary) = 2 digits 0-1, e.g: 101 = 1*2^2 + 0*2^1 + 1*2^0 = 5 (in decimal)
@@ -97,7 +96,8 @@ int main()
 
 	When computers were first designed, it made practical sense to organize memory in powers of 2.
 	Binary multiples of bytes align well with the addressing mechanisms used in computer architecture.
-	Since 2^10 is the closest power of 2 to 1000 (aka KILO), it became the standard size for a kilobyte.
+	Since 2^10 is the closest power of 2 to 1000 (aka KILO), it became the standard size for a kilobyte,
+	so in effect we use kibibytes, but call it kilobytes.
 
 	1 byte = 8 bits - > 2^8 (8 digits each can be 2 options 0/1) = 255 possible values
 	1 kilobyte = 10^3 = 1000 bytes, more accurately 2^10 = 1024 bytes
@@ -125,7 +125,7 @@ int main()
 
 	*****************************************************************************
 	automatically keeping track of the size of each dynamic allocation would impose additional overhead, 
-	which goes against the C++ philosophy of ìyou donít pay for what you donít useî.
+	which goes against the C++ philosophy of ‚Äúyou don‚Äôt pay for what you don‚Äôt use‚Äù.
 	So if you want to keep track of the size, save it to a variable, or make a custom class
 	of array which allocates a pointer and has a size parameter.
 	*****************************************************************************
@@ -235,8 +235,8 @@ int main()
 	*/
 
 	/****************************array decay****************************
-	Ptr ìdecayî = process where an array name is implicitly converted into a pointer to the 1st byte of its first element. 
-	aka ìarray-to-pointer conversionî.  The term ìdecayî signifies a loss of :
+	Ptr ‚Äúdecay‚Äù = process where an array name is implicitly converted into a pointer to the 1st byte of its first element. 
+	aka ‚Äúarray-to-pointer conversion‚Äù.  The term ‚Äúdecay‚Äù signifies a loss of :
 		1. Type Information: An array in C or C++ has a specific type that includes the type of its elements and its size. 
 		For example, int arr[10]; is of type int[10]. When arr decays to a pointer, it becomes int*, 
 		and the information about it being an array of 10 integers is lost.
@@ -287,8 +287,12 @@ int main()
 	// populating the array
 	for (int i = 0; i < 3; ++i)
 		for (int j = 0; j < 4; ++j)
-			*(*(arr4 + i) + j) = i + j;
-
+			*(*(arr4 + i) + j) = i + j; // equivalent to: arr4[i][j] = i + j;
+	// *(arr4+i) means dereference the value that is referenced in ith element of the array
+	// the pointer stores the address of the 1st byte of this value, but because the pointer
+	// is of type int, the compiler knows that the value stored there is an int, therefore
+	// it allows us to modify (write and read) to value there as an int
+	
 	// printing the array
 	for (int i = 0; i < 3; ++i)
 		for (int j = 0; j < 4; ++j)
@@ -303,19 +307,19 @@ int main()
 
 	/***********************2D Array - alternative syntax*********************************/
 	/*
-	arr5ptr is a pointer to an array of 4 doubles, in this case it points to arr4.
+	arr5ptr is a pointer to an array of 4 doubles, in this case it points to arr5.
 	But &arr5 returns a pointer to the 1st byte of an integer amongst 4 consecutive integers.
 	And we also know that arr decays(equals to) &arr.
-	thus when we say that arr5ptr is a pointer to an array, we might as well say that
-	arr5ptr is is a pointer to a pointer (because stack arrays  decay to pointers!).
-	More explicitly we can say that arr5ptr is a pointer to 4 pointers (=arrays decayed to pointer).
+ 	Writing "double(*arr5ptr)[4]" instead of "double *arr5ptr" is a more explicit way to say that
+  	arr5ptr is points not only to the 1st byte of an single int, but that there are 4 consecutive ints
+   	after that in. 
 	*/
 	double arr5[4] = { 1,2,3,4 };
 	double(*arr5ptr)[4] = &arr5;
 	std::cout << arr5ptr[0][0];
 
-	/*carrots is a pointer to a distnct type double[4] (a new type, just like a custom struct)
-	when incrementing ++arr5ptr, the compiler, because of the type, will increment the pointer
+	/* This has more than a syntactic effect:
+	when incrementing ++arr5ptr o carrtos below, the compiler, because of the type, will increment the pointer
 	to the next set of 4 doubles, aka to the 1st byte of the 1st element in {3,4,5,6}.
 	carrots just like any other pointer can point to the 1st byte of an element, and there maybe
 	infinite amount of contiguous elements stored after the element we point to. the 1st element
