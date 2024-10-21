@@ -3,7 +3,7 @@
 
 https://stackoverflow.com/questions/61823137/why-does-a-const-reference-to-a-reference-lose-its-constness
 
-“X const& x” and “X const* p”
+â€œX const& xâ€ and â€œX const* pâ€
 
 1. east-const notation (const on the right of what it consitifies - the int):
 "int const& x" - x is a reference to a const int
@@ -33,7 +33,12 @@ int main()
     goo<int&>(x);
     // with east-const the following evalution occurs:
     //  T const &x ==> int& const &x ==> "int& const": references are always const by nature - 
-    // they must be initialized and cannot be reassigned, therefore "int& const" is reduced to "int&" ==>
+    // in fact:
+    // int w = 4;
+     // int& const x = w; // produces error because "const qualifiers cannot be applied to int&"
+    // so saying "x is a const reference to int"  == "x is a reference to an int" because by saying "reference"
+    // we implicitly mean "const reference" ( references must be initialized and cannot be reassigned, just like const,
+    // because they are implictily const) therefore "int& const" is reduced to "int&" ==>
     // "int& &x" ==> int& x (due to reference collapsing)
 
     /************************************************
