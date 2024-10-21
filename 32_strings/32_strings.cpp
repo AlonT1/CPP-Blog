@@ -108,8 +108,11 @@ int main()
     //(the end of string is not known to the compiler)
 
     char str4[3] = "ma"; // we have to accomodate an extra char for '\0' thus str[3] and not str[2]
-
-    const wchar_t* name5 = L"makore"; //L signifies that literal is made up of wide characters (2 bytes per character - up to the compiler 2 windows 4 mac)
+    char str5[] = "ma"; // sizeof(str5) prints 3, extra character for null terminated charactor
+    //L signifies that literal is made up of wide characters 2 bytes per character - up to the compiler 2 windows 4 mac
+    // regular char is 1 byte (up to 256 characters) , for ASCII.
+    // wchar_t is used for Unicode (thousands of characters)
+    const wchar_t* name5 = L"makore";
 
     //cpp11 introduced
     const char16_t* name10 = u"makore"; // 2 byte per character (16 bits (1byte=bits)
