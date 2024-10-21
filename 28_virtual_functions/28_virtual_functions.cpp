@@ -198,7 +198,7 @@ int main()
 
     given:
     Parent* ptr = new Derived(); // Derived inherits from Parent
-    
+    (memory layout, portion)
     Parent
     __vfptr: void**---------------------->  Parent Vtable
     x: int (10)                             ptr to Foo of Parent    
