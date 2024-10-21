@@ -34,7 +34,7 @@ int main()
     //child c contains in memory portions of Father, Mother and then Child (in order of inheritance)
     Father* child = &c;
     child->father_method();
-    // child ptr points to the Father portion of c which doesn't
+    // child ptr (of type Father) points to the Father portion of c which doesn't
     //exist at the start of address of c (Mother portion exists there), but rather in an offset
     //from start address of c, calculated by the compiler!
 
