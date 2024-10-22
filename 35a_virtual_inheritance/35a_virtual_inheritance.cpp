@@ -70,58 +70,59 @@ int main()
     these portions only apply to the realm of the compiler/ide, memory wise the data of d
     is just aligned in the bytes one after another - there is nothing that says "portion of x" - this 
     is only visible to the compiler. the memory looks like this:
-    0x000000053E0FFC48  0000002a (start address of d) first byte(2a) contains 42 in decimal (base_value from Intermediate1 portion)
-    0x000000053E0FFC4C  00000001 i=1 of Intermediate1 portion
-    0x000000053E0FFC50  0000002a 42 in decimal (base_value from Intermediate2 portion)
-    0x000000053E0FFC54  00000002 i=2 of Intermediate2 portion
-    0x000000053E0FFC58  cccccccc empty portion of Derived (actually there isn't any memory allocated for d's content because it
+    (1) 0x000000053E0FFC48  0000002a (start address of d) first byte(2a) contains 42 in decimal (base_value from Intermediate1 portion)
+    (2) 0x000000053E0FFC4C  00000001 i=1 of Intermediate1 portion
+    (3) 0x000000053E0FFC50  0000002a 42 in decimal (base_value from Intermediate2 portion)
+    (4) 0x000000053E0FFC54  00000002 i=2 of Intermediate2 portion
+    (5) 0x000000053E0FFC58  cccccccc empty portion of Derived (actually there isn't any memory allocated for d's content because it
     his empty, just showing that the next address doesn't contain data)
 
+    *******************************************************************
+    Notice that (1) and (3) (the memory of Base) repeats twice in the memory of "d". This is solved by virtual inheritance:
+    *******************************************************************
     */
 
-
-
-    /*************VIRTUAL INHERITANCE 
+            
+    /**************************VIRTUAL INHERITANCE 
+    
     https://shaharmike.com/cpp/vtable-part3/
-    ensures single copy of base's data is inherited by grandchild. 
+    ensures single copy of base's data is inherited by grandchild.
+    ***************************************************************************************
     tl;dr both intermediate 1 & 2 hold pointers to the same base class, instead of each of them
-    holding a unique copy of base. A vtable for Derived is created that contains offsets which help us
+    holding a unique copy of Base, which causes "Derived" to have Base appearing twice in its memory,
+    because its inherited once from intermediate 1 and 2.
+    ***************************************************************************************
+    A vtable for Derived is created that contains offsets which help us
     to reach the same Base portions of Intermediate1 and Intermediate2 (since they both point
     to the same data, the offsets will lead us to the same Base values).
     Note: vs debugger doesn't show these vtables
 
-    This is done in the following way:
-    Note: vsdeugger hides the implementation (no vtables visible)
-    A vtable for the Derived class is created. Memory wise d's memory will look like this:
-    1. A pointer to a vtable (vfptr) from the Intermediate1 Portion of Derived
-    that points to a 32 bit offset integer housed in the vtable of Derived.
-    By adding 32 to the address of this pointer, we will get the address of the data of A 
-    2.memory portion of Intermediate1 (i=1)
-    3. A pointer to a vtable (vfptr) from the Intermediate2 Portion of Derived
-    that points to a 16 bit offset integer housed in the vtable of Derived.
-    By adding 16 to the address of this pointer, we will get the address of the data of A 
-    4. memory portion of Intermediate2 (i=2)
-    5. the data of Derived class
-    6. the data of Base class (to which Intermediate 1 and 2 point to by adding the offsets that reside
-    in the vtable of Derived
-    */
-    d.Intermediate1::base_value++;
-    d.Intermediate2::base_value;
+    This is done in the following way - given:
+       A [int a]
+       /     \
+   B[int b]   C[int c] 
+        \    /  
+       D[int d]
 
+    all inheritance are virtual   
+    'D' memory section looks like this:
 
-    /*
-    Additionally, a direct cast from Derived to Base is also unambiguous, 
+    4 bytes               12 bytes                     12 bytes             4 bytes     (total of 32 bytes)
+    mem sec of A        mem sec of B                mem sec of C          mem sec of D
+    [A::int a,      vfptr of D, B:int b,    vfptr of D, C::int C,     D::int d]
+
+    As seen mem sec of B and C contain DIFFERENT pointers to different offsets in the vtable of D.
+    for example (the numbers are random):
+    vtable of D
+    int offset = 20
+    int baseOffset = 12
+    int offsetToTop = 8
+    Using these offsets, the compiler can say: "in the memory of D, we have mem portion of C, and there
+    we have a pointer to a specific int offset - adding this offset to the mem portion of C will lead us to 'A'.
+    In this way the mem sec of C doesn't need to store a copy of the information of 'A', but rather just a pointer to 'A'.
+    
     now that there exists only one Base instance which Derived could be converted to.
     */
 
-    //d.base_value; // Not ambiguous!;
-    std::cout << sizeof(d) << std::endl;
-    /*
-    0x000000C3676FF648  00007ff6770d9c20
-    0x000000C3676FF650  cccccccc00000001
-    0x000000C3676FF658  00007ff6770d9ce8
-    0x000000C3676FF660  cccccccc00000002
-    0x000000C3676FF668  cccccccc0000002c 
-    
-    */
+    d.base_value; // Not ambiguous!;
 }
