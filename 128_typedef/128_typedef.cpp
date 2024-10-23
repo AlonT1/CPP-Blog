@@ -37,7 +37,34 @@ int main()
     {
         struct Noder2* next; //in c we must fully declare "struct Noder2*"
     };
-    struct Noder2 noder2; //in c the full name "struct Noder2". with cpp "Noder2" is suffice.
+
+    /*
+    in c the full name "struct Noder2". with cpp "Noder2" is suffice. Why?
+    Syntactically both treat struct almost the same. Only C++ has added an extra rule that allows to omit the struct
+    (and class) keyword if there is no ambiguity.
+    If there is ambiguity, also C++ requires the struct keyword in some places. 
+    A notorious example is stat on POSIX systems where there is a struct stat and a function stat - explained:
+    POSIX (Portable Operating System Interface) defines the API, along with command line shells and utility interfaces, 
+    for software compatibility with variants of Unix and other operating systems (defines shell commands such as mv,
+    grep, thread apis - pthread_create, pthread_join,...)
+    POSIX-Compliant Systems (Unix, macOS, Windows,..) specify a "stat" function:
+    
+    int stat(const char *path, struct stat *buf); // used to retrieve information about a file.
+
+    but POSIX also specifies a stat struct used to retrieve filesystem status information:
+    
+    struct stat
+    {
+	    dev_t     st_dev;     // ID of device containing file
+	    ino_t     st_ino;     // inode number
+	    // ... other members
+    };
+
+    When you want to use "struct stat" in C, and not the "stat" function you need to include the struct keyword
+    to avoid confusion with the stat function.
+    
+    */
+    struct Noder2 noder2;
 
     // we can instantiate a struct directly after declaration:
     struct Entity
@@ -66,7 +93,6 @@ int main()
     Node node1; //also works in C (saves us wrtiting "struct Entity1 entity;"
 
     std::cout << node1.x << '\n';
-
 
 
 }
