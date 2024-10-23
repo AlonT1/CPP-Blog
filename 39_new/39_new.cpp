@@ -63,9 +63,26 @@ int main()
     //new uses c's malloc behind the scenes
     Entity* d = (Entity*)malloc(sizeof(Entity)); // retrives a memory address of size entity,
     //but! doesn't construct the object! the location of is empty of content - in cpp use only "new"
+    /* To be more specific - given:
+    struct Node
+    {
+        int data;
+        struct Node* next;
+    };
 
-    //use placement new -  new(b) to choose the location of where the memory is stored
-    Entity* f = new(b) Entity;
+    in both c and cpp using malloc and new the memory block will look like:
+    +------------+------------------+
+    | 4 byte int |  8 byte pointer  |
+    +------------+------------------+
+    Malloc does not initialize this memory block, but new does (via ctor).
+
+    new also offers type safety by returning a pointer of the correct type, avoiding the need
+    for explicit type casting like happens with malloc.
+
+    */
+    
+    //use placement new:  new(b) to choose the location of where the memory is stored
+    Entity* f = new(b) Entity; // Entity is constructed at "b"s location
 
     //delets uses c's() free behind the scenes - does not remove the pointer from memory!
     // the pointer is allocated on the stack as a plain old data (POD), the object at the memory address is indeed removed.
@@ -77,12 +94,10 @@ int main()
     /* Memory fragmentation
     if heap was 10kb space.
     
-
     int* x = (int*)malloc(3000) //3000 bytes == 3 kb allocated on heap
     
     heap: size: 10kb  occupied: 3kb free: 7kb
 
-    
     int* y = (int*)malloc(4000)
 
     heap: size: 10kb   occupied: 3kb 4kb  free:3kb
@@ -101,10 +116,6 @@ int main()
     without adverse effects, this is becuase those languages don't support
     direct pointers. This process occurrs when memory allocation fails/periodic
     gargbage collection cycle - this compromises real time performance and determinism.
-
-
-
-    
     */
 
 }
