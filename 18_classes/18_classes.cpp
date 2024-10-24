@@ -33,9 +33,12 @@ public: //access specifer
 	void(Player::* fp)(int,int) = &Player::move; // fp  is a pointer, see 58_function pointers for how to invoke
 
 	Player() {}
+	// all methods in a class are implicitly inline - this why a methodA can call methodB despite methodB being
+	// declared+defined after methodA. In addition, the 1st parameter of methods (member functions) is implicitly "this"
+	// so "void move(int xa, int ya)" == "void move(Player* this, int xa, int ya)
 	void move(int xa, int ya) // a member function, aka method
 	{
-		x += xa * speed;
+		this->x += xa * speed; // == cpp allows to call "this->x" simply as x
 		y += ya * speed;
 	}
 
