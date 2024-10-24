@@ -1,5 +1,12 @@
 #include <iostream>
 
+// important note about constructors in general:
+// when using "new expression" which mallocates a block of memory at size of the entity + casts a pointer of type of the Entity
+// and constructs the object in the memory block - the term "constructor" here isn't really accurate - after the cast the compiler
+// knows where the int member is, where the float memeber is,etc, when it needs to access them in the memory block.
+// so the instance is "already" there, or more specifically - the memory has already been allocated to accomodate it.
+// the constructor simply INITIALIZES the data at the memory block, giving members a meaningful values.
+
 //all rules apply to stuct (except struct are public by default, class are private)
 
 //Entity1 is an aggregate object
