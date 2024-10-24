@@ -2,7 +2,11 @@
 operator - symbol used instead of a function to perform something (*, !, &, <<, +, - new, delete, ())
 overloading - giving a new meaning to..
 allowing to define or change an action of an operator
-OPERATORS ARE FUNCTION, instead of the name "add" the name can be "operator+"
+Note - with function overloading we are "overloading functions" that already exist
+When overloading operators, the operator function does not necessarily exist in our custom class,
+so overloading here means more  "IMPLEMENTING" the operator, not overloading
+an existing function such as "operator+".
+PERATORS ARE FUNCTIONS instead of the name "add" the name can be "operator+".
 use of operator overloading should be minimal and make perfect sense (vector addition)!
 */
 
@@ -21,12 +25,12 @@ public:
     //if he likes. In addition they are used inside the operator overload functions
     Vector2 add(const Vector2& other) const
     {
-        return Vector2(x + other.x, y + other.y); 
+        return Vector2(this.x + other.x, this.y + other.y); // creating a new object
     }
 
     Vector2 multiply(const Vector2& other) const 
     {
-        return Vector2(x * other.x, y * other.y);
+        return Vector2(this.x * other.x, this.y * other.y);
     }
 
 
@@ -40,6 +44,8 @@ public:
     Vector2 operator+ (Entity* const this, const Vector2& other)
     BINARY OPERATORS MUST TAKE IN 2 PARAMETERS by definition (either 1 implicit ("this") and 2nd is explicit
     or 2 explicit). Unary operators take in 1 parameters.
+
+    Const at the end is not mandatory, but recommended as operator+ should not modify class members
     */
     Vector2 operator+ (const Vector2& other) const  //equivalent to Vector2 operator+ (Vector2* const this, const vector2& other)
     //"operator" is a key word used to customize c++ operators for operands of user-defined types
@@ -51,7 +57,7 @@ public:
         without copy elision, returning back from add would require:
         1.copy constructing vector2 from add() to the hidden parameter 
         */
-        return add(other);
+        return add(other); //  return Vector2(this.x + other.x, this.y + other.y); // creating a new object
     }
 
     Vector2 operator* (const Vector2& other) const // equivalent to Vector2 operator* (Entity* const this, const Vector2& other) const
@@ -116,25 +122,27 @@ public:
 
     1. operator<< (belongs to ostream, std::cout is type osstream) and is binary function which
     takes in 2 parameters - the lhs operand (ostream) and a template generic rhs operand.
-    in this case the Vector instance).
+    in this case the Vector instance) - this is just how it is defined.
     therefore this function must be implemeneted outside of the class (free function)
     because otherwise the first paramter will implicitly be "*this" which will mount to 3 parameters, and to overload
     the function we must use the same number of parameters. their name can differ (we override signatures
     and signatures can be written without names, the types must match. in case of operator<< the first
-    param type is ostream and the 2nd param is generic (supports our custom object
+    param type is ostream and the 2nd param is generic (supports our custom object)
     Thus, we can't overload operator<< via a class function, because "this"
     will be implicitly passed, including std::cout and the rhs parameter (3 total parameters and not the required 2).
 
-    2. In addition ostream supports operator<< that accepts an ostream and a generic parameter.
-    we cannot access ostream class and add a new member function to it that accepts
-    our custom object. Therefore, I assume that operator<< is a non-member function
-    in the iostream header (doesn't belong to a specific class, but maybe "friends" with that class, 
-    having access to the private interface of the ostream class),
-    WE CANNOT OVERLOAD MEMBER FUNCTIONS OF INACCESSIBLE CLASS SUCH AS OSTREAM,
-    only its non-member functions that "lay free" globally.
-    when overloading operator<< we specify ostream as the first paramaeter in the overload
-    and a concrete type (Vector2) as the second parameter.
+    2. Unlike operator+ and operator* which are functions that did not exist in our custom class, operator<<
+    does exist in iostream. In fact its signature is:
+    std::ostream& operator<< (std::ostream& os, const T& obj); // note the generic 2nd parameter
+    So "operator overloading" with operator+ means - IMPLEMENTING the + opeartion,
+    But with operator<< we REALLY overload the operator (function) since its already defined in ostream.
+    So the engineers had 2 choices to enable us to overload<<:
+    1. either our class should inherit from ostream and override operator<< as a member function
+    2. make operator<< as a free member function.
+    By going with (2) its much easier to overload the function (no need for inheritance), and if operator<<
+    needs to access one of the class members (i.e act like a member function) we can simply friend it.
 
+    
     The only reason to "friend" this function is to give it access to the private
     fields of "other". otherwise, the function can be non-friend "normal"
     */
