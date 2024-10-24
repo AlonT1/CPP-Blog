@@ -16,22 +16,18 @@ int main()
     std::cout << sizeof Player;// size of is an operator, not a function! doesn't require parenthesis
 
 
-    //1. tl;dr operator new (can be overloaded)
+    //1. tl;dr "operator new" (can be overloaded) vs "new expression" (cannot be overloaded)
     //-  performs only memory allocation (chunk of memory in the requested size arguemnt), and returns a void pointer to it
+    // without calling a ctor, and without casting the pointer
     Player *p1 = (Player*) operator new (sizeof Player); //operator new (calls the "new" function - operators are function) 
     //allocates raw memory - malloc style! cpp requires an explicit cast 
     //meaning it requests 16 bytes from the os (the size of Player) and the os returns an address to the begining
     //of a 16 byte memory chunk. the malloc/new operator in turn returns a void pointer to that memory address
     //so we have to cast it to a pointer to Player, otherwise we won't be able to read/write
-    //from/to that memory address ((the compiler will treat that location as
-    //if it stores a Player object, rather then void - stores nothing).
-    //Note: cpp requires an explicit cast of the void pointer returned by
-    //malloc/new unlike c where the cast is done implicitly.
-    // IMPORTANT: operator new doesn't construct a Player object!!!!!
-    //p1 just points to the start of an empty memory chunk of 16 bytes, which supposed to store
-    //a Player object (being a Player type, allows the pointer/compiler to reach out for class members/functions)
-    //that are stored in that memory address, if the pointer was of type void, access to any information regarding
-    //Player class was invalid
+    // IMPORTANT: operator new doesn't initialize a Player object, since no ctor is invoked (like with new expression), 
+    // albeit the memory block is partitioned according to the members of the class!!!!!
+    // if the pointer was of type void, access to any information regarding
+    // Player class was invalid
     
     /*
     we can also override operator new:
@@ -54,10 +50,11 @@ int main()
     struct Node* node = (struct Node*)malloc(sizeof(struct Node));
 
     using typedef we can shorten the declartion above:
+     typedef struct node { struct node* next; } Node;
+    Node* node = (Node*)malloc(sizeof(Node));
     //(Node becomes alias for "struct node", but we must use "struct node" inside the struct
     //since the alias Node is not yet delcared inside the scope of the struct
-    typedef struct node { struct node* next; } Node;
-    Node* node = (Node*)malloc(sizeof(Node));
+    // search typedef for more info.
 
     */
 
@@ -72,16 +69,11 @@ int main()
     //3. performs an implicit cast from the void* returned from 1 into the type that is derived from "new X" - when X is the type
     // Player in this case
 
-    //note:in step 1 we invoked the operator new which requires an explicit cast from the returning void* to Player*,
-    //but we didn't perform the cast here. The reason is that step 3 of the "new expression" does this implicitly.
-    //this is also noticable when overriding the new operator (function) which returns void* - essentialy
-    //replacing step 1 of "new expression". the construction + implicit conversion of pointer of type T will be 
-    //the "new expression" later performed by
 
     //3. placement new - new expression with additional parameters - like "new expression" above + allows specifying an address
     void* address_of_player = operator new (sizeof Player); // allocating sizeof player memory chunk into a void pointer
     Player* p3 = new (address_of_player) Player(); // placement new allows to specify a specific address of where
-    //to initialize the Player object, and later placement new returns a pointer of type Player.
+    //to construct the Player object, and later placement new returns a pointer of type Player.
 
 
 
