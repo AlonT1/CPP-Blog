@@ -87,18 +87,18 @@ int main()
 
     /*
     The C++ language says that a local const reference, where the const refers to the type
-    specifier (int in the example below) prolongs the lifetime of temporary values
+    specifier (int in the following example below) prolongs the lifetime of temporary values
     until the end of the containing scope, but saving you the cost of a copy-construction
-    (i.e. if you were to use an local variable instead).
+    (i.e. if you were to use an local variable instead). see 45_copy_ctor
     */
     const int& t = 5; // a reference to an rvalue - references can "usually" refer to an lvalue because they
-    //have a memory location. but here we refer to an rvalue which doesn't have a memory location.
+    //have a memory location. but here they refer to an rvalue which doesn't have a memory location.
     //this is possible because the const promises that we won't change the literal and this makes sense
-    //because 5 doesn't have a memory location which can be refereed to and be modified.
+    //because 5 doesn't have a memory location which can be refereed to and be modified by us.
     //the const expands the reference and allows it to be assgined with rvalues CONSTANTS , prolonging their scope
-    //from expression scope to block scope.
+    //from expression scope to the scope of the variable.
     //In addition copy constructors which are const int& can receive either lvalues or rvalues, and the ctor
-    //can create an object from either
+    //can create an object from either. see 45_copy_ctor
 
     //read declarations backwards
     const int* ptr1 = new int; //ptr1 is a pointer to an int that is constant: the int data is constant, can't be changed via the ptr1
