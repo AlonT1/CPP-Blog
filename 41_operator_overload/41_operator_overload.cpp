@@ -217,7 +217,28 @@ Vector2 operator- (const Vector2& lhs, const Vector2& rhs)
 }
 
 /*
-detail at declartion
+What if in addition to the free operator- function above, we also have a member function:
+
+Vector2 operator- (const Vector2& rhs) const 
+{
+    return Vector2(x - rhs.x, y - rhs.y);
+}
+
+Can both exist together? the answer is yes
+Vector2 result1 = v1 - v2;  // Calls the member function    
+Vector2 result2 = operator-(v1, v2);  // Calls the non-member function
+
+The C++ standard defines that when both member and non-member functions can be called,
+the member function takes precedence for 
+operations where the left operand is an object of the class.
+
+*/
+
+
+
+
+/*
+further details at the function call in main()
 */
 Vector2& operator-- (Vector2& val) 
 {
@@ -270,73 +291,19 @@ int main()
 
     overload with a Member/Friend/Normal function?
     *********************************************************************
+    tl;dr tl;dr Member/Friend/Normal function? - These are just guidelines!!!!
+    which function signature to use? (the compiler will generate the appropriate function
+    call according to the signature, explained in "speed * powerup" example above)
 
-    member function - a function that is a member of the class
-    normal function - a classic function defined outside the class (free)
-    friend function - a function declared inside a class T via "friend" keyword.
-    This grants access to the private members of the instances of the friended class 
-    through the T type instances in the parameters of the function. can be defined
-    inside/outside the class (in both cases it is considered 
-    a free function, explained in notes about friend)
+    1. Want to manipulate lhs? overload by member function  +=, -=, /=,  *=, [], =, ()
+    2. want to create a new data (instance / overload an operator from an inaccessible class(operator<<)?
+    overload by normal function:  +,-,/,* , <<
+    3. same reasons in 2, but also grant access to private members of parameters
+    and also have the possibility to define the overload inside the class*? overload by friend function
 
-    The compiler will generate the appropriate function call for "speed * powerup"
-    according to the type of overload signature we write for the operator* function
-    we have two distinct signatures for overloading operators (member and free,
-    both produce the same result, but they are semantically different, they "mean"
-    two different purposes:
-
-    1. overloading with member function (member of the class), the signature is:
-
-        Vector2& operator*(const Vector2& powerup);
-
-        The operator* is a binary operator, and by declaring the signature of operator*
-        to accept a single parameter, 
-        *********************************************************************
-        we are telling the compiler/another programmer that we are going to operate on the lhs operand (speed),
-        (which is implicitly provided as a "this" pointer - ONLY HAPPENS IN MEMBER FUNCTIONS!!!!!!) 
-        and our goal is not to create a new independent object instance
-        as a result of using the operator. (a task fit for friend/normal functions).
-        *********************************************************************
-        The compiler actually transforms the signature to:
-        Vector2& operator*(const Vector2* this, const Vector2& powerup);
-        tO support this request, the compiler generates the following function call
-        for "speed * powerup":
-        speed.operator*(powerup), or more specfically operator*(&speed, powerup).
-        where the address of speed (the instance we operate on) is supplied to the
-        hidden *this parameter which serves as the lhs of the operator*.
-        therefore in the code we can refer to member variables of speed via
-        this->...   
-
-        Notes:
-        a. overlading by member function is classic for the following operators:
-        += incrementing lhs, -= decrementing lhs  /= dividing lhs,  *= multiplying lhs
-        operators [], =, (), -> MUST be overloaded as member functions, because they are
-        all about reading/writing from lhs.
-        b. the reason we return a ref to vector2& is to support chaining, explained 
-        in operator= overload definition in Vector2.
-
-    2. overloading with normal / friend functions, both are free (defined outside the class,
-    although friend can be defined inside the class)
-    the signature is:
-
-        Vector2 operator* (const Vector2& lhs, const Vector2& rhs);
-
-        The operator* is a binary operator, and by declaring the signature of operator*
-        to accept a two parameters,
-        *********************************************************************
-        we are telling the compiler / another developer that we are going
-        to provide the two lhs & rhs operand explicitly, and that we are not
-        interested on operating on a specific instance, but rather create a new
-        instance by manipulating the two argument instances.
-        **********************************************************************
-        Therefore if only a normal/friend operator overload exists, the compiler
-        will morph the function call: "speed* powerup" to equate to 
-        operator*(speed, powerup);
-
-        operators such as +,-,/,* are classic for free functions because they are
-        all about creating new data (+ creates a new instance out of two operands
-        and so forth).
-
+    *friend functions can be defined inside the class for organizational purposes
+    by they aren't actually a part of the class , explained in notes about friend
+    
     Notes:
     1.  Another reason to use free functions (normal /friend):
         The inability to add a member overload directly to the class, e.g:
@@ -360,27 +327,9 @@ int main()
             we want that the definition of the overload to be inside the class for organizational
             purposes (although friend functions are not part of the class, explained in
             notes about friends).
+            
 
-    3.  when we overload a an operator with a member function and then override
-        the overload with a free function, basically implementing two signatures, for example:
-
-        Vector2& operator*(const Vector2& powerup); (member)
-        Vector2 operator* (const Vector2& lhs, const Vector2& rhs); (free)
-
-        and we execute "vec1 * vec2;" then the compiler will  choose the free function!
-        why? because the 2nd signature is more explicit! we explicitly note all the parameters
-        that the function needs to accept. 
-        In the 1st signature, the compiler needs to transform the signature to the full signature:
-        Vector2& operator*(const Vector2* this, const Vector2& powerup);
-        but more importantly the compiler needs to supply an implicit hidden parameter
-        of lhs which is the address of vec1 (&vec1) accepted by "*this" parameter.
-        In the 2nd signature everything is explicit, both the number of parameters
-        and the signature itself. The compiler always prefer function signatures
-        that are the closest match, with less conversions and less implicit steps.
-
-
-
-    4.  Also note that although operators such as += are fit for member overload,
+    3.  Also note that although operators such as += are fit for member overload,
         they CAN be overloaded as a free functions (normal/friend) as well,
         but following the conventions is recommended. both are equivalent:
         Entity& operator+= (const Entity& other)
@@ -396,22 +345,6 @@ int main()
         }
 
         5. +, - and ! are unary operators (e.g: -x)
-
-    **********************************************************************
-    tl;dr tl;dr Member/Friend/Normal function?
-    which function signature to use? (the compiler will generate the appropriate function
-    call according to the signature, explained in "speed * powerup" example above)
-
-    1. Want to manipulate lhs? overload by member function  +=, -=, /=,  *=, [], =, ()
-    2. want to create a new data (instance / overload an operator from an inaccessible class(operator<<)?
-    overload by normal function:  +,-,/,* , <<
-    3. same reasons in 2, but also grant access to private members of parameters
-    and also have the possibility to define the overload inside the class*? overload by friend function
-
-    *friend functions can be defined inside the class for organizational purposes
-    by they aren't actually a part of the class , explained in notes about friend
-    **********************************************************************
-
 
     */
 
@@ -431,7 +364,6 @@ int main()
     this solution is not optimal for this scenario because operator-- operates
     on the instance itself, thus a member function fits better as explained above in:
     overload with a Member/Friend/Normal function?
-
     Vector2 operator--(Vector2& vec); //we explicitly note the parameter
     when performing "res4--"; the compiler will generate the following function call:
     operator--(&res4); //res4 is supplied implicitly 
