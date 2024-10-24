@@ -49,20 +49,21 @@ public:
     implicit converted to: Entity a = Entity(b), and rhs is constructed into the stack frame of a 
     (without copy ctor - RVO optimization, see 25_constructor)
     2. the reason that we pass a const lvalue reference to a String (String&) is because:
-        a. it is the convention.
+        a. it is the convention - and what the compiler expects.
         b. const lvalue reference can accept prvalues such as "new T() (temporary) because
         temporaries are automatically const, thus const lvalues reference extend the lifetime
         of prvalues from expression scope to the scope of the const lvalue ref
-        c. reference saves us from making a copy.
+        c. reference saves us from making a copy. - So its comfortable that we can pass a prvalue
+        without the need to manually create a new object beforehand.
         d. Passing by value, except from being more expensive performance wise than reference,
-        also causes an inifinite copy ctor loop! if the copy ctor was: String(const String other) 
+        also can cause an inifinite copy ctor loop! if the copy ctor was: String(const String other) 
         and the call was String a = b  where b is an existing String object, 
         and a is said to be initialized with a copy-ctor:
             1. a = b -> copy ctor of "a" is invoked. because "a" is not-yet-created, and
             we try to construct and initialize it with already-created "b" object, 
             cpp ALWAYS invokes a copy ctor (if "a" was already-created a copy assignemnt
             would have been invoked).
-            2. then b would have been assigned to "other", i.e "String other = b" (because
+            2. then b would have been assigned to "other", resulting in "String other = b" (because
             we want to copy b")
             this would have invoked another copy ctor where "other" would again been assigned with
             b, and so forth in an endless loop.
