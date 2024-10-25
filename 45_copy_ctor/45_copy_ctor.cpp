@@ -1,10 +1,11 @@
 /*
 copy - copying data, memory, primitives, so we can modify them. takes time and performance!
 in cpp when we use the assignment operator we ALWAYS copying the value
-*references are aliases...
+*references are const aliases...
 
 copy ctors promise not to modify the object we copy from (it is const for a reason),
 therefore they are considered "safe" as opposed to move semantics which does modify the "other" object
+by nulling the members of "other* out (because it's members or moved to "this" class)
 (search "exception" in 89_move_semantics)
 
 with copy ctor we deep copy all the fields from the object we copy from into the fields of our object.
