@@ -63,6 +63,13 @@ int main()
 	vertices3.push_back({ 1,2,3 }); // equivalent to vertices3.push_back(Vertex(1,2,3))
 	vertices3.push_back({ 4,5,6 });
 
+	/*
+	vector.size(): num of elements  stored in the vector.
+ 	vector.capacity():  maximum number of elements vec can hold without needing to reallocate memory.
+  	vector.reserve()allows you to specify the minimum capacity of a std::vector, but it does not change the vector’s size.
+  	
+ 	*/
+
 	for (int i = 0; i < vertices3.size(); i++)
 		std::cout << vertices3[i] << std::endl; // [] is overloaded in vector to get the elements
 
