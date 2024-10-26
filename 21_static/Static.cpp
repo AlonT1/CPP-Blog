@@ -22,8 +22,6 @@ static void function()
 
 }
 
-int t_var = 2; //can be referenced in different cpp files by extern
-
 // Definition of globalVariable with external linkage (default for non-static vars and funcs)
 // we can't use extern keyword at definition!
 // in 21_static.cpp we actually refer to this variable
