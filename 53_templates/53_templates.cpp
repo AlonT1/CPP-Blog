@@ -82,9 +82,14 @@ int res2 = returner_template(5);
 #define min(a,b) (a < b ? a : b)
 a, b can be of any typeand min(a, b) is replaced  by ther ternary(a < b ? a : b)
     at preprocessor stage before compile time(on the level of the source code text).
-    this means that parameters are not type - checked and cannot be controlled
+    this means that parameters are not type-checked and cannot be controlled
     and arguments are not evaluated as expected :
-min(++i, ++j) evaluated as(++i < ++j ? ++i : ++j)
+usage:
+int x = min(x,y);
+Compiler yields:
+int x = (x < y ? x : y)
+
+
 
 The template equivalent:
 */
@@ -167,6 +172,7 @@ public:
 
 
 Array<int, 5> arr; //equivalent to "Arra<int,5>
+// produces the following:
 
 /*
 template<>
@@ -232,7 +238,7 @@ int main()
 
 
 
-// static variables:
+// template for static variables:
 
 template <typename T>
 struct S
@@ -266,7 +272,7 @@ Notes:
     1. template functions often produce crazy-looking error messages that 
     are much harder to decipher than those of regular functions.
     2. template functions can increase your compile time and code size (code bloat)s,
-    as a single template might be “realized” and recompiled in many files
+    as a single template might be Â“realizedÂ” and recompiled in many files
     (there are ways to work around this one). This happens because, in the non-templated
     way, cpp files can use functions defined in some cpp, only by including their forward declarations-
     this satisfies the compiler by letting him know that somewhere, some cpp holds the defnition for the
@@ -332,7 +338,6 @@ a simple lvalue (e.g: "int") regardless if we provide the call with a prvalue, x
 7.
 when we specify a template parameter - the generated template recieves
 the type as-is (like a preprocessor):
-
 if foo is a function: foo<int&>(x) //remember that x is an identifier for an already-created object
 // and thus an lvalue expression.
 the generated template will be:
