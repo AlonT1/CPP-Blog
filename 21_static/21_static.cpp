@@ -1,8 +1,7 @@
 #include <iostream>
-//extern - external linkage - look for s_Var in external translation units
-//extern int s_var;
-extern int t_var;
-//can compile since function() in static.cpp is static, preventing double symbol error
+
+//extern int globalVariable; tells the compiler that globalVariable exists and is defined elsewhere.
+extern int globalVariable; // Declaration only, no storage allocated here
 
 
 int& function1()
