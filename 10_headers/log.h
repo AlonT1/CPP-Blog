@@ -21,9 +21,7 @@ inline means:
 1. It tells the compiler that the function code can be expanded where the function
 is called, instead of effectively being called.
 2. It tells the compiler that the function definition can be repeated (because of point 3).
-3. the compiler may consolidate all inline definitions into a single definition in memory.
-4. applies internal linkage.
-
+3. the compiler may consolidate all inline definitions into a single definition in memory. ?????
  */
 
 
