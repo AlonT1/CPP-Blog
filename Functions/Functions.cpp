@@ -4,7 +4,7 @@
 /*************************forward declaration*************************/
 
 int multiply(int a, int b); //forward decleration - this function exists somewhere / signature
-//equals to extern int multiply(int a, int b); functions are extern by default!!!
+//equals to extern int multiply(int a, int b); non static vars and functions are extern by default!!!
 
 //the name of the parameter (identifier) isn't required in forward decleration or in definiton
 //we provide an identifier only we want to refer to the variable. sometimes we don't need to
