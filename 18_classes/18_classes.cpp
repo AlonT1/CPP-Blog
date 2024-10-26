@@ -134,12 +134,16 @@ int main()
 /*
 Note 1:
 Player p; //p is a class object of type Player stored on the stack (instance variable).
+std::cout << p.name;
+**************** "." vs "->"****************************
+both operators are called "member access" (member of class/struct)
+using "." (aka dot operator, not overloadable) we access a member (can be a member of (static) class/struct or an instance of them).
+The object can be either on heap or stack, no matter where we access the object (once we get it) via "." operator.
 
-p.name --> "." operator = member access through object (if an object as allocated on the stack, we can access
-it's members directly via ".")
-a->b == (*a).b  (arrow operator) aka member access through pointer
-Deref the pointer (indirection) ---> get the object ---> access its "b" member
-The object can be either on the stack (inlined object?) or on heap.
+using "->" (arrow operator, overloadable) we perform 2 actions: p->name == (*p).name
+1. dereference (indirection) the pointer and get the object p is pointing to
+2. access the member using 'p' just like above.
+NOTE: the object p is pointing to can be either on heap or stack (or anywhere else)
 
 Player *p = new Player; //p is a pointer of type Player which points to an object
 of type Player that is allocated on the heap via "new expression (keyword" which does 3 things:
