@@ -1,7 +1,7 @@
 
 static int s_var = 5; // cannot be referenced in other cpp files by extern. s_var is encapsulated only this translation unit
 
-//Global variable static == Internal Linkage (locally scoped) + Stored in the static section of memory (not in heap or stack)
+//Global variable/function static == Internal Linkage (locally scoped) + Stored in the static section of memory (not in heap or stack)
 //+ Static storgae duration (allocated when the program begins until end) only one instance of the object exists
 
 // s_var can be included into multiple files with a header file->
