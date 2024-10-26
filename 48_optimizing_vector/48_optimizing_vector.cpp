@@ -36,33 +36,13 @@ int main()
 
 	//*************** parameters of push_back vs emplace_back
 
-	//if Test class would not have supported a ctor with a single parameter, the 
-	//following initialization of vec would have failed. for example, with 2 parameter
-	//ctors, the compiler can't tell if by {21, 45, 36} we want to construct 
-	//an object with values of {21,45} or {45,36}, or {21, 36}.
-
-	//compiler recognizes int supporting ctor with SINGLE PARAMETER,
-	//causing an anomaly of 3 identical m_i = 21, m_i = 45, m_i = 36
-	//inside vec
+	/*
+ 	Test takes in a ctor with a single element, hence we create 3 different Test objects
+  	otherwise, for multiple argument construcotrs, we must instantiate the object
+	pass it to the push_back, e.g:
+	vec.push_back(Test(6, 57))
+	*/
 	std::vector<Test> vec = { 21, 45 , 36 };
-
-
-	//push back:
-	//if the compiler has a single parameter ctor, we implicitly construct a Test
-	//object by supplying a value that the single-parameter ctor of Test recognizes (int i).
-	//otherwise, for multiple argument construcotrs, we must instantiate the object
-	// pass it to the push_back, e.g:
-	//vec.push_back(Test(6, 57))
-	
-	vec.push_back(43);
-
-
-	//in terms of construction, emplace_back can accept a constructed object
-	//AND multiple arguments - compiler will choose the appropriate constructor
-	//from the templated parameter (from Test class).
-	//for example std::vector<Test>, using emplace will use one of Test's ctors directly
-	//it is also more performant then push back - explained below
-	vec.emplace_back(43);
 
 
 
@@ -70,22 +50,28 @@ int main()
 
 	std::vector<Vertex> vertices; // capacity of the vector is 0 
 
-	//vertex does not spport single-parameter ctor, therefore we must construct the object
-	//and pass it to the push_back function
-	vertices.push_back(Vertex(1, 2, 3)); //1 copy - why? because when we construct Vertex(1,2,3) it is constructed
-	//on the stack frame of construction function, and then it is copied from there into the stack frame of main
-	//that the vector has allocated - this is done by copy ctor
-	//capcity of the vector is update to 1
-	//reallocation of old verts is not needed because this the first push back!
-	vertices.push_back(Vertex(4, 5, 6)); //2 copies:
-	//the reason for the 1st copy created by  the current pushback is listed above. after the push_back is completed,
-	//the 2nd copy occurs because after finishing the the current push back, the capacity of the vector is updated to two,
-	//this requires memory reallocation (the current location only supports one vertex),
-	//so the previous vertex is recopied to a new location together with the current Vertex
-	vertices.push_back(Vertex(7, 8, 9)); //3 copies - 1st for the current push back, and 2 more for the reallocation - 
-	//after the current push_Back, the size of the vector is updated to 3, this requires 
-	//copying the old two vertices into the new location where the current push back sits
-	//EACH REALLOCATION REQUIRES THE COPYING THE Vertices ONE BY ONE! 
+	// Vertex does not support a single-parameter constructor, so we must construct the object
+	// and pass it to the push_back function
+	vertices.push_back(Vertex(1, 2, 3)); // 1 copy occurs
+	// Explanation: When we construct Vertex(1, 2, 3), it is first created as a temporary object.
+	// Then, it is copied from this temporary location into the vector's allocated memory using the copy constructor.
+	// After this push_back, the vector's size is updated to 1, and its capacity is also at least 1.
+	// No reallocation of previous elements is needed here because this is the first push_back.
+	
+	vertices.push_back(Vertex(4, 5, 6)); // 2 copies occur
+	// Explanation: Since the current capacity is 1, pushing another vertex requires the vector to increase its capacity.
+	// Typically, this means reallocating memory (often doubling the capacity to 2), and then moving the previous elements to this new location.
+	// The first copy is for moving the previous Vertex (1, 2, 3) to the new memory location.
+	// The second copy occurs as Vertex(4, 5, 6) is copied from its temporary location into the new allocated space.
+	
+	vertices.push_back(Vertex(7, 8, 9)); // 3 copies occur
+	// Explanation: The vector's capacity (2) is exceeded again when we add this third vertex.
+	// As a result, the vector reallocates memory, typically doubling the capacity (e.g., to 4), to accommodate more elements.
+	// The first two copies are for moving the previous vertices (1, 2, 3) and (4, 5, 6) to the new location.
+	// The third copy occurs as Vertex(7, 8, 9) is copied from its temporary location into the newly allocated space.
+	// After this push_back, the vector's size is updated to 3, and its capacity is now at least 4.
+	
+	// Note: EACH REALLOCATION requires copying all existing elements into the new memory location, one by one.
 
 	//Total OF 6 COPIES 
 	//std::vector<Vertex> vertices(3); //constructs 3 vertex objects using an explicit default ctor...
@@ -103,7 +89,7 @@ int main()
 	//instead of constructing Vertex in  the stack frame of the construcor function within a new allocated memory chunk
 	//and then copying it back to main()'s stack frame where vertices2 is allocated,
 	//we construct the vector in the constructor function, but we pass the memory address of vector of main() to the
-	//stack frame of the ctor - RVO OPTIMIZED. Therefore the vertex is effectively constructed in the stack frame of main,
+	//stack frame of the ctor - RVO OPTIMIZED (?). Therefore the vertex is effectively constructed in the stack frame of main,
 	//there is no more copying of the constructed Vertex objects from the stack frame of
 	//the ctor to the stack frame of main.
 	
