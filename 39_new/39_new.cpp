@@ -84,12 +84,35 @@ int main()
     //use placement new:  new(b) to choose the location of where the memory is stored
     Entity* f = new(b) Entity; // Entity is constructed at "b"s location
 
+
+    // cpp new does not return a null ptr by default!
+    // by default, standard new operator throws std::bad_alloc exception on failure:
+    try 
+    {
+        int* ptr = new int[1000000000000]; // An extremely large allocation
+        ptr[1] = 100; // Use ptr...
+    } 
+    catch (const std::bad_alloc& e) // reference of exception to avoid copying
+    {
+        std::cerr << "Memory allocation failed: " << e.what() << '\n';
+    }
+    
+    // Note that the nothrow version of new, does return nullptr on failure!
+    int* ptr = new (std::nothrow) int[1000000000000];
+    if (ptr == nullptr)
+    {
+        std::cerr << "Memory allocation failed, returning nullptr\n";
+    } 
+    else 
+    {
+        ptr[1] = 100 // use ptr
+    }
+
     //delets uses c's() free behind the scenes - does not remove the pointer from memory!
     // the pointer is allocated on the stack as a plain old data (POD), the object at the memory address is indeed removed.
     //delete prevents memory leaks - the instantiated object is not needed but still resides in memory.
     delete[] b; //use "delete[]" to remove allocation done with - "new []"
     delete c;//use "delete" to remove allocation done with - "new"
-
 
     /* Memory fragmentation
     if heap was 10kb space.
