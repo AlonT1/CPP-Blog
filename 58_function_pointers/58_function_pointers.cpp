@@ -128,4 +128,8 @@ int main()
     int (*theLambda2)(int) = [](int value){return value;} // since x1+value is int then the return value is an int;
     // function pointers cannot point to lambdas that captures variables from the outside world, for this we need std::function
     // (see 59a_function_pointers_lambdas_example)
+    // in short
+    int x = 10;
+     // Capturing x as reference. "<int(int)> the left int is the return param and (int) is the accepting arg.
+    std::function<int(int)> func = [&x](int a) { return a + x; };
 }
