@@ -38,7 +38,7 @@ Player* get_player_by_top_kills(std::vector<Player>& players)
     int top_stat = -1;
     for (Player& player : players)
     {
-        const int& stat{ player.player_stats.kills }; //<- Only this changes (kills, deaths, ...)
+        const int& stat{ player.player_stats.kills }; //<- we want to generalize this!!!!! (kills, deaths, ...)
         if (stat > top_stat)
         {
             top_stat = stat;
@@ -84,11 +84,23 @@ Player* get_player_by_top_stat(std::vector<Player>& players, int(*get_stat)(Play
     return top_player;
 }
 
-/* shorter version of the function above:*/
+/* shorter, alternative version of the function above:*/
 Player* test(std::vector<Player>& players, int(*get_stat)(Player&))
 {
+    /*
+    fp is a std::function object, a type-safe wrapper for storing any callable target:
+    lambda, function pointer, or function object (functor). 
+    fp takes two Player references and returns a bool.
+    we assign fp a lambda which captures [get_stat] from the outside world (comes from the argument
+    of the function we are currently on), it takes in 2 Player references and returns a bool (-> bool)
+    (return type specified explicitly, but can also be inferred by the compiler), the body of the lambda is inside {}
+    */
     std::function<bool(Player&, Player&)> fp = [&get_stat](Player& playerA, Player& playerB) -> bool
-    {  return get_stat(playerA) > get_stat(playerB); };
+    {  
+        return get_stat(playerA) > get_stat(playerB); 
+    };
+    // std::max_element usually compares elements using the default operator< (which takes 2 params).
+    // But when you pass fp as the third argument, std::max_element will instead use fp to compare Player objects.
     std::vector<Player>::iterator it = std::max_element(players.begin(), players.end(), fp);
     return it._Ptr;
 }
