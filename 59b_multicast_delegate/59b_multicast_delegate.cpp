@@ -3,9 +3,9 @@
 // multiple functions can subscribe and unsubscribe to the delegate (function pointer).
 // a subscriber is simply some function!
 // this allows the delegate to invoke multiple function (subscribers) that exist in different locations,
-// with a single call with done to the delegate.
+// with a single call.
 // Note: a delegate (and function pointers to functions) that accept X and returns Y can only be subscribed 
-// (point at by functions  that accept X and return Y - same goes with function pointer in cpp).
+// (point at by functions)  that accept X and return Y - same goes with function pointer in cpp.
 
 #include <iostream>
 #include <string>
