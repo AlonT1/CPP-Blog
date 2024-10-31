@@ -117,6 +117,11 @@ int main()
     for_each(values, print_value); // iterates over each value, and executes print_value on each value
 
     //alternative to the seperate print_value function -> lambda, anonymous throw-away function)
-    for_each(values, [](int value) {std::cout << value << std::endl;}); //iterates over values, and executes print_value on them
-    //[] is called captcure method thats how we pass variables in from the outside world
+    // [](int value) {std::cout << value << std::endl;}  // is the lambda
+    // function that accepts a "value" and prints it
+    // [] is called captcure method thats how we pass variables in from the outside world and use them in the body of the lambda
+    // "for_each" is the function above (not std::for_each)
+    // "for_each" accepts "values" array, loops over "values" and feed each value into the lambda (which accepts "value" and prints it)
+    for_each(values, [](int value) {std::cout << value << std::endl;});
+    
 }
