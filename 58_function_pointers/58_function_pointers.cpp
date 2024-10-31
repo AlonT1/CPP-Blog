@@ -126,6 +126,9 @@ int main()
     for_each(values, theLambda1);
     // return type of lambda is based on the type of the value we return
     int (*theLambda2)(int) = [](int value){return value;} // since x1+value is int then the return value is an int;
+    // but we can also explicily specify return type using -> syntax:
+    int (*theLambda3)(int) = [](int value) -> int {return value;} // since x1+value is int then the return value is an int;
+
     // function pointers cannot point to lambdas that captures variables from the outside world, for this we need std::function
     // (see 59a_function_pointers_lambdas_example)
     // in short
