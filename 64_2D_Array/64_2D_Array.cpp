@@ -3,15 +3,16 @@
 the important takeaways:
 1. int*** x; can be better read as "int** *x" meaning x is a pointer to an int**,
 thus it can be assigned with an int**
-(in reality though all three "*" are a type modifier that belongs to the declarator "x"
+(in reality though all three "*" are a type modifier that belongs to the declarator "***x"
 
 2. a pointer to X can be assigned with:
-	1. address of X (single instance)
-	2. address of array of X
+	1. address of X (single instance) (actually - the 1st byte of X)
+	2. address of array of X (actually - the 1st byte of the array)
 	3. a pointer of the same type (copy assignment of the value (memory address that another pointer "holds")
+ 	(because that pointer points to either (1) or (2))
 
 	note: 1 and 2 are the same since in concept - in c/c++, the address of an array represents
-	the 1st object in that array, therefore in both cases we point to an object of
+	the byte of the 1st object in that array, therefore in both cases we point to the 1st byte of an object of
 	type X - only in 2 the following objects in memory are also of type X.
 	(stack allocated - contiguous, if heap - potentially fragmeneted).
 
