@@ -68,6 +68,7 @@ int main()
     Colors::BLUE; // class enums and regular enuams are also namespaces 
 
     //instead of c::functions::hello(), we can use two "using namespace"
+    // and then when calling hello() the compiler will deduce its from c::functions
     using namespace c;
     using namespace functions;
     hello();
