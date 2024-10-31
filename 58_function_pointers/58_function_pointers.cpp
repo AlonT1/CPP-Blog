@@ -120,8 +120,12 @@ int main()
     // [](int value) {std::cout << value << std::endl;}  // is the lambda
     // function that accepts a "value" and prints it
     // [] is called captcure method thats how we pass variables in from the outside world and use them in the body of the lambda
+    void(*theLambda1)(int) = [](int value) {std::cout << value << std::endl;}
     // "for_each" is the function above (not std::for_each)
     // "for_each" accepts "values" array, loops over "values" and feed each value into the lambda (which accepts "value" and prints it)
-    for_each(values, [](int value) {std::cout << value << std::endl;});
-    
+    for_each(values, theLambda1);
+    // return type of lambda is based on the type of the value we return
+    int (*theLambda2)(int) = [](int value){return value;} // since x1+value is int then the return value is an int;
+    // function pointers cannot point to lambdas that captures variables from the outside world, for this we need std::function
+    // (see 59a_function_pointers_lambdas_example)
 }
