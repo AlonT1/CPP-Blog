@@ -66,7 +66,9 @@ int main()
 
 	Note that this is only critical with polymoprhism (references/pointers), with non polymorphism,
 	for exmaple: "Dog dog; (where Dog inherits from Animal), when dog is destroyed,
-	then Animal will be also destryoed, no need for virtual destructor.
+	then Animal will be also destryoed, no need for virtual destructor (happens because "dog"
+ 	stores Animal section in the memory (is-a Animal) while "poly" ptr is of type Base, thus pointing
+  	only to the Base portion of Derived).
 
 	*************************************************************************************
 
