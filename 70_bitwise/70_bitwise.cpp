@@ -14,7 +14,7 @@ means x is moved left by 5 bits
 byte = 8 bits = 2 hexes (1f comprised of hex 1 and hex f, equivalent to 0x00011111 (0x for hex).
 0b1000 - 8 in binary, 0b for binary.
 nibble = 4 bits = 1 hex (nibble for half of a bite, similar to byte)
-word - 16 bits == 2 bytes. 
+word = 32/64 bit depending on OS (explained more in 19_structs.cpp)
 
 /************MSB VS LSB (B can stand for Byte(relevant to endianess)
 or bit(relevant for signed bit/two's complement methods):
