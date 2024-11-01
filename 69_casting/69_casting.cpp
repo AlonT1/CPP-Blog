@@ -92,10 +92,10 @@ int main()
 	//static cast - very similar to c cast but more restrictive - the safest cast
 	//------------------------------------------------------
 	double e = 5.24;
-	double s = static_cast<int>(e);
+	int s = static_cast<int>(e);
 	std::cout << s << std::endl;
 
-	//c is 1 byte, p is int* which points to 1 byte of memory, manipulating 1 byte of mem
+	//ch is 1 byte, p is int* which points to 1 byte of memory, manipulating 1 byte of mem
 	// with an integer (4 bytes) will result in run-time error
 	char ch = 'w';
 	int* p = (int*)&ch; //type punning /cast
@@ -157,7 +157,7 @@ int main()
 	//this conversion is successful in c style conversion or via cpp static_cast, but will fail in cpp dynamic_cast!
 
 	/*
-	but how does cpp knows that base points to a Derived class? cpp stores runtime type information (RTTI)
+	but how does cpp knows that "base" points to a Derived class? cpp stores runtime type information (RTTI)
 	about all of our types - this adds overhead but allows us to do dynamic casting. dynamic casting
 	costs overhead since we need to validate thorugh the RTTI what is the real type of the object.
 	(see 124_RTTI).
@@ -186,7 +186,7 @@ int main()
 	downcasting using dynamic_cast will not work:
 	1) With protected or private inheritance.
 	2) For classes that do not declare or inherit any virtual functions
-	(and thus don’t have a virtual table). At least the dtor can be virtual to enable
+	(and thus donÂ’t have a virtual table). At least the dtor can be virtual to enable
 	dynamic_cast (something is got to be virtual).
 	*/
 
