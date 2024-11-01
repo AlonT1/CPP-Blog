@@ -1,15 +1,17 @@
 #include <iostream>
 
-//structs and classes in cpp are USER-DEFINED TYPES
+//structs and classes are KEYWORDS in cpp that are used to define a USER-DEFINED TYPES
 //struct are public by default, classes are private - other than that they are identical!!!!
-//methods do not take any space in the class!
+// while class instances are stored on the heap/stack, methods of a class do not take any space in the class isntance,
+// but rather they are stored in the code segment of the memory lyout.
 //in terms of memory they are identical to functions and variables outside of a class.
 //classes, like structs, are a neat way of organizing information with encapsulation and minimize code duplication,
 //making programming easier and logical. the methods inside classes are just encapsulated function in a namespace, 
 //and varaibles are stored in memory like inside a single type like
 //a struct, inline one after another according to their order of declerations.
 //it is perfectly viable to program without classes, they just make life easier in terms of organization.
-//class A defines a new disctint type "A".
+
+//class keyword defines a new user defined tpye "A" 
 class A {}; //requires ";" at the end just like "int x; " requires ";" at the end - both are types
 
 class Player //"class" is the "class-key" - can be "struct" or a "class". "Player" is the class-head-name
