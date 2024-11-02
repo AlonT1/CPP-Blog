@@ -24,31 +24,33 @@ LSB (least significant bit) - rightmost bit
 This always applies, no matter the endianess (big or small).
 
 /************Big Endian VS Small Endian:
-5894623 decimal -> 0x0059F1DF in hex  represeting 32 bit integer-> (most significat BYYYTTEE is (leftmost) 00,
-least significat BYYYYTTEE is DF  
+5894623 decimal -> is 32 bit integer (4 bytes), in hex 0x0059F1DF.
+byte1: 00, byte2: 59, byte3: F1, byte4: DF
+00 is called the MSB (most signifcant BYTE), just like 5 (represeting 500 in 512)  is the most signifcant digit.
+Same goes for DF as the LSB
+0x0059F1DF is a hex representation of 5894623, we cannot write 0x0059F1DF as 0xDFF15900 (two different values!)
+endianess decides which byte should be stored in the lowest address in memory, the msb or the lsb?
+each CPU then interprets the memory according to its endianess.
 
-endianess - order of bytes of a word of digital data in memory
-endianess decides which byte should be stored in the lowest address, the msb or the lsb?
-big endian -the most significant byte of the data (00) is placed at the byte with the lowest address: (the next bytes are following)
-address
-0x0000002C6933F744  stores 00 (hex)  //every 64 bit address can store 1 byte on byte-addressable computer
-0x0000002C6933F745  stores 59
-0x0000002C6933F746  stores F1
-0x0000002C6933F747  stores DF
-in vs memory window, 5894623 will look like 0059F1DF
+Big endianess - the MSB 00 is stored in lower address
+0x0000002C6933F744 - 00
+0x0000002C6933F745 - 59
+0x0000002C6933F746 - F1
+0x0000002C6933F747 - DF
 
-Intel processors have traditionally been little-endian. Motorola processors have always been big-endian.
-little endian - the least signifcant byte is placed at the the byte with the lowest address: (the next bytes are following)
-0x0000002C6933F744  stores DF
-0x0000002C6933F745  stores F1
-0x0000002C6933F746  stores 59
-0x0000002C6933F747  stores 00
-in vs memory window, 5894623 will look like DFF15900
+Little Endianess - The LSB DF is stored in the lower adress
+0x0000002C6933F744 - DF
+0x0000002C6933F745 - F1
+0x0000002C6933F746 - 59
+0x0000002C6933F747 - 00
 
 
-in vs memory window, memory addresses in each columns rise from right to left (see mem_window diagram).
-popular intel cpus use little endianess
-Note: the bits are not reversed, the order of the bytes is simply different between big/little endianess
+Notes:
+1. Intel CPUs are little endian
+1. if we have one byte such as 0xAA (or a char) - there is no endianess (which is only valid for multi-byte data)
+2. according to RFC 793 network standard - all network headers must be big endian. So if a cpu "speaks"
+little endian it must convert the data to little endian before interpreting it
+3. in vs memory window, memory addresses in each columns rise from right to left (see mem_window diagram).
 
 *********************************************************************************
 Bitwise operators and their practical use:
@@ -73,14 +75,15 @@ a = 0101 | 1 << 1 = 0101 | 0010 = 0111
 a. create a mask, e.g: 0010 - aimed to check if the 2nd bit is on
 b. AND the mask with the target number: 0010 & 0101:
 if the result is != 0 than the bit is on, otherwise if == 0 than the bit is off
-(because all bits are set to 0)
+(because all bits are set to 0 except the one we specified, so if anything survived
+the operation hence that single bit was on, otherwise everything is zeroed out)
 alternatives:
 * (shortcut to above):  a & (1 << k) where k is the number of bit we want to examine,
 for example: 0101 & ( 1 << 2) = 0101 & 0100 = 0100
 
 4.  Zero out a number:
 XOR a number with itslef (because all bits are the same,
-and XOR yields 1 only when 2 nums are different).
+and XOR yields 1 only when 2 nums are different, so we'll get all zeroes).
 
 
 5. Multiply number by 2^n: a << n
@@ -92,7 +95,6 @@ e.g divide a number by 2: right shift by 1: a>>=1, equivalent to a = a>>1.
 
 *logical means that the bitshift does not preserve the msb. in arithmetic bitshift
 (the default << and >> in Java), the MSB is "stuck" and the shifting doesn't move it.
-(logical bitshift in java is 
 
 
 Note: bitwise operators in CPP can be overloaded. for example << is overloaded
@@ -108,8 +110,7 @@ one of the problems with signed bit method is that
 There are two ways to represent zero, 00000000 (0) and 10000000 (−0).
 
 INTEL cpu's use Two's Complement method instead of signed bit
-where 1 is 00000001 and -1 is 111111111  (convert 1 to its complement -1 - rightmost 1 is detected in 00000001
-and all zeros to the left of it are flipped)
+where 1 is 00000001 and -1 is 111111111  (convert 1 to its complement (subtract 1 from the binary digit)
 as opposoed to the signed bit method 00000000 means 0 and 10000000 means -0
 
 */
