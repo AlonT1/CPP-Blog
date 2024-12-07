@@ -4,7 +4,7 @@ and work under 3 conditions:
 1. Inheritance -  class B inherits from class A
 2. Virtual function override - class A contains a virtual function that class B overrides
 3. polymorphic pointer/ref - a polymorphic pointer/ref of type Base points
-that points/refers to one of the Derived (inheriting) classes.
+that points/refers to one of the Derived (inheriting) classes instantiated on heap/stack.
 we exectue virtual functions through the polymorphic pointer.
 Note: the pointer can point to either stack or heap allocated array! we both we can achieve virtual functions!
 e.g:
