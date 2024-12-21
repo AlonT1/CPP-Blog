@@ -37,7 +37,7 @@ in this example
 Data bus size, instruction size, address size are usually multiples of the word size:
 1. data bus size: num of bits that can be transferred simultaneously between the CPU and memory.
 For example, if a computer has a 32-bit data bus, it can transfer 32 bits of data at a time 1.
-2. Instruction size: number of bits used to represent an instruction in the computer’s instruction set.
+2. Instruction size: number of bits used to represent an instruction in the computerâ€™s instruction set.
 e.g: if a computer has a 32-bit instruction size, each instruction in the instruction set is represented by 32 bits.
 3. Address size: num of bits used to represent a memory address.
 e.g: if a computer has a 32-bit address size, it can address up to 2^32 bytes of memory, or 4 GB (read operating systems doc).
@@ -163,32 +163,22 @@ struct Vec2 //is just a representation of 2 floats, not supposed to contain
 };
 
 
-//typedef struct
-typedef struct Test // struct is the type, Test is the new name associated with the type
-{
-    int x;
-}foo;
-//in c, typedefing a struct allowed getting rid of the struct keyword when declaring a struct:
-//Test test, instead of struct Test test;
-//foo is an inline declaration+definition of a struct
-
-
-//the name Test isn't necessary! a struct can be anonymous, we can declare a struct instance inline:
-typedef struct
-{
-    int x;
-}foo4;
-
-
-//the name of the struct is also useful if we want to have a memeber which points to the struct, 
-//like a node in a tree:
+//the name of the struct is  useful if we want to have a memeber which points to the struct:
 struct Node
 {
-    Node* left;
-    Node* right;
+    struct Node* left;
+    struct Node* right;
     int data;
-};
-//in this case the name is mandatory since the pointers must point to something (to the name!)
+}node; // inline instance of Node
+
+// typedefing:
+typedef struct Node { // <-- Node is here 
+    struct Node* left; // still need to write "struct" here, typedef only begins later
+    struct Node* right;
+    int data;
+} Node; // "struct Node" is now typdefed as <----Node, so we can delcare "Node node;" not an instance!
+
+// in cpp struct keyword is not necessary!
 
 
 int main()
