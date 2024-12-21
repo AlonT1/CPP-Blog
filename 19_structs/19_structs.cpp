@@ -176,8 +176,8 @@ typedef struct Node { // <-- Node is here
     struct Node* left; // still need to write "struct" here, typedef only begins later
     struct Node* right;
     int data;
-} Node; // "struct Node" is now typdefed as <----Node, so we can delcare "Node node;" not an instance!
-
+} Node; // "struct Node" is now typdefed as <----Node, so we can delcare "Node node = {...};" not an instance!
+// note that we can still use struct keyword "struct Node node = ". it's up to us if node is a ptr or stack allocated.
 // in cpp struct keyword is not necessary! see 128_typedef.cpp why
 
 
