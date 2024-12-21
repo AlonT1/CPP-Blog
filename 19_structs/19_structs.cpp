@@ -178,7 +178,7 @@ typedef struct Node { // <-- Node is here
     int data;
 } Node; // "struct Node" is now typdefed as <----Node, so we can delcare "Node node;" not an instance!
 
-// in cpp struct keyword is not necessary!
+// in cpp struct keyword is not necessary! see 128_typedef.cpp why
 
 
 int main()
