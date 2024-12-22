@@ -188,8 +188,8 @@ int main()
     };
 
     //in C:
-    enum Week {Mon, Tue};
-    Week week = Week::Mon; //in cpp
+    enum Week {Mon, Tue}; // enum keyword mandatoy in C, unless the enum is typedefed as "typedef enum {...} Week"
+    Week week = Week::Mon; //in cpp, enum isn't mandatory
     enum Week day;
     day = W
 
