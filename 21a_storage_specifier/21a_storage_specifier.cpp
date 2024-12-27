@@ -52,6 +52,15 @@ Notes:
 
 *const / constexpr vars have internal linkage by default, static keyword is ignored
 *static functions are internally linked (without static - external link)
+
+
+if the lifespan of the object is consistent with a specific scope
+and is easily determined at compile time
+then it should be an automatic storage duration object (stack like)
+
+If the lifespan of the object is defined at runtime and extends beyond the current scope
+Then it should be a a dynamic storage duration object (heap like)
+
 */
 
 
