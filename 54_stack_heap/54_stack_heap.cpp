@@ -13,6 +13,17 @@ and return the address of the new position 4 byte int allocation -> stack pointe
 5. heap segment - part of ram , grows upwards (from low memory address to high)
 6. OS Kernel space - user code cannot read or write to these addresses
 
+stack allocated variables (which can contain pointers to heap obejcts), are self destroyed (although internal
+pointers to heap needs to be freed (see RAII), and have faster access as the stack is smaller then the heap,
+and therefore can store less resources. The syntax looks cleaner.
+We can also have pointers to stack allocated variables.
+BUT BEWAREA of scope issues!! see 21a_storage_specifier.cpp
+Remember that a pointer to heap allocated struct/class can have stack allocated members which will be alive
+as long as the struct/class allocation is alive (because they belong to the struct/class).
+
+
+
+
 the os loads entire program into memory, allocates physical ram for it.
 the stack and the heap are 2 areas in the ram. stack - ~2mb, heap can grow and change.
 the actual location of these areas is in the ram. stack my be "hot" in the cache, because we often access the
