@@ -13,16 +13,6 @@ and return the address of the new position 4 byte int allocation -> stack pointe
 5. heap segment - part of ram , grows upwards (from low memory address to high)
 6. OS Kernel space - user code cannot read or write to these addresses
 
-stack allocated variables (which can contain pointers to heap obejcts), are self destroyed (although internal
-pointers to heap needs to be freed (see RAII), and have faster access as the stack is smaller then the heap,
-and therefore can store less resources. The syntax looks cleaner.
-We can also have pointers to stack allocated variables.
-BUT BEWAREA of scope issues!! see 21a_storage_specifier.cpp
-Remember that a pointer to heap allocated struct/class can have stack allocated members which will be alive
-as long as the struct/class allocation is alive (because they belong to the struct/class).
-
-
-
 
 the os loads entire program into memory, allocates physical ram for it.
 the stack and the heap are 2 areas in the ram. stack - ~2mb, heap can grow and change.
@@ -64,6 +54,30 @@ even though you appear to have enough memory free. Another possible consequence 
 process to release memory back to the OS because each of the large blocks it has allocated from the OS, 
 via malloc etc has something left in it, even though most of each block is now unused.
 
+
+When to use stack allocated or heap allocated variables?
+Clarification: we can have pointers to stack allocated and heap allocated objects
+Use stack allocated
+Use heap allocated objects whenL
+1. Need to store large object (e.g: texture, huge excel)
+2. The 
+
+
+If the class/struct is a small POD type (Vector3, Color, Matrix, Quaternion) - use stack allocation (like Unity)
+In C# called a value type (as opposed to reference type), stored inline on the stack (less space, but fast access,
+less space to traverse) + structs are immutable (in C#) and don't require garbage collection (automatically cleaned up),
+as opposed to heap allocated objects requiring GC (cpu cycles).
+Especially critical if for some reason we need to create a Vector3 each frame (if heap --> cause GC spikes)
+Cleaner code: no need for new, delete. Destruction is guaranteed, no leaks.
+Stack objects must be small not only because the stack is small, but because their content is stored inline
+in the variable, which must be copied when returning/assigning, as opposed to pointers where we copy only the address.
+This is mitigagted in cpp with move semantics.
+In addition, heap objects can be created in run-time dynamically (variable sized array).
+Also use smart pointers, instead of raw ptrs for heap allocated objects, which ensure ownsership and activate the dtor of the object.
+***************************************************************
+Use stack allocation for small, local, short-lived POD style objects.
+Use heap allocation for objects whose lifetime exceeds the scope, resource heavy.
+******************************************************************
 */
 
 #include <iostream>
