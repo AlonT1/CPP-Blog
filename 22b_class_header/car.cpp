@@ -1,6 +1,6 @@
 /*
 
-see car.cpp and car.h
+see 10_headers first, and car.cpp and car.h here
 
 Notes:
 1. Member variable fields: only the header should define member variables! the cpp shouldn't! //int Car::m_speed = 4; error!
