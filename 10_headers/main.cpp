@@ -1,63 +1,42 @@
 #include <iostream>
 /*
-iostream is included in this cpp and in log.cpp - but the iostream header 
-includes #ifndef #define guard against include duplications!
-for example avoiding:
-void log(const char* msg); to appear in this file twice, due to 2 includes of log.h.
-which will cause the linker to also link up the definitions in log.cpp, in summary
-we will have 2 fully defined "log" functions here, if we don't use preprocessor
-directives in the header file - either "pragma once" or "ifndef, define, endif"
 
-// header.h
-#pragma once
-// Code placed here is included only once per translation unit.
 
-or:
+Header Inclusion (in .h/.c files):
+1. #include <iostream>: Includes system headers from compiler-defined paths.
+2. #include "log.h": Includes user-defined headers from the current or specified project paths
+("include additional headers" in visual studio project settings.)
 
-// headerfile.h
-#ifndef HEADERFILE_H
-#define HEADERFILE_H
+Header Guard Mechanisms (both equivalent), need to be written in the header files (not in .c):
+1. #pragma once: Ensures the header is included only once per translation unit.
+2. #ifndef HEADERFILE_H, #define HEADERFILE_H ...content... #endif
+The gaurds helps to prevent the existence of multiple same forward declaration in a single translation unit (.c),
+violating ODR(one definition rule) for functions (classes/structs are exempt from ODR).
 
-// contents of headerfile.h (included only once per translation unit).
 
-#endif // HEADERFILE_H
+The header enables the usage of log.cpp. by inserting the declerations that exist in log.h we 
+tell the linker that somewhere in the project, in some .c, the definitions of these functions exist.
+the linker will find them in the log.cpp translation unit and link the included forward declerations
+here from "log.h" with the definition from "log.cpp". Think of the fowrard declerations as pointers to the defs.
 
+Why not just declare functions and define them inside the header file? because even a single inlcude will cause
+definition duplication (in the original .h, and in the included file), and the linker will encouter the duplicated
+data, violating ODR.
 */
-
-
-/*
-include <> searches only the compiler predefined paths and the paths specified in the "include additional headers"
-in visual studio project settings.
-
-*/
-
-#include "log.h" // enables the usage of log.cpp. by inserting the declerations that exist in log.h we 
-//tell the linker that somewhere in the project, the definitions of these functions exist.
-//the linker will eventually find them in the log.cpp translation unit and link this translation unit up with it
-//without it, the compiler won't know that these functions exist in log.cpp.
-//this enables the reuse of log.cpp's function in other files.
-//Why not just declare functions and define them inside the header file? 
-//because it will cause a redifinition of data across the project - in cpp data types must be defined ONCE!
-//each translation unit (cpp file) will contain decleration and definition of a function, and during linkage
-//this can cause duplicates of data. therefore we declare once, define once, and include the header in other cpp's
-//a promise to the linker that some cpp file holds the definition of the data in a single location with a single defintion.
-
-
-/*
-Form 1 - #include < xxx >
-The preprocessor searches for the header file in the standard system directories
-(e.g., directories where C++ standard library headers are stored) and
-in "include additional headers" in visual studio project settings.
-mainly used for external files not written by the programmer itself
-
-Form 2 - #include "xxx"
-mainly used for external files  written by the programmer itself, such as "log.h".
-include " " first searches the current folder (where the header is)
-and then reverts to search in the same way as include<>
-*/
+#include "log.h"
 
 int main()
 {
     log("hello world");
     init_log();
 }
+
+/*
+What headers should contain:
+Header guards, function forward declerations, structs+classes (functions are only fwd declerations), enums, templates.
+Should player.c include player.h - not mandatory (the definition in .c will be linked up with fwd decl in .h),
+but is recommended (https://stackoverflow.com/questions/1804486/should-i-use-include-in-headers):
+header should have all the necessary "includes", and optimally player.c will need to include only player.h
+
+for headers/cpp in the context of classes, see 22b_class_header
+*/
