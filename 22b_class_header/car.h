@@ -35,7 +35,7 @@ This is possbile because:
 	THIS DOES NOT APPLY TO STATIC MEMBER VARIABLES - THEY are treated more as a global variable,
 	embedded in the exe, thus they need only one single definition across all program
 
-Including fully defined header is problematic for 2 reasons:
+Including fully defined class header is problematic for 2 reasons:
 
 	1. leads to a bloated binary because each cpp that will include the header,
 	which includes full defintions for each function of the class. 
