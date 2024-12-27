@@ -1,30 +1,18 @@
 /*
+
+see car.cpp and car.h
+
 Notes:
-
-**************************************************************************
-1. when using a header and a cpp, the cpp should only include 
-implementation of functions in the following format: return type, name and parameters.
-keywords such , override, virtual, static, __declspec(dllimport) 
-(49_static_dynamic_linking), should only be used in the header, where the functions
-are declared
-Why?
-Header file == class interafce ==  function signatures and behaviors (whether they are virtual, static, etc.). 
-It tells the compiler and anyone using the class what they can expect in terms of functionality.
-By marking a function as virtual in the header file, you inform users of the class and the compiler that
-this function is intended to be overridden in derived classes (interaction).
-The cpp on the other hand contains implementation details.
-
-
-C++ Standard n3337 § 7.1.2/5 says:
-The virtual specifier shall be used only in the initial declaration of a non-static class member function;
-**************************************************************************
-
-2. cpp should not include class variable member definition //int Car::m_speed = 4; error!
+1. Member variable fields: only the header should define member variables! the cpp shouldn't! //int Car::m_speed = 4; error!
 non-static variable members such as m_speed (private or public) can only be defined using "default member initialization"
 inside the class (in the header) - they can not be defined outside the class in a cpp file like static members.
 check 36_member_initializer_list to see the construction phase and what the compiler chooses to initialize
 the variable with (the value at the inline definition or the value supplied to the ctor)
 
+2. Methods: for methods, the keywords, static, override, const should appear both in .cpp and in .h EXCEPT virtual:
+which needs to exist only in h (initial declarations).
+C++ Standard n3337 § 7.1.2/5 says:
+The virtual specifier shall be used only in the initial declaration of a non-static class member function;
 */
 
 
