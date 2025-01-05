@@ -55,15 +55,22 @@ process to release memory back to the OS because each of the large blocks it has
 via malloc etc has something left in it, even though most of each block is now unused.
 
 
+class can be instantiated both on heap or stack.
 When to use stack allocated or heap allocated variables?
 Clarification: we can have pointers to stack allocated and heap allocated objects
-Use stack allocated
-Use heap allocated objects whenL
-1. Need to store large object (e.g: texture, huge excel)
-2. The 
+stack vs heap allocated objects vary by lifetime, size considerations, r/w performance, ownership, and mem management.
 
+Stack - tied to scope, limited space (small objects), faster r/w (due to small objs), stored inline in memory, sole ownership,
+automatic destruction.
+heap - lifetime adheres to dtor/delete, uses pointers (new), usually for large objects, multi-ownership (multiple ptrs to
+single allocated mem), slower performance due to possible fragmentation, manual allocation + destruction.
 
-If the class/struct is a small POD type (Vector3, Color, Matrix, Quaternion) - use stack allocation (like Unity)
+Rule of thumb: if we are dealing with a small sized object (float, array of 5 elements,...) whose scope is is limited
+allocate it on the stack.
+Otherwise if we are dealing with some big object (excel data, texture,...) - use the heap.
+
+Regarding struct vs classes in terms of stack vs heap, besides structs in cpp have public members by default and classes having
+private members, If the class/struct is a small POD type (Vector3, Color, Matrix, Quaternion) - use stack allocated structs (like Unity)
 In C# called a value type (as opposed to reference type), stored inline on the stack (less space, but fast access,
 less space to traverse) + structs are immutable (in C#) and don't require garbage collection (automatically cleaned up),
 as opposed to heap allocated objects requiring GC (cpu cycles).
@@ -71,13 +78,19 @@ Especially critical if for some reason we need to create a Vector3 each frame (i
 Cleaner code: no need for new, delete. Destruction is guaranteed, no leaks.
 Stack objects must be small not only because the stack is small, but because their content is stored inline
 in the variable, which must be copied when returning/assigning, as opposed to pointers where we copy only the address.
-This is mitigagted in cpp with move semantics.
+This is mitigagted in cpp with move semantics and with ref keyword in C#.
 In addition, heap objects can be created in run-time dynamically (variable sized array).
+If the entity is NOT a POD, for example a Player class with many fields, huge arrays, methods, etc - use a class that is allocated
+on the heap.
 Also use smart pointers, instead of raw ptrs for heap allocated objects, which ensure ownsership and activate the dtor of the object.
 ***************************************************************
-Use stack allocation for small, local, short-lived POD style objects.
-Use heap allocation for objects whose lifetime exceeds the scope, resource heavy.
+Use stack allocation for small, local, short-lived POD style objects (Vector3)
+Use heap allocation for objects whose lifetime exceeds the scope, resource heavy (Texture), 
+and heap allocated classes for non-POD entities (Player)
 ******************************************************************
+
+Note that class vs struct debate is only relevant for OOP, in c we only have structs - plain data ggregation, no methods.
+So if POD use struct on stack, and for everything else - consider it as a class on the heap (allocate on heap).
 */
 
 #include <iostream>
