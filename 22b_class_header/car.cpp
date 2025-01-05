@@ -9,7 +9,7 @@ inside the class (in the header) - they can not be defined outside the class in 
 check 36_member_initializer_list to see the construction phase and what the compiler chooses to initialize
 the variable with (the value at the inline definition or the value supplied to the ctor)
 
-2. Methods: for methods, the keywords, static, override, const should appear both in .cpp and in .h EXCEPT virtual:
+2. Methods: for methods, the keywords, static, override, const should appear both in .cpp and in .h signatures EXCEPT virtual:
 which needs to exist only in h (initial declarations).
 C++ Standard n3337 § 7.1.2/5 says:
 The virtual specifier shall be used only in the initial declaration of a non-static class member function;
