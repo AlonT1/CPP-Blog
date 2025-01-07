@@ -88,7 +88,7 @@ on the heap. Many pointers pointing to the same address also cause an ownership 
 Dynamic allocation is not guaranteed to return successfully, and can potentially fail.
 Also use smart pointers, instead of raw ptrs for heap allocated objects, which ensure ownsership and activate the dtor of the object.
 Also beware of stack allocated structs containing malloced pointers. Because of the stack struct variable dies, you'll lose
-access to the dynamically allocated addresses stored in the pointers.
+access to the dynamically allocated addresses stored in the pointers. The stack size can also fill up at some point.
 ***************************************************************
 Use stack allocation for small, local, short-lived POD style objects (Vector3)
 Use heap allocation for objects whose lifetime exceeds the scope, resource heavy (Texture), 
