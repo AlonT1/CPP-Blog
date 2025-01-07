@@ -80,7 +80,7 @@ Stack objects must be small not only because the stack is small, but because the
 in the variable, which must be copied when returning/assigning, as opposed to pointers where we copy only the address.
 This is mitigagted in cpp with move semantics and with ref keyword in C#.
 In addition, heap objects can be created in run-time dynamically (variable sized array), and incur indirection
-cost for the pointers, and performance hit during allocation/deallocation.
+cost for the pointers (although we can have ptrs to stack allocated objects), and performance hit during allocation/deallocation.
 If the entity is NOT a POD, for example a Player class with many fields, huge arrays, methods, etc - use a class that is allocated
 on the heap.
 Also use smart pointers, instead of raw ptrs for heap allocated objects, which ensure ownsership and activate the dtor of the object.
