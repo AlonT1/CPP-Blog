@@ -9,7 +9,7 @@ struct exists in cpp mainly for backwards compatability with c
 in c -> #define struct class - a hack 
 never use inheritence with a struct - added level of complexity
 class inherits from a struct - possible gateway for errors in compilers
-
+stack allocated structs/classes cannot be null like a pointer, no need to null check!
 there is no extra memory or padding for the struct.
 empty structs weigh 1 byte since we need to reference them
 but when it holds data, there is nothing that denotes that a struct exsists
