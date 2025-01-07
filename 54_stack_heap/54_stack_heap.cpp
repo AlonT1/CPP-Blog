@@ -77,12 +77,14 @@ as opposed to heap allocated objects requiring GC (cpu cycles).
 Especially critical if for some reason we need to create a Vector3 each frame (if heap --> cause GC spikes)
 Cleaner code: no need for new, delete. Destruction is guaranteed, no leaks.
 Stack objects must be small not only because the stack is small, but because their content is stored inline
-in the variable, which must be copied when returning/assigning, as opposed to pointers where we copy only the address.
+in the variable, which must be copied when returning/assigning, as opposed to pointers where we copy only the address,
+alyhtough we can have pointers to struct allocated structs.
 This is mitigagted in cpp with move semantics and with ref keyword in C#.
 In addition, heap objects can be created in run-time dynamically (variable sized array), and incur indirection
 cost for the pointers (although we can have ptrs to stack allocated objects), and performance hit during allocation/deallocation.
 If the entity is NOT a POD, for example a Player class with many fields, huge arrays, methods, etc - use a class that is allocated
 on the heap.
+Dynamic allocation is not guaranteed to return successfully, and can potentially fail.
 Also use smart pointers, instead of raw ptrs for heap allocated objects, which ensure ownsership and activate the dtor of the object.
 ***************************************************************
 Use stack allocation for small, local, short-lived POD style objects (Vector3)
