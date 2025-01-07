@@ -30,7 +30,8 @@ at compile-time and "polymorphic" because we have a symbol with the same name (a
 function with the same name, representing different types of functions).
 Thus, these functions are said to be statically dispatched (at compile time).
 
-function-overloading mechanism utilizes "name mangling" that occurs with every function
+C does not support function overloading!
+in CPP function-overloading mechanism utilizes "name mangling" that occurs with every function
 in cpp. for example:
 we have two multiply functions: multiply(a,b,c) and multiply(a,b), to ensure
 there is no collision between them, the compiler simply gives the two different names
