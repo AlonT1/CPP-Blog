@@ -172,7 +172,13 @@ struct Node
 }node; // inline instance of Node
 
 // typedefing:
-typedef struct Node 
+typedef struct // structs can be annonymous!
+{
+    int x, y;
+}TheStruct; // the annonymous struct above is typedef as "TheStruct myStruct;" TheStruct is not an instance!
+
+
+typedef struct Node // Name of the struct, needed so that the pointers inside the struct could refer to the struct itself
 {
     struct Node* left; // still need to write "struct" here, typedef only begins later
     struct Node* right;
@@ -181,10 +187,6 @@ typedef struct Node
 // note that we can still use struct keyword "struct Node node = ". it's up to us if node is a ptr or stack allocated.
 // in cpp struct keyword is not necessary! see 128_typedef.cpp why
 
-typedef struct // structs can be annonymous!
-{
-    int x, y;
-}TheStruct; // the annonymous struct above can be instantiated as "TheStruct myStruct;"
 
 int main()
 {
