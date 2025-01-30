@@ -1,6 +1,6 @@
 #include <iostream>
 
-namespace Inheritance
+namespace Inheritance // entity inheritance (who they are)
 {
 	class Animal
 	{
@@ -29,7 +29,7 @@ namespace Inheritance
 	// now we want a CleaningRobotDog that has all 4 methods method above - problem!
 }
 
-namespace Composition
+namespace Composition // behaviour composition (what they do)
 {
 	namespace Behaviours
 	{
